@@ -1,0 +1,47 @@
+<footer class="site-footer">
+    <div class="container footer-grid">
+        <div class="footer-brand-block">
+            <a href="{% url 'home:index' %}" class="brand brand-footer">
+                <div class="brand-icon">
+                    <span class="material-symbols-outlined">home_work</span>
+                </div>
+                <span class="brand-text">HABITA</span>
+            </a>
+            <p>
+                Transformando la búsqueda de tu hogar en una experiencia excepcional.
+            </p>
+        </div>
+
+        <div>
+            <h4>Explorar</h4>
+            <ul>
+                <li><a href="{% url 'properties:list' %}">Propiedades</a></li>
+                <li><a href="#">Casas</a></li>
+                <li><a href="#">Departamentos</a></li>
+                <li><a href="#">Oficinas</a></li>
+            </ul>
+        </div>
+
+        <div>
+            <h4>Empresa</h4>
+            <ul>
+                <li><a href="#">Sobre Nosotros</a></li>
+                <li><a href="#">Blog</a></li>
+                <li><a href="#">Contacto</a></li>
+                <li><a href="#">Trabaja con nosotros</a></li>
+            </ul>
+        </div>
+
+        <div>
+            <h4>Suscríbete</h4>
+            <form class="footer-subscribe-form">
+                <input type="email" placeholder="Email">
+                <button type="button" class="btn-primary btn-small">Unirse</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="container footer-bottom">
+        <p>© 2024 HABITA Real Estate. Todos los derechos reservados.</p>
+    </div>
+</footer>

@@ -9,30 +9,6 @@
 
 {% block content %}
 <div class="site-shell">
-
-    <header class="site-header">
-        <div class="container header-row">
-            <a href="/" class="brand">
-                <div class="brand-icon">
-                    <span class="material-symbols-outlined">home_work</span>
-                </div>
-                <span class="brand-text">HABITA</span>
-            </a>
-
-            <nav class="main-nav">
-                <a href="/properties/">Propiedades</a>
-                <a href="#">Zonas</a>
-                <a href="#">Nosotros</a>
-                <a href="#">Contacto</a>
-            </nav>
-
-            <div class="header-actions">
-                <a href="#" class="btn-link">Iniciar Sesión</a>
-                <a href="#" class="btn-primary btn-small">Registrarse</a>
-            </div>
-        </div>
-    </header>
-
     <main>
         <section class="hero-section">
             <div class="container">
@@ -113,7 +89,7 @@
                         <h2>Propiedades Destacadas</h2>
                         <p>Las mejores ofertas disponibles esta semana en Querétaro.</p>
                     </div>
-                    <a href="/properties/" class="section-link">Ver todas</a>
+                    <a href="{% url 'properties:list' %}" class="btn-primary">Explorar propiedades</a>
                 </div>
 
                 {% if featured_properties_error %}
@@ -163,6 +139,9 @@
                                             <span class="material-symbols-outlined">straighten</span>
                                             <span>{{ property.area }}</span>
                                         </div>
+                                        <a href="{% url 'properties:detail' property.id %}">
+                                            Ver detalles
+                                        </a>
                                     </div>
                                 </div>
                             </article>
@@ -222,45 +201,5 @@
         </section>
     </main>
 
-    <footer class="site-footer">
-        <div class="container footer-grid">
-            <div class="footer-brand-block">
-                <div class="brand brand-footer">
-                    <div class="brand-icon">
-                        <span class="material-symbols-outlined">home_work</span>
-                    </div>
-                    <span class="brand-text">HABITA</span>
-                </div>
-                <p>
-                    La plataforma líder en el mercado inmobiliario de Querétaro.
-                    Innovación y confianza para encontrar tu próximo hogar de forma segura y sencilla.
-                </p>
-            </div>
-
-            <div>
-                <h4>Explora</h4>
-                <ul>
-                    <li><a href="#">Casas</a></li>
-                    <li><a href="#">Departamentos</a></li>
-                    <li><a href="#">Lofts</a></li>
-                    <li><a href="#">Comercial</a></li>
-                </ul>
-            </div>
-
-            <div>
-                <h4>Legal</h4>
-                <ul>
-                    <li><a href="#">Privacidad</a></li>
-                    <li><a href="#">Términos</a></li>
-                    <li><a href="#">Seguridad</a></li>
-                    <li><a href="#">Cookies</a></li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="container footer-bottom">
-            <p>© 2024 HABITA Real Estate. Todos los derechos reservados. Querétaro, México.</p>
-        </div>
-    </footer>
 </div>
 {% endblock %}

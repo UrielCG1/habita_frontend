@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Propiedades | HABITA{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/properties.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="properties-page">
+    <div class="container">
+        <div class="properties-page-header">
+            <h1>Catálogo de Propiedades</h1>
+            <p>Encuentra el hogar ideal con filtros conectados en tiempo real.</p>
+        </div>
+
+        <form method="get" class="properties-filters">
+            <div class="filter-field filter-field-search">
+                <span class="material-symbols-outlined">search</span>
+                <input type="text" name="q" placeholder="Buscar por nombre o zona" value="{{ filters.q }}">
+            </div>
+
+            <div class="filter-field">
+                <input type="text" name="city" placeholder="Ciudad" value="{{ filters.city }}">
+            </div>
+
+            <div class="filter-field">
+                <select name="property_type">
+                    <option value="">Tipo de propiedad</option>
+                    <option value="house" {% if filters.property_type == "house" %}selected{% endif %}>Casa</option>
+                    <option value="apartment" {% if filters.property_type == "apartment" %}selected{% endif %}>Departamento</option>
+                    <option value="office" {% if filters.property_type == "office" %}selected{% endif %}>Oficina</option>
+                    <option value="land" {% if filters.property_type == "land" %}selected{% endif %}>Terreno</option>
+                </select>
+            </div>
+
+            <div class="filter-field">
+                <input type="number" name="min_price" placeholder="Precio mínimo" value="{{ filters.min_price }}">
+            </div>
+
+            <div class="filter-field">
+                <input type="number" name="max_price" placeholder="Precio máximo" value="{{ filters.max_price }}">
+            </div>
+
+            <div class="filter-field">
+                <input type="number" name="bedrooms" placeholder="Habitaciones" value="{{ filters.bedrooms }}">
+            </div>
+
+            <div class="filter-field">
+                <input type="number" step="0.5" name="bathrooms" placeholder="Baños" value="{{ filters.bathrooms }}">
+            </div>
+
+            <div class="filter-field">
+                <select name="status">
+                    <option value="">Estatus</option>
+                    <option value="available" {% if filters.status == "available" %}selected{% endif %}>Disponible</option>
+                    <option value="rented" {% if filters.status == "rented" %}selected{% endif %}>Rentada</option>
+                    <option value="sold" {% if filters.status == "sold" %}selected{% endif %}>Vendida</option>
+                </select>
+            </div>
+
+            <div class="filters-actions">
+                <button type="submit" class="btn-primary">Aplicar filtros</button>
+                <a href="{% url 'properties:list' %}" class="btn-secondary">Limpiar</a>
+            </div>
+        </form>
+
+        {% if error_message %}
+            <div class="api-message api-message-error">
+                {{ error_message }}
+            </div>
+        {% endif %}
+
+        {% if properties %}
+            <div class="properties-grid properties-grid-catalog">
+                {% for property in properties %}
+                    <article class="property-card">
+                        <a href="{% url 'properties:detail' property.id %}" class="property-card-link">
+                            <div class="property-image-wrapper">
+                                <img
+                                    src="{{ property.cover_image_url }}"
+                                    alt="{{ property.cover_image_alt }}"
+                                    class="property-image"
+                                >
+                                <span class="property-badge">
+                                    {{ property.property_type }}
+                                </span>
+                            </div>
+
+                            <div class="property-body">
+                                <div class="property-card-top">
+                                    <h3>{{ property.price_display }}</h3>
+                                    {% if property.status %}
+                                        <span class="property-status">{{ property.status }}</span>
+                                    {% endif %}
+                                </div>
+
+                                <p class="property-title">{{ property.title }}</p>
+
+                                <div class="property-location">
+                                    <span class="material-symbols-outlined">location_on</span>
+                                    <span>{{ property.location }}</span>
+                                </div>
+
+                                <div class="property-meta">
+                                    <span class="meta-item">
+                                        <span class="material-symbols-outlined">bed</span>
+                                        {{ property.bedrooms }}
+                                    </span>
+                                    <span class="meta-item">
+                                        <span class="material-symbols-outlined">bathtub</span>
+                                        {{ property.bathrooms }}
+                                    </span>
+                                    <span class="meta-item">
+                                        <span class="material-symbols-outlined">straighten</span>
+                                        {{ property.area_m2 }} m²
+                                    </span>
+                                </div>
+
+                                <div class="property-card-action">
+                                    <span class="btn-primary btn-small">Ver detalles</span>
+                                </div>
+                            </div>
+                        </a>
+                    </article>
+                {% endfor %}
+            </div>
+
+            {% if pagination.total_pages > 1 %}
+                <div class="pagination">
+                    {% if pagination.has_previous %}
+                        <a href="?page={{ pagination.previous_page }}{% if filters.q %}&q={{ filters.q }}{% endif %}{% if filters.city %}&city={{ filters.city }}{% endif %}{% if filters.property_type %}&property_type={{ filters.property_type }}{% endif %}{% if filters.min_price %}&min_price={{ filters.min_price }}{% endif %}{% if filters.max_price %}&max_price={{ filters.max_price }}{% endif %}{% if filters.bedrooms %}&bedrooms={{ filters.bedrooms }}{% endif %}{% if filters.bathrooms %}&bathrooms={{ filters.bathrooms }}{% endif %}{% if filters.status %}&status={{ filters.status }}{% endif %}" class="page-link">
+                            ‹
+                        </a>
+                    {% endif %}
+
+                    <span class="page-current">{{ pagination.page }}</span>
+
+                    {% if pagination.has_next %}
+                        <a href="?page={{ pagination.next_page }}{% if filters.q %}&q={{ filters.q }}{% endif %}{% if filters.city %}&city={{ filters.city }}{% endif %}{% if filters.property_type %}&property_type={{ filters.property_type }}{% endif %}{% if filters.min_price %}&min_price={{ filters.min_price }}{% endif %}{% if filters.max_price %}&max_price={{ filters.max_price }}{% endif %}{% if filters.bedrooms %}&bedrooms={{ filters.bedrooms }}{% endif %}{% if filters.bathrooms %}&bathrooms={{ filters.bathrooms }}{% endif %}{% if filters.status %}&status={{ filters.status }}{% endif %}" class="page-link">
+                            ›
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="api-message">
+                No se encontraron propiedades con los filtros aplicados.
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

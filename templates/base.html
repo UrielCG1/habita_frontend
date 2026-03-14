@@ -15,6 +15,16 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    {% block content %}{% endblock %}
+    <div class="site-shell">
+        {% include "includes/navbar.html" %}
+
+        <main class="site-main">
+            {% block content %}{% endblock %}
+        </main>
+
+        {% include "includes/footer.html" %}
+    </div>
+
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

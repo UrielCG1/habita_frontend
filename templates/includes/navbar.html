@@ -1,0 +1,31 @@
+{% load static %}
+<header class="site-header">
+    <div class="container navbar-row">
+        <div class="navbar-left">
+            <a href="{% url 'home:index' %}" class="brand">
+                <div class="brand-icon">
+                    <span class="material-symbols-outlined">home_work</span>
+                </div>
+                <span class="brand-text">HABITA</span>
+            </a>
+
+            <nav class="main-nav">
+                <a href="{% url 'properties:list' %}?status=available">Comprar</a>
+                <a href="{% url 'properties:list' %}?status=available">Alquilar</a>
+                <a href="{% url 'properties:list' %}">Propiedades</a>
+                <a href="#">Nosotros</a>
+            </nav>
+        </div>
+
+        <div class="navbar-right">
+            <form class="navbar-search" action="{% url 'properties:list' %}" method="get">
+                <span class="material-symbols-outlined">search</span>
+                <input type="text" name="q" placeholder="Buscar zona o ciudad...">
+            </form>
+
+            <a href="#" class="navbar-user">
+                <span class="material-symbols-outlined">person</span>
+            </a>
+        </div>
+    </div>
+</header>
