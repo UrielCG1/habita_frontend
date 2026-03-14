@@ -8,170 +8,190 @@
 {% endblock %}
 
 {% block content %}
-<section class="hero-home">
-    <div class="container">
-        <div class="hero-banner">
-            <div class="hero-overlay"></div>
-            <img src="{% static 'img/hero-home.jpg' %}" alt="Hogar moderno HABITA" class="hero-image">
+<section class="hero-section">
+            <div class="container">
+                <div class="hero-card" style="background-image: linear-gradient(rgba(8, 20, 43, 0.62), rgba(8, 20, 43, 0.58)), url('{% static "img/hero-home.jpg" %}');">
+                    <div class="hero-content">
+                        <h1>
+                            Encuentra tu hogar ideal en
+                            <span>Querétaro</span>
+                        </h1>
+                        <p>
+                            Tu plataforma de confianza para encontrar el hogar perfecto.
+                            Transparencia, seguridad y las mejores ubicaciones.
+                        </p>
 
-            <div class="hero-content">
-                <h1>
-                    Encuentra tu hogar<br>
-                    ideal en <span>Querétaro</span>
-                </h1>
-                <p>
-                    Tu plataforma de confianza para encontrar el hogar perfecto.
-                    Transparencia, seguridad y las mejores ubicaciones.
-                </p>
-
-                <form class="hero-search-bar" action="{% url 'properties:list' %}" method="get">
-                    <div class="hero-search-field">
-                        <span class="material-symbols-outlined">search</span>
-                        <input type="text" name="q" placeholder="Zona, tipo de propiedad o precio...">
-                    </div>
-
-                    <div class="hero-search-field">
-                        <span class="material-symbols-outlined">sell</span>
-                        <select name="max_price">
-                            <option value="">Presupuesto</option>
-                            <option value="10000">$5,000 - $10,000</option>
-                            <option value="20000">$10,000 - $20,000</option>
-                            <option value="50000">$20,000+</option>
-                        </select>
-                    </div>
-
-                    <button type="submit" class="btn-primary hero-search-btn">
-                        Buscar Ahora
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="benefits-section">
-    <div class="container">
-        <div class="section-heading section-heading-center">
-            <span class="section-kicker">Beneficios</span>
-            <h2>¿Por qué elegir HABITA?</h2>
-            <div class="section-line"></div>
-        </div>
-
-        <div class="benefits-grid">
-            <article class="benefit-card">
-                <div class="benefit-icon">
-                    <span class="material-symbols-outlined">verified_user</span>
-                </div>
-                <h3>Propiedades Verificadas</h3>
-                <p>Cada listado pasa por un riguroso proceso de validación física y legal para tu tranquilidad.</p>
-            </article>
-
-            <article class="benefit-card">
-                <div class="benefit-icon">
-                    <span class="material-symbols-outlined">handshake</span>
-                </div>
-                <h3>Trato Directo y Seguro</h3>
-                <p>Facilitamos la comunicación transparente entre inquilinos y propietarios certificados.</p>
-            </article>
-
-            <article class="benefit-card">
-                <div class="benefit-icon">
-                    <span class="material-symbols-outlined">location_on</span>
-                </div>
-                <h3>Zonas Exclusivas</h3>
-                <p>Tenemos la mejor selección en Juriquilla, El Campanario, Zibatá y las mejores colonias de Qro.</p>
-            </article>
-        </div>
-    </div>
-</section>
-
-<section class="featured-section">
-    <div class="container">
-        <div class="section-heading section-heading-between">
-            <div>
-                <h2>Propiedades Destacadas</h2>
-                <p>Las mejores ofertas disponibles esta semana en Querétaro.</p>
-            </div>
-            <a href="{% url 'properties:list' %}" class="section-link">Ver todas</a>
-        </div>
-
-        <div class="properties-grid">
-            {% for property in featured_properties %}
-                <article class="property-card property-card-home">
-                    <a href="{% url 'properties:detail' property.id %}" class="property-card-link">
-                        <div class="property-image-box">
-                            <img src="{{ property.cover_image_url }}" alt="{{ property.cover_image_alt }}" class="property-image">
-                            {% if forloop.first %}
-                                <span class="property-chip">Destacado</span>
-                            {% elif forloop.counter == 2 %}
-                                <span class="property-chip">Nuevo</span>
-                            {% else %}
-                                <span class="property-chip">Premium</span>
-                            {% endif %}
-                            <span class="property-price-floating">{{ property.price_display }}/mes</span>
-                        </div>
-
-                        <div class="property-body">
-                            <h3>{{ property.title }}</h3>
-
-                            <div class="property-location">
-                                <span class="material-symbols-outlined">location_on</span>
-                                <span>{{ property.location }}</span>
+                        <form class="hero-search-form" action="/properties/" method="get">
+                            <div class="field-group">
+                                <span class="material-symbols-outlined">search</span>
+                                <input type="text" name="q" placeholder="Zona, tipo de propiedad o precio...">
                             </div>
 
-                            <div class="property-meta">
-                                <span><span class="material-symbols-outlined">bed</span>{{ property.bedrooms }} Rec.</span>
-                                <span><span class="material-symbols-outlined">bathtub</span>{{ property.bathrooms }} Baños</span>
-                                <span><span class="material-symbols-outlined">straighten</span>{{ property.area_m2 }}m²</span>
+                            <div class="field-group">
+                                <span class="material-symbols-outlined">sell</span>
+                                <select name="budget">
+                                    <option value="">Presupuesto</option>
+                                    <option value="5000-10000">$5,000 - $10,000</option>
+                                    <option value="10000-20000">$10,000 - $20,000</option>
+                                    <option value="20000+">$20,000+</option>
+                                </select>
                             </div>
+
+                            <button type="submit" class="btn-primary">Buscar Ahora</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="benefits-section">
+            <div class="container">
+                <div class="section-heading centered">
+                    <span class="section-eyebrow">Beneficios</span>
+                    <h2>¿Por qué elegir HABITA?</h2>
+                    <div class="section-line"></div>
+                </div>
+
+                <div class="benefits-grid">
+                    <article class="info-card">
+                        <div class="info-icon">
+                            <span class="material-symbols-outlined">verified_user</span>
                         </div>
-                    </a>
-                </article>
-            {% endfor %}
-        </div>
-    </div>
-</section>
+                        <h3>Propiedades Verificadas</h3>
+                        <p>Cada listado pasa por un riguroso proceso de validación física y legal para tu tranquilidad.</p>
+                    </article>
 
-<section class="owners-section">
-    <div class="container owners-grid">
-        <div class="owners-content">
-            <h2>¿Eres propietario? Pon tu inmueble en las mejores manos.</h2>
-            <p>
-                Nuestra plataforma conecta tu propiedad con perfiles verificados y confiables.
-                Reducimos el tiempo de vacancia y aseguramos tu inversión.
-            </p>
+                    <article class="info-card">
+                        <div class="info-icon">
+                            <span class="material-symbols-outlined">handshake</span>
+                        </div>
+                        <h3>Trato Directo y Seguro</h3>
+                        <p>Facilitamos la comunicación transparente entre inquilinos y propietarios certificados.</p>
+                    </article>
 
-            <ul class="owners-list">
-                <li><span class="material-symbols-outlined">check_circle</span>Reportes de crédito detallados</li>
-                <li><span class="material-symbols-outlined">check_circle</span>Fotografía profesional gratuita</li>
-                <li><span class="material-symbols-outlined">check_circle</span>Contratos blindados legalmente</li>
-            </ul>
+                    <article class="info-card">
+                        <div class="info-icon">
+                            <span class="material-symbols-outlined">location_on</span>
+                        </div>
+                        <h3>Zonas Exclusivas</h3>
+                        <p>Tenemos la mejor selección en Juriquilla, El Campanario, Zibatá y las mejores colonias de Querétaro.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
 
-            <a href="#" class="btn-secondary owners-btn">Quiero Rentar mi Propiedad</a>
-        </div>
+        <section class="featured-section">
+            <div class="container">
+                <div class="section-heading section-heading-row">
+                    <div>
+                        <h2>Propiedades Destacadas</h2>
+                        <p>Las mejores ofertas disponibles esta semana en Querétaro.</p>
+                    </div>
+                    <a href="/properties/" class="section-link">Ver todas</a>
+                </div>
 
-        <div class="owners-image-wrap">
-            <img src="{% static 'img/owners-block.jpg' %}" alt="Propietarios HABITA" class="owners-image">
-        </div>
-    </div>
-</section>
+                {% if featured_properties_error %}
+                    <div class="api-message api-message-error">
+                        {{ featured_properties_error }}
+                    </div>
+                {% endif %}
 
-<section class="zones-section">
-    <div class="container">
-        <div class="section-heading section-heading-center">
-            <h2>Estamos en todo Querétaro</h2>
-        </div>
+                {% if featured_properties %}
+                    <div class="properties-grid">
+                        {% for property in featured_properties %}
+                            <article class="property-card">
+                                <div class="property-image-wrapper">
+                                    {% if property.image_url %}
+                                        <img src="{{ property.image_url }}" alt="{{ property.title }}" class="property-image">
+                                    {% else %}
+                                        <img src="{% static 'img/property-placeholder.jpg' %}" alt="{{ property.title }}" class="property-image">
+                                    {% endif %}
 
-        <div class="zones-grid">
-            <span>Juriquilla</span>
-            <span>El Campanario</span>
-            <span>Milenio III</span>
-            <span>Centro Sur</span>
-            <span>Zibatá</span>
-            <span>Corregidora</span>
-            <span>Refugio</span>
-            <span>Centro</span>
-        </div>
-    </div>
-</section>
+                                    <div class="property-badge">
+                                        {{ property.property_type|default:"Propiedad" }}
+                                    </div>
+
+                                    <div class="property-price">
+                                        {{ property.price }}
+                                    </div>
+                                </div>
+
+                                <div class="property-body">
+                                    <h3>{{ property.title }}</h3>
+
+                                    <div class="property-location">
+                                        <span class="material-symbols-outlined">location_on</span>
+                                        <span>{{ property.location }}</span>
+                                    </div>
+
+                                    <div class="property-meta">
+                                        <div class="meta-item">
+                                            <span class="material-symbols-outlined">bed</span>
+                                            <span>{{ property.bedrooms }}</span>
+                                        </div>
+                                        <div class="meta-item">
+                                            <span class="material-symbols-outlined">bathtub</span>
+                                            <span>{{ property.bathrooms }}</span>
+                                        </div>
+                                        <div class="meta-item">
+                                            <span class="material-symbols-outlined">straighten</span>
+                                            <span>{{ property.area }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="api-message">
+                        Aún no hay propiedades destacadas disponibles para mostrar.
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="owners-section">
+            <div class="container owners-grid">
+                <div class="owners-copy">
+                    <h2>¿Eres propietario? Pon tu inmueble en las mejores manos.</h2>
+                    <p>
+                        Nuestra plataforma conecta tu propiedad con perfiles verificados y confiables.
+                        Reducimos el tiempo de vacancia y aseguramos tu inversión.
+                    </p>
+
+                    <ul class="owners-list">
+                        <li>
+                            <span class="material-symbols-outlined">check_circle</span>
+                            Reportes de crédito detallados
+                        </li>
+                        <li>
+                            <span class="material-symbols-outlined">check_circle</span>
+                            Fotografía profesional gratuita
+                        </li>
+                        <li>
+                            <span class="material-symbols-outlined">check_circle</span>
+                            Contratos blindados legalmente
+                        </li>
+                    </ul>
+
+                    <a href="#" class="btn-secondary">Quiero Rentar mi Propiedad</a>
+                </div>
+
+                <div class="owners-image-box">
+                    <img src="{% static 'img/owners-block.jpg' %}" alt="Bloque propietarios">
+                </div>
+            </div>
+        </section>
+
+        <section class="zones-section">
+            <div class="container zones-container">
+                <h2>Estamos en todo Querétaro</h2>
+
+                <div class="zones-grid">
+                    {% for zone in zones %}
+                        <div class="zone-chip">{{ zone }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
 {% endblock %}
