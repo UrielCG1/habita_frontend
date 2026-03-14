@@ -1,33 +1,30 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Propiedades | HABITA{% endblock %}
+{% block title %}Catálogo de Propiedades | HABITA{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/properties.css' %}">
 {% endblock %}
 
 {% block content %}
-<section class="properties-page">
+<section class="catalog-page">
     <div class="container">
-        <div class="properties-page-header">
+        <div class="catalog-header">
             <h1>Catálogo de Propiedades</h1>
-            <p>Encuentra el hogar ideal con filtros conectados en tiempo real.</p>
+            <p>Encuentra el hogar de tus sueños entre nuestras opciones exclusivas.</p>
         </div>
 
-        <form method="get" class="properties-filters">
-            <div class="filter-field filter-field-search">
-                <span class="material-symbols-outlined">search</span>
-                <input type="text" name="q" placeholder="Buscar por nombre o zona" value="{{ filters.q }}">
+        <form method="get" class="catalog-filters">
+            <div class="catalog-filter">
+                <span class="material-symbols-outlined">location_on</span>
+                <input type="text" name="city" placeholder="Ubicación/Zona" value="{{ filters.city }}">
             </div>
 
-            <div class="filter-field">
-                <input type="text" name="city" placeholder="Ciudad" value="{{ filters.city }}">
-            </div>
-
-            <div class="filter-field">
+            <div class="catalog-filter">
+                <span class="material-symbols-outlined">home</span>
                 <select name="property_type">
-                    <option value="">Tipo de propiedad</option>
+                    <option value="">Tipo de Propiedad</option>
                     <option value="house" {% if filters.property_type == "house" %}selected{% endif %}>Casa</option>
                     <option value="apartment" {% if filters.property_type == "apartment" %}selected{% endif %}>Departamento</option>
                     <option value="office" {% if filters.property_type == "office" %}selected{% endif %}>Oficina</option>
@@ -35,91 +32,67 @@
                 </select>
             </div>
 
-            <div class="filter-field">
-                <input type="number" name="min_price" placeholder="Precio mínimo" value="{{ filters.min_price }}">
+            <div class="catalog-filter">
+                <span class="material-symbols-outlined">payments</span>
+                <input type="number" name="max_price" placeholder="Rango de Precio" value="{{ filters.max_price }}">
             </div>
 
-            <div class="filter-field">
-                <input type="number" name="max_price" placeholder="Precio máximo" value="{{ filters.max_price }}">
-            </div>
-
-            <div class="filter-field">
+            <div class="catalog-filter">
+                <span class="material-symbols-outlined">bed</span>
                 <input type="number" name="bedrooms" placeholder="Habitaciones" value="{{ filters.bedrooms }}">
             </div>
 
-            <div class="filter-field">
-                <input type="number" step="0.5" name="bathrooms" placeholder="Baños" value="{{ filters.bathrooms }}">
-            </div>
-
-            <div class="filter-field">
-                <select name="status">
-                    <option value="">Estatus</option>
-                    <option value="available" {% if filters.status == "available" %}selected{% endif %}>Disponible</option>
-                    <option value="rented" {% if filters.status == "rented" %}selected{% endif %}>Rentada</option>
-                    <option value="sold" {% if filters.status == "sold" %}selected{% endif %}>Vendida</option>
+            <div class="catalog-sort">
+                <span>Ordenar por:</span>
+                <select name="sort">
+                    <option value="">Más recientes</option>
                 </select>
             </div>
 
-            <div class="filters-actions">
-                <button type="submit" class="btn-primary">Aplicar filtros</button>
+            <div class="catalog-actions">
+                <button type="submit" class="btn-primary">Aplicar</button>
                 <a href="{% url 'properties:list' %}" class="btn-secondary">Limpiar</a>
             </div>
         </form>
 
-        {% if error_message %}
-            <div class="api-message api-message-error">
-                {{ error_message }}
-            </div>
-        {% endif %}
-
         {% if properties %}
-            <div class="properties-grid properties-grid-catalog">
+            <div class="catalog-grid">
                 {% for property in properties %}
-                    <article class="property-card">
-                        <a href="{% url 'properties:detail' property.id %}" class="property-card-link">
-                            <div class="property-image-wrapper">
-                                <img
-                                    src="{{ property.cover_image_url }}"
-                                    alt="{{ property.cover_image_alt }}"
-                                    class="property-image"
-                                >
-                                <span class="property-badge">
-                                    {{ property.property_type }}
-                                </span>
+                    <article class="catalog-card">
+                        <a href="{% url 'properties:detail' property.id %}" class="catalog-card-link">
+                            <div class="catalog-card-media">
+                                <button type="button" class="catalog-favorite-btn" aria-label="Guardar favorito">
+                                    <span class="material-symbols-outlined">favorite</span>
+                                </button>
+                                <img src="{{ property.cover_image_url }}" alt="{{ property.cover_image_alt }}">
                             </div>
 
-                            <div class="property-body">
-                                <div class="property-card-top">
-                                    <h3>{{ property.price_display }}</h3>
-                                    {% if property.status %}
-                                        <span class="property-status">{{ property.status }}</span>
-                                    {% endif %}
+                            <div class="catalog-card-body">
+                                <div class="catalog-card-top">
+                                    <span class="catalog-price">{{ property.price_display }}</span>
+                                    <span class="catalog-badge">{{ property.status|default:"Disponible" }}</span>
                                 </div>
 
-                                <p class="property-title">{{ property.title }}</p>
-
-                                <div class="property-location">
+                                <div class="catalog-location">
                                     <span class="material-symbols-outlined">location_on</span>
                                     <span>{{ property.location }}</span>
                                 </div>
 
-                                <div class="property-meta">
-                                    <span class="meta-item">
+                                <div class="catalog-meta-row">
+                                    <div class="catalog-meta">
                                         <span class="material-symbols-outlined">bed</span>
-                                        {{ property.bedrooms }}
-                                    </span>
-                                    <span class="meta-item">
+                                        <span>{{ property.bedrooms }}</span>
+                                    </div>
+                                    <div class="catalog-meta">
                                         <span class="material-symbols-outlined">bathtub</span>
-                                        {{ property.bathrooms }}
-                                    </span>
-                                    <span class="meta-item">
+                                        <span>{{ property.bathrooms }}</span>
+                                    </div>
+                                    <div class="catalog-meta">
                                         <span class="material-symbols-outlined">straighten</span>
-                                        {{ property.area_m2 }} m²
-                                    </span>
-                                </div>
+                                        <span>{{ property.area_m2 }}m²</span>
+                                    </div>
 
-                                <div class="property-card-action">
-                                    <span class="btn-primary btn-small">Ver detalles</span>
+                                    <span class="catalog-detail-btn">Ver detalles</span>
                                 </div>
                             </div>
                         </a>
@@ -128,26 +101,20 @@
             </div>
 
             {% if pagination.total_pages > 1 %}
-                <div class="pagination">
+                <div class="catalog-pagination">
                     {% if pagination.has_previous %}
-                        <a href="?page={{ pagination.previous_page }}{% if filters.q %}&q={{ filters.q }}{% endif %}{% if filters.city %}&city={{ filters.city }}{% endif %}{% if filters.property_type %}&property_type={{ filters.property_type }}{% endif %}{% if filters.min_price %}&min_price={{ filters.min_price }}{% endif %}{% if filters.max_price %}&max_price={{ filters.max_price }}{% endif %}{% if filters.bedrooms %}&bedrooms={{ filters.bedrooms }}{% endif %}{% if filters.bathrooms %}&bathrooms={{ filters.bathrooms }}{% endif %}{% if filters.status %}&status={{ filters.status }}{% endif %}" class="page-link">
-                            ‹
-                        </a>
+                        <a class="page-btn" href="?page={{ pagination.previous_page }}">‹</a>
                     {% endif %}
 
-                    <span class="page-current">{{ pagination.page }}</span>
+                    <span class="page-btn page-btn-current">{{ pagination.page }}</span>
 
                     {% if pagination.has_next %}
-                        <a href="?page={{ pagination.next_page }}{% if filters.q %}&q={{ filters.q }}{% endif %}{% if filters.city %}&city={{ filters.city }}{% endif %}{% if filters.property_type %}&property_type={{ filters.property_type }}{% endif %}{% if filters.min_price %}&min_price={{ filters.min_price }}{% endif %}{% if filters.max_price %}&max_price={{ filters.max_price }}{% endif %}{% if filters.bedrooms %}&bedrooms={{ filters.bedrooms }}{% endif %}{% if filters.bathrooms %}&bathrooms={{ filters.bathrooms }}{% endif %}{% if filters.status %}&status={{ filters.status }}{% endif %}" class="page-link">
-                            ›
-                        </a>
+                        <a class="page-btn" href="?page={{ pagination.next_page }}">›</a>
                     {% endif %}
                 </div>
             {% endif %}
         {% else %}
-            <div class="api-message">
-                No se encontraron propiedades con los filtros aplicados.
-            </div>
+            <div class="api-message">No se encontraron propiedades.</div>
         {% endif %}
     </div>
 </section>

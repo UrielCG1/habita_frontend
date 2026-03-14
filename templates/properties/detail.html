@@ -1,89 +1,120 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Detalle de propiedad | HABITA{% endblock %}
+{% block title %}{{ property.title|default:"Detalle de propiedad" }} | HABITA{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/property-detail.css' %}">
 {% endblock %}
 
 {% block content %}
-<section class="property-detail-page">
+<section class="detail-page">
     <div class="container">
         {% if error_message or not property %}
             <div class="api-message api-message-error">
                 {{ error_message|default:"No fue posible cargar esta propiedad." }}
             </div>
         {% else %}
-            <div class="property-detail-top">
-                <div class="property-detail-gallery">
-                    <div class="property-detail-main-image">
-                        <img src="{{ property.cover_image_url }}" alt="{{ property.title }}">
-                    </div>
-
-                    {% if property.images|length > 1 %}
-                        <div class="property-detail-thumbs">
-                            {% for image in property.images %}
-                                <div class="property-detail-thumb">
-                                    <img src="{{ image.image_url }}" alt="{{ image.alt }}">
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
+            <div class="detail-gallery">
+                <div class="detail-gallery-main">
+                    <img src="{{ property.images.0.image_url }}" alt="{{ property.title }}">
                 </div>
 
-                <aside class="property-detail-summary">
-                    <span class="detail-badge">{{ property.property_type }}</span>
-                    <h1>{{ property.title }}</h1>
-                    <p class="detail-price">{{ property.price_display }}</p>
-
-                    <div class="property-location">
-                        <span class="material-symbols-outlined">location_on</span>
-                        <span>{{ property.location }}</span>
-                    </div>
-
-                    <div class="detail-meta-grid">
-                        <div class="detail-meta-card">
-                            <span class="material-symbols-outlined">bed</span>
-                            <strong>{{ property.bedrooms }}</strong>
-                            <small>Habitaciones</small>
+                <div class="detail-gallery-grid">
+                    {% for image in property.images|slice:"1:5" %}
+                        <div class="detail-gallery-thumb">
+                            <img src="{{ image.image_url }}" alt="{{ image.alt }}">
                         </div>
-                        <div class="detail-meta-card">
-                            <span class="material-symbols-outlined">bathtub</span>
-                            <strong>{{ property.bathrooms }}</strong>
-                            <small>Baños</small>
-                        </div>
-                        <div class="detail-meta-card">
-                            <span class="material-symbols-outlined">straighten</span>
-                            <strong>{{ property.area_m2 }}</strong>
-                            <small>m²</small>
-                        </div>
-                    </div>
-
-                    <div class="detail-actions">
-                        <a href="{% url 'properties:list' %}" class="btn-secondary">Volver al catálogo</a>
-                        <a href="#" class="btn-primary">Solicitar información</a>
-                    </div>
-                </aside>
+                    {% endfor %}
+                </div>
             </div>
 
-            <div class="property-detail-content">
-                <div class="detail-block">
-                    <h2>Descripción</h2>
-                    <p>
-                        {{ property.description|default:"Esta propiedad no cuenta con descripción por el momento." }}
-                    </p>
+            <div class="detail-layout">
+                <div class="detail-content">
+                    <div class="detail-tags">
+                        <span class="tag-primary">Disponible ahora</span>
+                        <span class="tag-muted">Propiedad verificada</span>
+                    </div>
+
+                    <h1>{{ property.title }}</h1>
+                    <p class="detail-subprice">{{ property.price_display }} / mes • {{ property.location }}</p>
+
+                    <div class="detail-stats">
+                        <div><span class="material-symbols-outlined">bed</span>{{ property.bedrooms }} Habitaciones</div>
+                        <div><span class="material-symbols-outlined">shower</span>{{ property.bathrooms }} Baños</div>
+                        <div><span class="material-symbols-outlined">straighten</span>{{ property.area_m2 }} m²</div>
+                    </div>
+
+                    <section class="detail-section">
+                        <h2>Descripción</h2>
+                        <p>{{ property.description|default:"Esta propiedad no cuenta con descripción por el momento." }}</p>
+                    </section>
+
+                    <section class="detail-section">
+                        <h2>Amenidades</h2>
+                        <div class="amenities-grid">
+                            <div><span class="material-symbols-outlined">wifi</span>High-speed WiFi</div>
+                            <div><span class="material-symbols-outlined">local_parking</span>Private Parking</div>
+                            <div><span class="material-symbols-outlined">fitness_center</span>24/7 Gym</div>
+                            <div><span class="material-symbols-outlined">pool</span>Heated Pool</div>
+                            <div><span class="material-symbols-outlined">security</span>24/7 Security</div>
+                            <div><span class="material-symbols-outlined">pets</span>Pet Friendly</div>
+                        </div>
+                    </section>
+
+                    <section class="detail-section">
+                        <h2>Ubicación</h2>
+                        <p class="detail-location-text">{{ property.address|default:property.location }}</p>
+                        <div class="detail-map-placeholder">
+                            <span class="material-symbols-outlined">location_on</span>
+                        </div>
+                    </section>
                 </div>
 
-                <div class="detail-block">
-                    <h2>Información general</h2>
-                    <ul class="detail-info-list">
-                        <li><strong>Ciudad:</strong> {{ property.city|default:"No disponible" }}</li>
-                        <li><strong>Estado:</strong> {{ property.state|default:"No disponible" }}</li>
-                        <li><strong>Dirección:</strong> {{ property.address|default:"No disponible" }}</li>
-                        <li><strong>Estatus:</strong> {{ property.status|default:"No disponible" }}</li>
-                    </ul>
-                </div>
+                <aside class="detail-sidebar">
+                    <div class="detail-sidebar-card">
+                        <div class="detail-sidebar-price-row">
+                            <div>
+                                <p>Precio por mes</p>
+                                <h3>{{ property.price_display }}</h3>
+                            </div>
+                            <span class="detail-green-badge">Disponible</span>
+                        </div>
+
+                        <div class="detail-sidebar-actions">
+                            <a href="#" class="btn-accent detail-btn-full">
+                                <span class="material-symbols-outlined">description</span>
+                                Solicitar renta
+                            </a>
+
+                            <a href="#" class="btn-secondary detail-btn-full">
+                                <span class="material-symbols-outlined">favorite</span>
+                                Guardar en favoritos
+                            </a>
+                        </div>
+
+                        <div class="detail-contact-box">
+                            <h4>Contacto</h4>
+                            <div class="detail-contact-person">
+                                <div class="detail-contact-avatar">H</div>
+                                <div>
+                                    <strong>Habita Asesor</strong>
+                                    <span>Property Specialist</span>
+                                </div>
+                            </div>
+
+                            <div class="detail-contact-lines">
+                                <p><span class="material-symbols-outlined">call</span>+52 442 000 0000</p>
+                                <p><span class="material-symbols-outlined">mail</span>contacto@habita.mx</p>
+                            </div>
+                        </div>
+
+                        <div class="detail-notice">
+                            <strong>Nota importante</strong>
+                            <p>Las visitas se coordinan con cita previa y confirmación de disponibilidad.</p>
+                        </div>
+                    </div>
+                </aside>
             </div>
         {% endif %}
     </div>

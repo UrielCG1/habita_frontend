@@ -1,31 +1,23 @@
 {% load static %}
 <header class="site-header">
     <div class="container navbar-row">
-        <div class="navbar-left">
-            <a href="{% url 'home:home' %}" class="brand">
-                <div class="brand-icon">
-                    <span class="material-symbols-outlined">home_work</span>
-                </div>
-                <span class="brand-text">HABITA</span>
-            </a>
+        <a href="{% url 'home:home' %}" class="brand">
+            <span class="brand-mark">
+                <span class="material-symbols-outlined">home_work</span>
+            </span>
+            <span class="brand-name">HABITA</span>
+        </a>
 
-            <nav class="main-nav">
-                <a href="{% url 'properties:list' %}?status=available">Comprar</a>
-                <a href="{% url 'properties:list' %}?status=available">Alquilar</a>
-                <a href="{% url 'properties:list' %}">Propiedades</a>
-                <a href="#">Nosotros</a>
-            </nav>
-        </div>
+        <nav class="main-nav">
+            <a href="{% url 'properties:list' %}">Propiedades</a>
+            <a href="#">Zonas</a>
+            <a href="#">Nosotros</a>
+            <a href="#">Contacto</a>
+        </nav>
 
-        <div class="navbar-right">
-            <form class="navbar-search" action="{% url 'properties:list' %}" method="get">
-                <span class="material-symbols-outlined">search</span>
-                <input type="text" name="q" placeholder="Buscar zona o ciudad...">
-            </form>
-
-            <a href="#" class="navbar-user">
-                <span class="material-symbols-outlined">person</span>
-            </a>
+        <div class="nav-actions">
+            <a href="#" class="nav-login">Iniciar Sesión</a>
+            <a href="#" class="btn-primary btn-nav">Registrarse</a>
         </div>
     </div>
 </header>
