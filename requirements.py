@@ -1,0 +1,12 @@
+asgiref==3.11.1
+certifi==2026.2.25
+charset-normalizer==3.4.5
+Django==6.0.3
+idna==3.11
+packaging==26.0
+python-dotenv==1.2.2
+requests==2.32.5
+setuptools==82.0.1
+sqlparse==0.5.5
+urllib3==2.6.3
+wheel==0.46.3
