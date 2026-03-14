@@ -1,0 +1,60 @@
+:root {
+    --color-primary: #004c6d;
+    --color-primary-dark: #00344b;
+    --color-accent: #f6c324;
+    --color-text: #1f2937;
+    --color-text-soft: #5b6470;
+    --color-bg: #f3f5f7;
+    --color-surface: #ffffff;
+    --color-border: #e5e7eb;
+    --color-footer: #08142b;
+    --shadow-sm: 0 6px 18px rgba(15, 23, 42, 0.06);
+    --shadow-md: 0 12px 30px rgba(15, 23, 42, 0.10);
+    --radius-lg: 18px;
+    --radius-xl: 26px;
+    --container: 1180px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    font-family: "Inter", sans-serif;
+    color: var(--color-text);
+    background: var(--color-bg);
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button,
+input,
+select {
+    font: inherit;
+}
+
+.container {
+    width: 100%;
+    max-width: var(--container);
+    margin: 0 auto;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.material-symbols-outlined {
+    font-size: 20px;
+    vertical-align: middle;
+}
