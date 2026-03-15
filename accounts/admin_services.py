@@ -1,5 +1,6 @@
 from decimal import Decimal, InvalidOperation
 from urllib.parse import urljoin
+from typing import Optional
 
 from django.conf import settings
 
@@ -15,7 +16,7 @@ def _backend_root() -> str:
     return settings.BACKEND_API_BASE_URL.removesuffix("/api")
 
 
-def _absolute_media_url(file_url: str | None) -> str | None:
+def _absolute_media_url(file_url: Optional[str]) -> Optional[str]:
     if not file_url:
         return None
 
@@ -71,7 +72,7 @@ def _normalize_recent_request(item: dict) -> dict:
     }
 
 
-def get_admin_dashboard(request) -> tuple[dict | None, str | None]:
+def get_admin_dashboard(request) -> tuple[Optional[dict], Optional[str]]:
     try:
         response = authenticated_request(
             request,

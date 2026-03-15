@@ -1,6 +1,7 @@
 from decimal import Decimal, InvalidOperation
 from urllib.parse import urljoin
 from typing import Optional
+from datetime import datetime
 
 from django.conf import settings
 
@@ -69,19 +70,62 @@ def _normalize_property_card(item: dict) -> dict:
     }
 
 
+def _format_request_date(value: Optional[str]) -> str:
+    if not value:
+        return "Solicitud reciente"
+
+    try:
+        dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        months = {
+            1: "Enero",
+            2: "Febrero",
+            3: "Marzo",
+            4: "Abril",
+            5: "Mayo",
+            6: "Junio",
+            7: "Julio",
+            8: "Agosto",
+            9: "Septiembre",
+            10: "Octubre",
+            11: "Noviembre",
+            12: "Diciembre",
+        }
+        return f"Solicitada el {dt.day} de {months[dt.month]}, {dt.year}"
+    except Exception:
+        return "Solicitud reciente"
+
+
+def _status_key(status: Optional[str]) -> str:
+    value = (status or "").strip().lower()
+    if value in {"accepted", "aceptada", "approved", "aprobada"}:
+        return "approved"
+    if value in {"pending", "pendiente"}:
+        return "pending"
+    if value in {"rejected", "rechazada"}:
+        return "rejected"
+    if value in {"cancelled", "cancelada"}:
+        return "cancelled"
+    return "default"
+
+
 def _normalize_rental_request(item: dict) -> dict:
     property_data = item.get("property") or {}
     cover_image = property_data.get("cover_image") or {}
     image_url = _absolute_media_url(cover_image.get("file_url"))
 
+    raw_status = item.get("status") or ""
+    normalized_status = raw_status.capitalize()
+
     return {
         "id": item.get("id"),
-        "status": (item.get("status") or "").capitalize(),
+        "status": normalized_status,
+        "status_key": _status_key(raw_status),
         "message": item.get("message") or "",
         "owner_notes": item.get("owner_notes") or "",
         "move_in_date": item.get("move_in_date"),
         "monthly_budget": _format_price(item.get("monthly_budget")) if item.get("monthly_budget") else "No especificado",
         "created_at": item.get("created_at"),
+        "requested_label": _format_request_date(item.get("created_at")),
         "property_title": property_data.get("title", "Propiedad"),
         "property_id": property_data.get("id"),
         "property_location": _build_location(property_data),
@@ -192,3 +236,7 @@ def get_dashboard_summary(request, user_id: int) -> dict:
         "rental_requests_count": len(rental_requests),
         "rental_requests_error": requests_error,
     }
+    
+
+
+# activity

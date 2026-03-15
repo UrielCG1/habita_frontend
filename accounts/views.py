@@ -198,6 +198,35 @@ def my_requests_view(request):
         },
     )
     
+### my_activity view
+@habita_login_required
+def activity_view(request):
+    habita_user = get_habita_user(request)
+
+    favorites, favorites_error = get_user_favorites(
+        request,
+        user_id=habita_user["id"],
+        limit=50,
+    )
+
+    rental_requests, rental_requests_error = get_user_rental_requests(
+        request,
+        user_id=habita_user["id"],
+        limit=50,
+    )
+
+    return render(
+        request,
+        "accounts/activity.html",
+        {
+            "habita_user": habita_user,
+            "favorites": favorites,
+            "favorites_error": favorites_error,
+            "rental_requests": rental_requests,
+            "rental_requests_error": rental_requests_error,
+        },
+    )
+    
     
 @habita_role_required("owner", "admin")
 def owner_properties_view(request):

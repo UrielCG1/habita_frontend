@@ -160,7 +160,7 @@ def patch_rental_request_status(request, request_id: int, status: str, owner_not
 # Servicios para la sección de propietario
 #### ============================
     
-def get_owner_property_detail(request, property_id: int) -> tuple[dict | None, str | None]:
+def get_owner_property_detail(request, property_id: int) -> tuple[Optional[dict], Optional[str]]:
     try:
         response = authenticated_request(
             request,
@@ -216,7 +216,7 @@ def get_owner_property_detail(request, property_id: int) -> tuple[dict | None, s
         return None, "No fue posible cargar la propiedad."
 
 
-def create_owner_property(request, owner_id: int, payload: dict) -> tuple[dict | None, str | None]:
+def create_owner_property(request, owner_id: int, payload: dict) -> tuple[Optional[dict], Optional[str]]:
     body = {
         **payload,
         "owner_id": owner_id,
@@ -240,7 +240,7 @@ def create_owner_property(request, owner_id: int, payload: dict) -> tuple[dict |
         return None, "No fue posible crear la propiedad."
 
 
-def patch_owner_property(request, property_id: int, payload: dict) -> tuple[dict | None, str | None]:
+def patch_owner_property(request, property_id: int, payload: dict) -> tuple[Optional[dict], Optional[str]]:
     try:
         response = authenticated_request(
             request,

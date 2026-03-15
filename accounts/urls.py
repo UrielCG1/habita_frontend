@@ -16,6 +16,7 @@ from .views import (
     owner_property_edit_view,
     admin_property_delete_view,
     admin_property_edit_view,
+    activity_view,
 )
 
 app_name = "accounts"
@@ -25,8 +26,12 @@ urlpatterns = [
     path("register/", register_view, name="register"),
     path("logout/", logout_view, name="logout"),
     path("dashboard/", dashboard_view, name="dashboard"),
+    
+    path("activity/", activity_view, name="activity"),
+    
     path("favorites/", favorites_view, name="favorites"),
     path("my-requests/", my_requests_view, name="my-requests"),
+    
     path("owner-area/", owner_area_view, name="owner-area"),
     path("admin-area/", admin_area_view, name="admin-area"),
     

@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Mi actividad | HABITA{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/activity.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="activity-page">
+    <div class="container">
+        <div class="activity-header">
+            <h1>Mi actividad</h1>
+            <p>Gestiona tus propiedades guardadas y el seguimiento de tus trámites en HABITA.</p>
+        </div>
+
+        <section class="activity-block">
+            <div class="activity-block__header">
+                <h2>Estado de tus solicitudes</h2>
+            </div>
+
+            {% if rental_requests_error %}
+                <div class="message-box message-error">{{ rental_requests_error }}</div>
+            {% elif rental_requests %}
+                <div class="activity-requests">
+                    {% for item in rental_requests %}
+                        <article class="request-card request-card--{{ item.status_key }}">
+                            <div class="request-card__top">
+                                <div>
+                                    <h3>{{ item.property_title }}</h3>
+                                    <p>{{ item.requested_label }}</p>
+                                </div>
+
+                                <span class="request-badge request-badge--{{ item.status_key }}">
+                                    {{ item.status }}
+                                </span>
+                            </div>
+
+                            <div class="request-card__meta">
+                                <div>
+                                    <span>Presupuesto</span>
+                                    <strong>{{ item.monthly_budget }}</strong>
+                                </div>
+
+                                <div>
+                                    <span>Mudanza estimada</span>
+                                    <strong>{{ item.move_in_date|default:"No especificada" }}</strong>
+                                </div>
+
+                                <div>
+                                    <span>{% if item.message %}Tu mensaje{% else %}Estado{% endif %}</span>
+                                    <strong>
+                                        {% if item.message %}
+                                            {{ item.message|truncatechars:40 }}
+                                        {% else %}
+                                            En revisión
+                                        {% endif %}
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <div class="request-card__notes">
+                                <p class="request-card__notes-title">
+                                    Notas del propietario:
+                                </p>
+
+                                {% if item.owner_notes %}
+                                    <p class="request-card__notes-text">{{ item.owner_notes }}</p>
+                                {% else %}
+                                    <p class="request-card__notes-text request-card__notes-text--muted">
+                                        {% if item.status_key == "pending" %}
+                                            El propietario está revisando las solicitudes recibidas. Recibirás una respuesta en breve.
+                                        {% elif item.status_key == "approved" %}
+                                            Tu solicitud fue aprobada. Revisa los siguientes pasos con el propietario.
+                                        {% elif item.status_key == "rejected" %}
+                                            Esta solicitud no fue aprobada.
+                                        {% else %}
+                                            Sin notas por el momento.
+                                        {% endif %}
+                                    </p>
+                                {% endif %}
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="empty-text">Aún no has enviado solicitudes.</p>
+            {% endif %}
+        </section>
+
+        <section class="activity-block activity-block--favorites">
+            <div class="activity-block__header activity-block__header--row">
+                <h2>Tus propiedades favoritas</h2>
+                <span class="favorites-count">{{ favorites|length }} guardadas</span>
+            </div>
+
+            {% if favorites_error %}
+                <div class="message-box message-error">{{ favorites_error }}</div>
+            {% elif favorites %}
+                <div class="activity-favorites-grid">
+                    {% for property in favorites %}
+                        <article class="favorite-card">
+                            <div class="favorite-card__image-wrap">
+                                {% if property.image_url %}
+                                    <img src="{{ property.image_url }}" alt="{{ property.title }}" class="favorite-card__image">
+                                {% else %}
+                                    <img src="{% static 'img/property-placeholder.jpg' %}" alt="{{ property.title }}" class="favorite-card__image">
+                                {% endif %}
+
+                                <form method="post" action="{% url 'properties:toggle-favorite' property.id %}" class="favorite-card__heart-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="remove">
+                                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                    <button type="submit" class="favorite-card__heart-btn" title="Quitar de favoritos">
+                                        <span class="material-symbols-outlined">favorite</span>
+                                    </button>
+                                </form>
+                            </div>
+
+                            <div class="favorite-card__body">
+                                <span class="favorite-card__type">{{ property.property_type }}</span>
+                                <h3>{{ property.title }}</h3>
+
+                                <div class="favorite-card__location">
+                                    <span class="material-symbols-outlined">location_on</span>
+                                    <span>{{ property.location }}</span>
+                                </div>
+
+                                <p class="favorite-card__price">
+                                    {{ property.price }}
+                                </p>
+
+                                <div class="favorite-card__actions">
+                                    <a href="{% url 'properties:detail' property.id %}" class="favorite-card__detail-btn">
+                                        Ver detalle
+                                    </a>
+
+                                    <form method="post" action="{% url 'properties:toggle-favorite' property.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="remove">
+                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                        <button type="submit" class="favorite-card__remove-btn" title="Quitar de favoritos">
+                                            <span class="material-symbols-outlined">delete</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="empty-text">Aún no tienes propiedades guardadas.</p>
+            {% endif %}
+        </section>
+    </div>
+</section>
+{% endblock %}
