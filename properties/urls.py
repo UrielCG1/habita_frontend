@@ -1,9 +1,11 @@
 from django.urls import path
 
 from .views import (
+    delete_review_view,
     properties_list_view,
     property_detail_view,
     submit_rental_request_view,
+    submit_review_view,
     toggle_favorite_view,
 )
 
@@ -14,4 +16,6 @@ urlpatterns = [
     path("<int:property_id>/", property_detail_view, name="detail"),
     path("<int:property_id>/favorite/", toggle_favorite_view, name="toggle-favorite"),
     path("<int:property_id>/request/", submit_rental_request_view, name="submit-request"),
+    path("<int:property_id>/review/", submit_review_view, name="submit-review"),
+    path("<int:property_id>/review/delete/", delete_review_view, name="delete-review"),
 ]

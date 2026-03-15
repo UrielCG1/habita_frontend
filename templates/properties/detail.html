@@ -119,6 +119,87 @@
             </div>
         </div>
 
+        <div class="detail-reviews-section">
+            <div class="detail-panel">
+                <div class="reviews-header">
+                    <div>
+                        <h2>Reseñas</h2>
+                        <p>{{ reviews_summary.count }} reseña{{ reviews_summary.count|pluralize:"s" }} · Promedio {{ reviews_summary.average }}/5</p>
+                    </div>
+                </div>
+
+                {% if reviews_error %}
+                    <div class="message-box message-error">{{ reviews_error }}</div>
+                {% endif %}
+
+                {% if habita_logged_in %}
+                    <div class="review-form-box">
+                        <h3>
+                            {% if user_review %}
+                                Edita tu reseña
+                            {% else %}
+                                Escribe tu reseña
+                            {% endif %}
+                        </h3>
+
+                        <form method="post" action="{% url 'properties:submit-review' property.id %}" class="request-form">
+                            {% csrf_token %}
+
+                            <div class="request-form-grid">
+                                <div class="form-group">
+                                    <label for="{{ review_form.rating.id_for_label }}">Calificación</label>
+                                    {{ review_form.rating }}
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="{{ review_form.comment.id_for_label }}">Comentario</label>
+                                {{ review_form.comment }}
+                            </div>
+
+                            <div class="review-actions">
+                                <button type="submit" class="btn-primary">
+                                    {% if user_review %}Actualizar reseña{% else %}Publicar reseña{% endif %}
+                                </button>
+
+                                {% if user_review %}
+                                    <form method="post" action="{% url 'properties:delete-review' property.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn-danger">Eliminar reseña</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </form>
+                    </div>
+                {% else %}
+                    <p class="empty-text">Inicia sesión para dejar una reseña.</p>
+                {% endif %}
+
+                {% if reviews %}
+                    <div class="reviews-list">
+                        {% for review in reviews %}
+                            <article class="review-card">
+                                <div class="review-card__top">
+                                    <div>
+                                        <h3>{{ review.user_name }}</h3>
+                                        <p class="review-card__rating">{{ review.rating }}/5</p>
+                                    </div>
+                                </div>
+
+                                {% if review.comment %}
+                                    <p class="review-card__comment">{{ review.comment }}</p>
+                                {% else %}
+                                    <p class="review-card__comment review-card__comment--muted">Sin comentario.</p>
+                                {% endif %}
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="empty-text">Aún no hay reseñas para esta propiedad.</p>
+                {% endif %}
+            </div>
+        </div>
+
         <div class="detail-back">
             <a href="{% url 'properties:list' %}" class="btn-secondary-link">← Volver al catálogo</a>
         </div>

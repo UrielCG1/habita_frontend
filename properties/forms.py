@@ -38,3 +38,33 @@ class RentalRequestForm(forms.Form):
             }
         ),
     )
+
+
+class ReviewForm(forms.Form):
+    rating = forms.ChoiceField(
+        label="Calificación",
+        choices=(
+            ("5", "5 estrellas"),
+            ("4", "4 estrellas"),
+            ("3", "3 estrellas"),
+            ("2", "2 estrellas"),
+            ("1", "1 estrella"),
+        ),
+        widget=forms.Select(
+            attrs={
+                "class": "form-input",
+            }
+        ),
+    )
+
+    comment = forms.CharField(
+        label="Comentario",
+        required=False,
+        widget=forms.Textarea(
+            attrs={
+                "rows": 4,
+                "placeholder": "Comparte tu experiencia con esta propiedad...",
+                "class": "form-textarea",
+            }
+        ),
+    )

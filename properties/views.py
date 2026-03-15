@@ -8,15 +8,19 @@ from django.views.decorators.http import require_POST
 from accounts.decorators import habita_login_required
 from accounts.dashboard_services import create_rental_request
 from accounts.utils import get_habita_user, is_habita_authenticated
-from .forms import RentalRequestForm
+from .forms import RentalRequestForm, ReviewForm
 from .services import (
     add_favorite,
     build_query_string,
+    delete_review,
     get_favorite_status,
     get_properties_list,
     get_property_detail,
+    get_property_reviews,
     get_user_favorite_ids,
+    get_user_review_for_property,
     remove_favorite,
+    save_review,
 )
 
 
@@ -81,9 +85,22 @@ def property_detail_view(request, property_id: int):
         return redirect("properties:list")
 
     is_favorite = False
+    user_review = None
+    review_form = ReviewForm()
+    reviews, reviews_summary, reviews_error = get_property_reviews(property_id)
+
     if is_habita_authenticated(request):
         habita_user = get_habita_user(request)
         is_favorite = get_favorite_status(request, habita_user["id"], property_id)
+        user_review = get_user_review_for_property(request, habita_user["id"], property_id)
+
+        if user_review:
+            review_form = ReviewForm(
+                initial={
+                    "rating": str(user_review["rating"]),
+                    "comment": user_review["comment"],
+                }
+            )
 
     return render(
         request,
@@ -92,6 +109,11 @@ def property_detail_view(request, property_id: int):
             "property": property_data,
             "is_favorite": is_favorite,
             "rental_request_form": RentalRequestForm(),
+            "reviews": reviews,
+            "reviews_summary": reviews_summary,
+            "reviews_error": reviews_error,
+            "review_form": review_form,
+            "user_review": user_review,
         },
     )
 
@@ -134,6 +156,55 @@ def submit_rental_request_view(request, property_id: int):
         move_in_date=form.cleaned_data.get("move_in_date").isoformat() if form.cleaned_data.get("move_in_date") else None,
         monthly_budget=str(form.cleaned_data.get("monthly_budget")) if form.cleaned_data.get("monthly_budget") else None,
     )
+
+    if success:
+        messages.success(request, message)
+    else:
+        messages.error(request, message)
+
+    return redirect("properties:detail", property_id=property_id)
+
+
+@require_POST
+@habita_login_required
+def submit_review_view(request, property_id: int):
+    habita_user = get_habita_user(request)
+    form = ReviewForm(request.POST)
+
+    if not form.is_valid():
+        messages.error(request, "Revisa los datos de tu reseña.")
+        return redirect("properties:detail", property_id=property_id)
+
+    user_review = get_user_review_for_property(request, habita_user["id"], property_id)
+
+    success, message = save_review(
+        request=request,
+        user_id=habita_user["id"],
+        property_id=property_id,
+        rating=int(form.cleaned_data["rating"]),
+        comment=form.cleaned_data.get("comment") or "",
+        review_id=user_review["id"] if user_review else None,
+    )
+
+    if success:
+        messages.success(request, message)
+    else:
+        messages.error(request, message)
+
+    return redirect("properties:detail", property_id=property_id)
+
+
+@require_POST
+@habita_login_required
+def delete_review_view(request, property_id: int):
+    habita_user = get_habita_user(request)
+    user_review = get_user_review_for_property(request, habita_user["id"], property_id)
+
+    if not user_review:
+        messages.error(request, "No se encontró una reseña tuya para esta propiedad.")
+        return redirect("properties:detail", property_id=property_id)
+
+    success, message = delete_review(request, review_id=user_review["id"])
 
     if success:
         messages.success(request, message)

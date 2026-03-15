@@ -113,6 +113,23 @@ def _normalize_property_detail(item: dict) -> dict:
     }
 
 
+def _normalize_review(item: dict) -> dict:
+    user = item.get("user") or {}
+
+    return {
+        "id": item.get("id"),
+        "user_id": item.get("user_id"),
+        "property_id": item.get("property_id"),
+        "rating": item.get("rating", 0),
+        "comment": item.get("comment") or "",
+        "is_visible": item.get("is_visible", True),
+        "created_at": item.get("created_at"),
+        "updated_at": item.get("updated_at"),
+        "user_name": user.get("full_name", "Usuario"),
+        "user_email": user.get("email", ""),
+    }
+
+
 def get_properties_list(filters: dict, page: int = 1, limit: int = 9) -> tuple[list[dict], dict, str | None]:
     skip = max(page - 1, 0) * limit
 
@@ -265,6 +282,116 @@ def remove_favorite(request, user_id: int, property_id: int) -> tuple[bool, str]
 
     except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError):
         return False, "No fue posible eliminar la propiedad de favoritos."
+
+
+def get_property_reviews(property_id: int) -> tuple[list[dict], dict, str | None]:
+    url = f"{settings.BACKEND_API_BASE_URL}/properties/{property_id}/reviews"
+
+    try:
+        response = requests.get(
+            url,
+            params={"only_visible": "true", "limit": 100, "skip": 0},
+            timeout=settings.BACKEND_REQUEST_TIMEOUT,
+        )
+
+        if response.status_code >= 500:
+            return [], {"count": 0, "average": 0}, "No fue posible cargar las reseñas."
+
+        response.raise_for_status()
+        payload = response.json()
+    except requests.RequestException:
+        return [], {"count": 0, "average": 0}, "No fue posible cargar las reseñas."
+    except ValueError:
+        return [], {"count": 0, "average": 0}, "La API devolvió un formato inválido para reseñas."
+
+    items = payload if isinstance(payload, list) else []
+    reviews = [_normalize_review(item) for item in items]
+
+    count = len(reviews)
+    average = round(sum(review["rating"] for review in reviews) / count, 1) if count else 0
+
+    return reviews, {"count": count, "average": average}, None
+
+
+def get_user_review_for_property(request, user_id: int, property_id: int) -> dict | None:
+    if not is_habita_authenticated(request):
+        return None
+
+    try:
+        response = authenticated_request(
+            request,
+            "GET",
+            f"/users/{user_id}/reviews",
+            params={"limit": 100, "skip": 0},
+        )
+
+        if response.status_code != 200:
+            return None
+
+        payload = response.json()
+        items = payload if isinstance(payload, list) else []
+
+        for item in items:
+            if item.get("property_id") == property_id:
+                return _normalize_review(item)
+
+        return None
+
+    except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError, ValueError):
+        return None
+
+
+def save_review(request, user_id: int, property_id: int, rating: int, comment: str, review_id: int | None = None) -> tuple[bool, str]:
+    try:
+        if review_id:
+            response = authenticated_request(
+                request,
+                "PATCH",
+                f"/reviews/{review_id}",
+                json={
+                    "rating": rating,
+                    "comment": comment,
+                    "is_visible": True,
+                },
+            )
+            if response.status_code == 200:
+                return True, "Tu reseña fue actualizada correctamente."
+        else:
+            response = authenticated_request(
+                request,
+                "POST",
+                "/reviews",
+                json={
+                    "user_id": user_id,
+                    "property_id": property_id,
+                    "rating": rating,
+                    "comment": comment,
+                },
+            )
+            if response.status_code in (200, 201):
+                return True, "Tu reseña fue enviada correctamente."
+
+        return False, "No fue posible guardar tu reseña."
+
+    except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError):
+        return False, "No fue posible guardar tu reseña."
+
+
+def delete_review(request, review_id: int) -> tuple[bool, str]:
+    try:
+        response = authenticated_request(
+            request,
+            "DELETE",
+            f"/reviews/{review_id}",
+        )
+
+        if response.status_code == 204:
+            return True, "Tu reseña fue eliminada correctamente."
+
+        return False, "No fue posible eliminar tu reseña."
+
+    except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError):
+        return False, "No fue posible eliminar tu reseña."
 
 
 def build_query_string(filters: dict) -> str:
