@@ -6,6 +6,7 @@ from django.views.decorators.http import require_POST
 from .dashboard_services import get_dashboard_summary, get_user_favorites, get_user_rental_requests
 from .decorators import habita_login_required, habita_role_required
 from .forms import LoginForm, RegisterForm, OwnerRequestStatusForm, OwnerPropertyForm
+from .admin_services import get_admin_dashboard
 from .owner_services import (
     create_owner_property,
     get_owner_properties,
@@ -14,6 +15,7 @@ from .owner_services import (
     patch_owner_property,
     patch_rental_request_status,
     upload_owner_property_images,
+    delete_property_by_id,
 )
 from .services import (
     AuthServiceError,
@@ -167,11 +169,16 @@ def owner_area_view(request):
 
 @habita_role_required("admin")
 def admin_area_view(request):
+    habita_user = get_habita_user(request)
+    dashboard_data, dashboard_error = get_admin_dashboard(request)
+
     return render(
         request,
         "accounts/admin_area.html",
         {
-            "habita_user": get_habita_user(request),
+            "habita_user": habita_user,
+            "dashboard_data": dashboard_data,
+            "dashboard_error": dashboard_error,
         },
     )
     
@@ -422,3 +429,99 @@ def owner_property_edit_view(request, property_id: int):
             "property_obj": property_detail,
         },
     )
+    
+    
+#### PANEL DE ADMINISTRACIÓN
+
+@habita_role_required("admin")
+def admin_property_edit_view(request, property_id: int):
+    property_detail, error = get_owner_property_detail(request, property_id=property_id)
+
+    if error or not property_detail:
+        messages.error(request, error or "No fue posible cargar la propiedad.")
+        return redirect("accounts:admin-area")
+
+    initial = {
+        "title": property_detail["title"],
+        "description": property_detail["description"],
+        "price": property_detail["price"],
+        "property_type": property_detail["property_type"],
+        "status": property_detail["status"],
+        "address_line": property_detail["address_line"],
+        "neighborhood": property_detail["neighborhood"],
+        "city": property_detail["city"],
+        "state": property_detail["state"],
+        "bedrooms": property_detail["bedrooms"],
+        "bathrooms": property_detail["bathrooms"],
+        "parking_spaces": property_detail["parking_spaces"],
+        "area_m2": property_detail["area_m2"],
+        "latitude": property_detail["latitude"],
+        "longitude": property_detail["longitude"],
+        "is_published": property_detail["is_published"],
+    }
+
+    form = OwnerPropertyForm(request.POST or None, request.FILES or None, initial=initial)
+
+    if request.method == "POST" and form.is_valid():
+        payload = {
+            "title": form.cleaned_data["title"],
+            "description": form.cleaned_data["description"],
+            "price": str(form.cleaned_data["price"]),
+            "property_type": form.cleaned_data["property_type"],
+            "status": form.cleaned_data["status"],
+            "address_line": form.cleaned_data["address_line"],
+            "neighborhood": form.cleaned_data["neighborhood"],
+            "city": form.cleaned_data["city"],
+            "state": form.cleaned_data["state"],
+            "bedrooms": form.cleaned_data["bedrooms"],
+            "bathrooms": form.cleaned_data["bathrooms"],
+            "parking_spaces": form.cleaned_data["parking_spaces"],
+            "area_m2": str(form.cleaned_data["area_m2"]) if form.cleaned_data["area_m2"] is not None else None,
+            "latitude": str(form.cleaned_data["latitude"]) if form.cleaned_data["latitude"] is not None else None,
+            "longitude": str(form.cleaned_data["longitude"]) if form.cleaned_data["longitude"] is not None else None,
+            "is_published": form.cleaned_data["is_published"],
+        }
+
+        updated_property, patch_error = patch_owner_property(request, property_id=property_id, payload=payload)
+
+        if patch_error or not updated_property:
+            messages.error(request, patch_error or "No fue posible actualizar la propiedad.")
+        else:
+            uploaded_files = form.cleaned_data.get("images") or []
+            if uploaded_files:
+                upload_ok, upload_message = upload_owner_property_images(
+                    request,
+                    property_id=property_id,
+                    files=uploaded_files,
+                    alt_text=updated_property.get("title", ""),
+                    set_first_as_cover=False,
+                )
+                if not upload_ok:
+                    messages.warning(request, upload_message)
+
+            messages.success(request, "Propiedad actualizada correctamente.")
+            return redirect("accounts:admin-area")
+
+    return render(
+        request,
+        "accounts/owner_property_form.html",
+        {
+            "form": form,
+            "mode": "edit",
+            "property_obj": property_detail,
+            "admin_mode": True,
+        },
+    )
+
+
+@require_POST
+@habita_role_required("admin")
+def admin_property_delete_view(request, property_id: int):
+    success, message = delete_property_by_id(request, property_id=property_id)
+
+    if success:
+        messages.success(request, message)
+    else:
+        messages.error(request, message)
+
+    return redirect("accounts:admin-area")

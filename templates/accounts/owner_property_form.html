@@ -26,7 +26,7 @@
                     {% endif %}
                 </p>
             </div>
-            <a href="{% url 'accounts:owner-properties' %}" class="btn-primary btn-small">Volver</a>
+            <a href="{% if admin_mode %}{% url 'accounts:admin-area' %}{% else %}{% url 'accounts:owner-properties' %}{% endif %}" class="btn-primary btn-small">Volver</a>
         </div>
 
         <div class="detail-panel">

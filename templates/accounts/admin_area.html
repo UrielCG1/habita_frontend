@@ -1,19 +1,167 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Área de administración | HABITA{% endblock %}
+{% block title %}Panel Admin | HABITA{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
 {% endblock %}
 
 {% block content %}
-<section class="auth-section">
-    <div class="auth-container" style="max-width: 720px;">
-        <div class="auth-card">
-            <h1>Área administrativa</h1>
-            <p>Bienvenido, {{ habita_user.full_name }}.</p>
+<section class="admin-section">
+    <div class="container">
+        <div class="admin-header">
+            <div>
+                <h1>Resumen del Sistema</h1>
+                <p>Estado general de la plataforma HABITA hoy.</p>
+            </div>
         </div>
+
+        {% if dashboard_error %}
+            <div class="message-box message-error">{{ dashboard_error }}</div>
+        {% elif dashboard_data %}
+            <div class="admin-stats-grid">
+                <article class="admin-stat-card">
+                    <div class="admin-stat-card__top">
+                        <div class="admin-stat-icon admin-stat-icon--primary">
+                            <span class="material-symbols-outlined">apartment</span>
+                        </div>
+                    </div>
+                    <p>Total Propiedades</p>
+                    <strong>{{ dashboard_data.summary.total_properties }}</strong>
+                </article>
+
+                <article class="admin-stat-card">
+                    <div class="admin-stat-card__top">
+                        <div class="admin-stat-icon admin-stat-icon--blue">
+                            <span class="material-symbols-outlined">pending_actions</span>
+                        </div>
+                    </div>
+                    <p>Solicitudes Activas</p>
+                    <strong>{{ dashboard_data.summary.active_requests }}</strong>
+                </article>
+
+                <article class="admin-stat-card">
+                    <div class="admin-stat-card__top">
+                        <div class="admin-stat-icon admin-stat-icon--accent">
+                            <span class="material-symbols-outlined">person_add</span>
+                        </div>
+                    </div>
+                    <p>Nuevos Usuarios</p>
+                    <strong>{{ dashboard_data.summary.total_users }}</strong>
+                </article>
+
+                <article class="admin-stat-card">
+                    <div class="admin-stat-card__top">
+                        <div class="admin-stat-icon admin-stat-icon--green">
+                            <span class="material-symbols-outlined">payments</span>
+                        </div>
+                    </div>
+                    <p>Ingresos Proyectados</p>
+                    <strong>{{ dashboard_data.summary.projected_income }}</strong>
+                </article>
+            </div>
+
+            <section class="admin-panel">
+                <div class="admin-panel__header">
+                    <h2>Gestión de Propiedades</h2>
+                </div>
+
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Propiedad</th>
+                                <th>Propietario</th>
+                                <th>Precio</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for property in dashboard_data.recent_properties %}
+                                <tr>
+                                    <td>
+                                        <div class="admin-property-cell">
+                                            <div class="admin-property-thumb">
+                                                {% if property.image_url %}
+                                                    <img src="{{ property.image_url }}" alt="{{ property.title }}">
+                                                {% else %}
+                                                    <img src="{% static 'img/property-placeholder.jpg' %}" alt="{{ property.title }}">
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <strong>{{ property.title }}</strong>
+                                                <p>{{ property.location }}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ property.owner_name }}</td>
+                                    <td>{{ property.price }}</td>
+                                    <td>
+                                        <span class="status-chip status-chip--{{ property.status|lower }}">
+                                            {{ property.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="admin-actions">
+                                            <a href="{% url 'accounts:admin-property-edit' property.id %}" class="icon-btn">
+                                                <span class="material-symbols-outlined">edit</span>
+                                            </a>
+
+                                            <form method="post" action="{% url 'accounts:admin-property-delete' property.id %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="icon-btn icon-btn--danger">
+                                                    <span class="material-symbols-outlined">delete</span>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5">No hay propiedades para mostrar.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <div class="admin-bottom-grid">
+                <section class="admin-panel">
+                    <div class="admin-panel__header">
+                        <h2>Solicitudes Recientes</h2>
+                    </div>
+
+                    <div class="recent-requests-list">
+                        {% for item in dashboard_data.recent_requests %}
+                            <article class="recent-request-item">
+                                <div class="recent-request-avatar">
+                                    {{ item.user_name|slice:":2"|upper }}
+                                </div>
+                                <div class="recent-request-content">
+                                    <strong>{{ item.user_name }}</strong>
+                                    <p>Interés en <span>{{ item.property_title }}</span></p>
+                                </div>
+                                <div class="recent-request-status">
+                                    {{ item.status }}
+                                </div>
+                            </article>
+                        {% empty %}
+                            <p class="empty-text">No hay solicitudes recientes.</p>
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <section class="admin-support-card">
+                    <h3>Soporte Premium</h3>
+                    <p>¿Necesitas ayuda con la integración de nuevas propiedades o gestión de usuarios masiva?</p>
+                    <button type="button">Contactar Soporte</button>
+                </section>
+            </div>
+        {% endif %}
     </div>
 </section>
 {% endblock %}

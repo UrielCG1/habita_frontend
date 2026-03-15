@@ -14,6 +14,8 @@ from .views import (
     register_view,
     owner_property_create_view,
     owner_property_edit_view,
+    admin_property_delete_view,
+    admin_property_edit_view,
 )
 
 app_name = "accounts"
@@ -34,4 +36,7 @@ urlpatterns = [
     
     path("owner-properties/create/", owner_property_create_view, name="owner-property-create"),
     path("owner-properties/<int:property_id>/edit/", owner_property_edit_view, name="owner-property-edit"),
+    
+    path("admin/properties/<int:property_id>/edit/", admin_property_edit_view, name="admin-property-edit"),
+    path("admin/properties/<int:property_id>/delete/", admin_property_delete_view, name="admin-property-delete"),
 ]

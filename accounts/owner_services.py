@@ -301,3 +301,22 @@ def upload_owner_property_images(
 
     except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError):
         return False, "La propiedad se guardó, pero no fue posible subir las imágenes."
+    
+    
+### panel admin ###
+
+def delete_property_by_id(request, property_id: int) -> tuple[bool, str]:
+    try:
+        response = authenticated_request(
+            request,
+            "DELETE",
+            f"/properties/{property_id}",
+        )
+
+        if response.status_code == 204:
+            return True, "Propiedad eliminada correctamente."
+
+        return False, "No fue posible eliminar la propiedad."
+
+    except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError):
+        return False, "No fue posible eliminar la propiedad."
