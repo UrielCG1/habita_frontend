@@ -118,7 +118,9 @@
                             </div>
 
                             <div class="property-body">
-                                <h3>{{ property.title }}</h3>
+                                <h3>
+                                    <a href="{% url 'properties:detail' property.id %}">{{ property.title }}</a>
+                                </h3>
 
                                 <div class="property-location">
                                     <span class="material-symbols-outlined">location_on</span>

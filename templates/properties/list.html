@@ -1,120 +1,116 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Catálogo de Propiedades | HABITA{% endblock %}
+{% block title %}Propiedades | HABITA{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/properties.css' %}">
 {% endblock %}
 
 {% block content %}
-<section class="catalog-page">
+<section class="properties-page">
     <div class="container">
-        <div class="catalog-header">
-            <h1>Catálogo de Propiedades</h1>
-            <p>Encuentra el hogar de tus sueños entre nuestras opciones exclusivas.</p>
+        <div class="page-heading">
+            <h1>Explora propiedades en Querétaro</h1>
+            <p>Encuentra opciones disponibles y filtradas según lo que buscas.</p>
         </div>
 
-        <form method="get" class="catalog-filters">
-            <div class="catalog-filter">
-                <span class="material-symbols-outlined">location_on</span>
-                <input type="text" name="city" placeholder="Ubicación/Zona" value="{{ filters.city }}">
-            </div>
+        <form method="get" class="filters-panel">
+            <div class="filters-grid">
+                <input type="text" name="q" placeholder="Buscar por zona o palabra clave" value="{{ filters.q }}">
+                <input type="text" name="city" placeholder="Ciudad" value="{{ filters.city }}">
+                <input type="text" name="state" placeholder="Estado" value="{{ filters.state }}">
 
-            <div class="catalog-filter">
-                <span class="material-symbols-outlined">home</span>
                 <select name="property_type">
-                    <option value="">Tipo de Propiedad</option>
-                    <option value="house" {% if filters.property_type == "house" %}selected{% endif %}>Casa</option>
-                    <option value="apartment" {% if filters.property_type == "apartment" %}selected{% endif %}>Departamento</option>
-                    <option value="office" {% if filters.property_type == "office" %}selected{% endif %}>Oficina</option>
-                    <option value="land" {% if filters.property_type == "land" %}selected{% endif %}>Terreno</option>
+                    <option value="">Tipo de propiedad</option>
+                    <option value="house" {% if filters.property_type == 'house' %}selected{% endif %}>Casa</option>
+                    <option value="apartment" {% if filters.property_type == 'apartment' %}selected{% endif %}>Departamento</option>
+                    <option value="room" {% if filters.property_type == 'room' %}selected{% endif %}>Habitación</option>
                 </select>
+
+                <input type="number" name="min_price" placeholder="Precio mínimo" value="{{ filters.min_price }}">
+                <input type="number" name="max_price" placeholder="Precio máximo" value="{{ filters.max_price }}">
+                <input type="number" name="bedrooms" placeholder="Recámaras mínimas" value="{{ filters.bedrooms }}">
+                <input type="number" name="bathrooms" placeholder="Baños mínimos" value="{{ filters.bathrooms }}">
             </div>
 
-            <div class="catalog-filter">
-                <span class="material-symbols-outlined">payments</span>
-                <input type="number" name="max_price" placeholder="Rango de Precio" value="{{ filters.max_price }}">
-            </div>
-
-            <div class="catalog-filter">
-                <span class="material-symbols-outlined">bed</span>
-                <input type="number" name="bedrooms" placeholder="Habitaciones" value="{{ filters.bedrooms }}">
-            </div>
-
-            <div class="catalog-sort">
-                <span>Ordenar por:</span>
-                <select name="sort">
-                    <option value="">Más recientes</option>
-                </select>
-            </div>
-
-            <div class="catalog-actions">
-                <button type="submit" class="btn-primary">Aplicar</button>
-                <a href="{% url 'properties:list' %}" class="btn-secondary">Limpiar</a>
+            <div class="filters-actions">
+                <button type="submit" class="btn-primary">Filtrar</button>
+                <a href="{% url 'properties:list' %}" class="btn-secondary-link">Limpiar filtros</a>
             </div>
         </form>
 
+        {% if properties_error %}
+            <div class="message-box message-error">{{ properties_error }}</div>
+        {% endif %}
+
         {% if properties %}
-            <div class="catalog-grid">
+            <div class="properties-grid-page">
                 {% for property in properties %}
-                    <article class="catalog-card">
-                        <a href="{% url 'properties:detail' property.id %}" class="catalog-card-link">
-                            <div class="catalog-card-media">
-                                <button type="button" class="catalog-favorite-btn" aria-label="Guardar favorito">
-                                    <span class="material-symbols-outlined">favorite</span>
-                                </button>
-                                <img src="{{ property.cover_image_url }}" alt="{{ property.cover_image_alt }}">
-                            </div>
-
-                            <div class="catalog-card-body">
-                                <div class="catalog-card-top">
-                                    <span class="catalog-price">{{ property.price_display }}</span>
-                                    <span class="catalog-badge">{{ property.status|default:"Disponible" }}</span>
-                                </div>
-
-                                <div class="catalog-location">
-                                    <span class="material-symbols-outlined">location_on</span>
-                                    <span>{{ property.location }}</span>
-                                </div>
-
-                                <div class="catalog-meta-row">
-                                    <div class="catalog-meta">
-                                        <span class="material-symbols-outlined">bed</span>
-                                        <span>{{ property.bedrooms }}</span>
-                                    </div>
-                                    <div class="catalog-meta">
-                                        <span class="material-symbols-outlined">bathtub</span>
-                                        <span>{{ property.bathrooms }}</span>
-                                    </div>
-                                    <div class="catalog-meta">
-                                        <span class="material-symbols-outlined">straighten</span>
-                                        <span>{{ property.area_m2 }}m²</span>
-                                    </div>
-
-                                    <span class="catalog-detail-btn">Ver detalles</span>
-                                </div>
-                            </div>
+                    <article class="property-card-page">
+                        <a href="{% url 'properties:detail' property.id %}" class="property-card-page__image-link">
+                            {% if property.image_url %}
+                                <img src="{{ property.image_url }}" alt="{{ property.title }}" class="property-card-page__image">
+                            {% else %}
+                                <img src="{% static 'img/property-placeholder.jpg' %}" alt="{{ property.title }}" class="property-card-page__image">
+                            {% endif %}
                         </a>
+
+                        <div class="property-card-page__body">
+                            <div class="property-card-page__top">
+                                <span class="property-type-chip">{{ property.property_type }}</span>
+
+                                {% if habita_logged_in %}
+                                    <form method="post" action="{% url 'properties:toggle-favorite' property.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                        {% if property.is_favorite %}
+                                            <input type="hidden" name="action" value="remove">
+                                            <button type="submit" class="favorite-btn favorite-btn--active">★</button>
+                                        {% else %}
+                                            <input type="hidden" name="action" value="add">
+                                            <button type="submit" class="favorite-btn">☆</button>
+                                        {% endif %}
+                                    </form>
+                                {% endif %}
+                            </div>
+
+                            <h2>
+                                <a href="{% url 'properties:detail' property.id %}">{{ property.title }}</a>
+                            </h2>
+
+                            <p class="property-location">{{ property.location }}</p>
+                            <strong class="property-price">{{ property.price }}</strong>
+
+                            <div class="property-meta-row">
+                                <span>{{ property.bedrooms }} rec.</span>
+                                <span>{{ property.bathrooms }} baños</span>
+                                <span>{{ property.area }}</span>
+                            </div>
+
+                            <a href="{% url 'properties:detail' property.id %}" class="property-link">
+                                Ver detalle
+                            </a>
+                        </div>
                     </article>
                 {% endfor %}
             </div>
 
-            {% if pagination.total_pages > 1 %}
-                <div class="catalog-pagination">
-                    {% if pagination.has_previous %}
-                        <a class="page-btn" href="?page={{ pagination.previous_page }}">‹</a>
+            {% if total_pages > 1 %}
+                <div class="pagination">
+                    {% if current_page > 1 %}
+                        <a href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ current_page|add:'-1' }}">Anterior</a>
                     {% endif %}
 
-                    <span class="page-btn page-btn-current">{{ pagination.page }}</span>
+                    <span>Página {{ current_page }} de {{ total_pages }}</span>
 
-                    {% if pagination.has_next %}
-                        <a class="page-btn" href="?page={{ pagination.next_page }}">›</a>
+                    {% if current_page < total_pages %}
+                        <a href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ current_page|add:'1' }}">Siguiente</a>
                     {% endif %}
                 </div>
             {% endif %}
         {% else %}
-            <div class="api-message">No se encontraron propiedades.</div>
+            <p class="empty-text">No se encontraron propiedades con esos filtros.</p>
         {% endif %}
     </div>
 </section>

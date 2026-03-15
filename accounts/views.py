@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
+from .dashboard_services import get_dashboard_summary, get_user_favorites
 from .decorators import habita_login_required, habita_role_required
 from .forms import LoginForm, RegisterForm
 from .services import (
@@ -25,7 +26,7 @@ def _default_redirect_for_role(user: dict) -> str:
         return reverse("accounts:admin-area")
     if role == "owner":
         return reverse("accounts:owner-area")
-    return reverse("home:home")
+    return reverse("accounts:dashboard")
 
 
 def login_view(request):
@@ -114,11 +115,31 @@ def logout_view(request):
 
 @habita_login_required
 def dashboard_view(request):
+    habita_user = get_habita_user(request)
+    summary = get_dashboard_summary(request, user_id=habita_user["id"])
+
     return render(
         request,
         "accounts/dashboard.html",
         {
-            "habita_user": get_habita_user(request),
+            "habita_user": habita_user,
+            **summary,
+        },
+    )
+
+
+@habita_login_required
+def favorites_view(request):
+    habita_user = get_habita_user(request)
+    favorites, favorites_error = get_user_favorites(request, user_id=habita_user["id"], limit=50)
+
+    return render(
+        request,
+        "accounts/favorites.html",
+        {
+            "habita_user": habita_user,
+            "favorites": favorites,
+            "favorites_error": favorites_error,
         },
     )
 

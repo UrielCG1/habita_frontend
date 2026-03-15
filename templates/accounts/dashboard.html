@@ -5,40 +5,91 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 {% endblock %}
 
 {% block content %}
-<section class="auth-section">
-    <div class="auth-container" style="max-width: 720px;">
-        <div class="auth-card">
-            <div class="auth-brand" style="text-align:left;">
-                <h1>Mi panel</h1>
-                <p>Sesión activa dentro de HABITA.</p>
+<section class="dashboard-section">
+    <div class="container">
+        <div class="dashboard-header">
+            <div>
+                <h1>Hola, {{ habita_user.full_name }}</h1>
+                <p>Bienvenido a tu panel de HABITA.</p>
             </div>
+            <a href="{% url 'accounts:logout' %}" class="btn-primary btn-small">Cerrar sesión</a>
+        </div>
 
-            <div class="message-box message-success">
-                Has iniciado sesión correctamente.
-            </div>
+        <div class="dashboard-stats">
+            <article class="stat-card">
+                <h3>Favoritos</h3>
+                <strong>{{ favorites_count }}</strong>
+            </article>
+            <article class="stat-card">
+                <h3>Solicitudes</h3>
+                <strong>{{ rental_requests_count }}</strong>
+            </article>
+            <article class="stat-card">
+                <h3>Rol</h3>
+                <strong>{{ habita_user.role|title }}</strong>
+            </article>
+        </div>
 
-            <div class="form-group">
-                <label>Nombre</label>
-                <div class="form-input" style="display:flex;align-items:center;">{{ habita_user.full_name }}</div>
-            </div>
+        <div class="dashboard-grid">
+            <section class="dashboard-panel">
+                <div class="panel-heading">
+                    <h2>Mis favoritos</h2>
+                    <a href="{% url 'accounts:favorites' %}">Ver todos</a>
+                </div>
 
-            <div class="form-group">
-                <label>Correo</label>
-                <div class="form-input" style="display:flex;align-items:center;">{{ habita_user.email }}</div>
-            </div>
+                {% if favorites_error %}
+                    <div class="message-box message-error">{{ favorites_error }}</div>
+                {% elif favorites %}
+                    <div class="mini-properties-grid">
+                        {% for property in favorites %}
+                            <article class="mini-property-card">
+                                <div class="mini-property-image">
+                                    {% if property.image_url %}
+                                        <img src="{{ property.image_url }}" alt="{{ property.title }}">
+                                    {% else %}
+                                        <img src="{% static 'img/property-placeholder.jpg' %}" alt="{{ property.title }}">
+                                    {% endif %}
+                                </div>
+                                <div class="mini-property-body">
+                                    <h3>{{ property.title }}</h3>
+                                    <p>{{ property.location }}</p>
+                                    <strong>{{ property.price }}</strong>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="empty-text">Aún no tienes favoritos guardados.</p>
+                {% endif %}
+            </section>
 
-            <div class="form-group">
-                <label>Rol</label>
-                <div class="form-input" style="display:flex;align-items:center;">{{ habita_user.role }}</div>
-            </div>
+            <section class="dashboard-panel">
+                <div class="panel-heading">
+                    <h2>Mis solicitudes</h2>
+                </div>
 
-            <div style="margin-top: 18px; display:flex; gap:12px; flex-wrap:wrap;">
-                <a href="/" class="auth-back-link">Volver al inicio</a>
-                <a href="{% url 'accounts:logout' %}" class="auth-back-link">Cerrar sesión</a>
-            </div>
+                {% if rental_requests_error %}
+                    <div class="message-box message-error">{{ rental_requests_error }}</div>
+                {% elif rental_requests %}
+                    <div class="request-list">
+                        {% for item in rental_requests %}
+                            <article class="request-item">
+                                <h3>{{ item.property_title }}</h3>
+                                <p><strong>Estado:</strong> {{ item.status }}</p>
+                                {% if item.message %}
+                                    <p>{{ item.message }}</p>
+                                {% endif %}
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="empty-text">Aún no has enviado solicitudes.</p>
+                {% endif %}
+            </section>
         </div>
     </div>
 </section>

@@ -169,12 +169,9 @@ def refresh_access_token(request) -> str:
     return access_token
 
 
-def get_authorization_header(request, auto_refresh: bool = False) -> dict:
+def get_authorization_header(request) -> dict:
     auth_data = request.session.get("habita_auth", {})
     access_token = auth_data.get("access_token")
-
-    if not access_token and auto_refresh:
-        access_token = refresh_access_token(request)
 
     if not access_token:
         raise UnauthorizedRefreshError("No hay access token disponible.")
@@ -182,3 +179,45 @@ def get_authorization_header(request, auto_refresh: bool = False) -> dict:
     return {
         "Authorization": f"Bearer {access_token}",
     }
+
+
+def authenticated_request(request, method: str, endpoint: str, **kwargs):
+    url = f"{settings.BACKEND_API_BASE_URL}{endpoint}"
+    timeout = kwargs.pop("timeout", settings.BACKEND_REQUEST_TIMEOUT)
+
+    try:
+        headers = kwargs.pop("headers", {})
+        headers.update(get_authorization_header(request))
+
+        response = requests.request(
+            method=method,
+            url=url,
+            headers=headers,
+            timeout=timeout,
+            **kwargs,
+        )
+
+        if response.status_code == 401:
+            new_access_token = refresh_access_token(request)
+
+            retry_headers = kwargs.pop("retry_headers", {})
+            retry_headers.update({"Authorization": f"Bearer {new_access_token}"})
+
+            response = requests.request(
+                method=method,
+                url=url,
+                headers=retry_headers,
+                timeout=timeout,
+                **kwargs,
+            )
+
+        return response
+
+    except UnauthorizedRefreshError:
+        clear_auth_session(request)
+        raise
+
+    except requests.RequestException as exc:
+        raise BackendUnavailableError(
+            "No fue posible conectar con el backend."
+        ) from exc
