@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Iniciar sesión | HABITA{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-brand">
+                <h1>HABITA</h1>
+                <p>Accede a tu cuenta para continuar.</p>
+            </div>
+
+            {% if messages %}
+                <div class="auth-messages">
+                    {% for message in messages %}
+                        <div class="message-box message-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post" class="auth-form">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ next_url }}">
+
+                {% if form.non_field_errors %}
+                    <div class="message-box message-error">
+                        {% for error in form.non_field_errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <div class="field-error">{{ form.email.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+                    {{ form.password }}
+                    {% if form.password.errors %}
+                        <div class="field-error">{{ form.password.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="auth-submit">
+                    Iniciar sesión
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                <p>¿Aún no tienes cuenta? Próximamente podrás registrarte aquí.</p>
+                <a href="/" class="auth-back-link">Volver al inicio</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
