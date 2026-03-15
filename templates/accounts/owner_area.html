@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Área de propietario | HABITA{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+    <div class="auth-container" style="max-width: 720px;">
+        <div class="auth-card">
+            <h1>Área de propietario</h1>
+            <p>Bienvenido, {{ habita_user.full_name }}.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}
