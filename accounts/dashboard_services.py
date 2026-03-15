@@ -68,6 +68,27 @@ def _normalize_property_card(item: dict) -> dict:
     }
 
 
+def _normalize_rental_request(item: dict) -> dict:
+    property_data = item.get("property") or {}
+    cover_image = property_data.get("cover_image") or {}
+    image_url = _absolute_media_url(cover_image.get("file_url"))
+
+    return {
+        "id": item.get("id"),
+        "status": (item.get("status") or "").capitalize(),
+        "message": item.get("message") or "",
+        "owner_notes": item.get("owner_notes") or "",
+        "move_in_date": item.get("move_in_date"),
+        "monthly_budget": _format_price(item.get("monthly_budget")) if item.get("monthly_budget") else "No especificado",
+        "created_at": item.get("created_at"),
+        "property_title": property_data.get("title", "Propiedad"),
+        "property_id": property_data.get("id"),
+        "property_location": _build_location(property_data),
+        "property_price": _format_price(property_data.get("price")),
+        "property_image_url": image_url,
+    }
+
+
 def get_user_favorites(request, user_id: int, limit: int = 6) -> tuple[list[dict], str | None]:
     try:
         response = authenticated_request(
@@ -110,24 +131,52 @@ def get_user_rental_requests(request, user_id: int, limit: int = 5) -> tuple[lis
         payload = response.json()
         items = payload if isinstance(payload, list) else []
 
-        results = []
-        for item in items:
-            property_data = item.get("property") or {}
-            results.append(
-                {
-                    "id": item.get("id"),
-                    "status": item.get("status", "").capitalize(),
-                    "message": item.get("message") or "",
-                    "created_at": item.get("created_at"),
-                    "property_title": property_data.get("title", "Propiedad"),
-                    "property_id": property_data.get("id"),
-                }
-            )
-
-        return results, None
+        return [_normalize_rental_request(item) for item in items], None
 
     except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError):
         return [], "No fue posible cargar solicitudes."
+
+
+def create_rental_request(
+    request,
+    user_id: int,
+    property_id: int,
+    message: str | None = None,
+    move_in_date: str | None = None,
+    monthly_budget: str | None = None,
+) -> tuple[bool, str]:
+    payload = {
+        "user_id": user_id,
+        "property_id": property_id,
+        "message": message or None,
+        "move_in_date": move_in_date or None,
+        "monthly_budget": monthly_budget or None,
+    }
+
+    try:
+        response = authenticated_request(
+            request,
+            "POST",
+            "/rental-requests",
+            json=payload,
+        )
+
+        if response.status_code in (200, 201):
+            data = response.json()
+            message_text = (
+                data.get("message")
+                if isinstance(data, dict)
+                else None
+            )
+            if not message_text and isinstance(data, dict):
+                message_text = data.get("data", {}).get("message")
+
+            return True, message_text or "Solicitud enviada correctamente."
+
+        return False, "No fue posible enviar la solicitud."
+
+    except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError):
+        return False, "No fue posible enviar la solicitud."
 
 
 def get_dashboard_summary(request, user_id: int) -> dict:

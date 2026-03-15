@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Mis solicitudes | HABITA{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="dashboard-section">
+    <div class="container">
+        <div class="dashboard-header">
+            <div>
+                <h1>Mis solicitudes</h1>
+                <p>Revisa el estado de las solicitudes que has enviado.</p>
+            </div>
+            <a href="{% url 'accounts:dashboard' %}" class="btn-primary btn-small">Volver al panel</a>
+        </div>
+
+        {% if rental_requests_error %}
+            <div class="message-box message-error">{{ rental_requests_error }}</div>
+        {% elif rental_requests %}
+            <div class="request-list request-list--full">
+                {% for item in rental_requests %}
+                    <article class="request-item request-item--full">
+                        <div class="request-item__media">
+                            {% if item.property_image_url %}
+                                <img src="{{ item.property_image_url }}" alt="{{ item.property_title }}">
+                            {% else %}
+                                <img src="{% static 'img/property-placeholder.jpg' %}" alt="{{ item.property_title }}">
+                            {% endif %}
+                        </div>
+
+                        <div class="request-item__body">
+                            <h2>{{ item.property_title }}</h2>
+                            <p>{{ item.property_location }}</p>
+                            <p><strong>Precio:</strong> {{ item.property_price }}</p>
+                            <p><strong>Estado:</strong> {{ item.status }}</p>
+                            <p><strong>Presupuesto:</strong> {{ item.monthly_budget }}</p>
+
+                            {% if item.move_in_date %}
+                                <p><strong>Mudanza estimada:</strong> {{ item.move_in_date }}</p>
+                            {% endif %}
+
+                            {% if item.message %}
+                                <p><strong>Mensaje:</strong> {{ item.message }}</p>
+                            {% endif %}
+
+                            {% if item.owner_notes %}
+                                <p><strong>Notas del propietario:</strong> {{ item.owner_notes }}</p>
+                            {% endif %}
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="empty-text">Aún no has enviado solicitudes.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

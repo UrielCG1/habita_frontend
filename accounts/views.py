@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
-from .dashboard_services import get_dashboard_summary, get_user_favorites
+from .dashboard_services import get_dashboard_summary, get_user_favorites, get_user_rental_requests
 from .decorators import habita_login_required, habita_role_required
 from .forms import LoginForm, RegisterForm
 from .services import (
@@ -162,5 +162,21 @@ def admin_area_view(request):
         "accounts/admin_area.html",
         {
             "habita_user": get_habita_user(request),
+        },
+    )
+    
+    
+@habita_login_required
+def my_requests_view(request):
+    habita_user = get_habita_user(request)
+    rental_requests, rental_requests_error = get_user_rental_requests(request, user_id=habita_user["id"], limit=50)
+
+    return render(
+        request,
+        "accounts/my_requests.html",
+        {
+            "habita_user": habita_user,
+            "rental_requests": rental_requests,
+            "rental_requests_error": rental_requests_error,
         },
     )

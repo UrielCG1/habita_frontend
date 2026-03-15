@@ -83,6 +83,42 @@
             </article>
         </div>
 
+        <div class="detail-request-section">
+            <div class="detail-panel">
+                <h2>Solicitar renta</h2>
+
+                {% if habita_logged_in %}
+                    <form method="post" action="{% url 'properties:submit-request' property.id %}" class="request-form">
+                        {% csrf_token %}
+
+                        <div class="form-group">
+                            <label for="{{ rental_request_form.message.id_for_label }}">Mensaje</label>
+                            {{ rental_request_form.message }}
+                        </div>
+
+                        <div class="request-form-grid">
+                            <div class="form-group">
+                                <label for="{{ rental_request_form.move_in_date.id_for_label }}">Fecha estimada de mudanza</label>
+                                {{ rental_request_form.move_in_date }}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="{{ rental_request_form.monthly_budget.id_for_label }}">Presupuesto mensual</label>
+                                {{ rental_request_form.monthly_budget }}
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-primary">Enviar solicitud</button>
+                    </form>
+                {% else %}
+                    <p class="empty-text">Necesitas iniciar sesión para enviar una solicitud de renta.</p>
+                    <a href="{% url 'accounts:login' %}?next={{ request.get_full_path }}" class="btn-primary">
+                        Iniciar sesión
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
         <div class="detail-back">
             <a href="{% url 'properties:list' %}" class="btn-secondary-link">← Volver al catálogo</a>
         </div>

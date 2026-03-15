@@ -6,7 +6,9 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from accounts.decorators import habita_login_required
+from accounts.dashboard_services import create_rental_request
 from accounts.utils import get_habita_user, is_habita_authenticated
+from .forms import RentalRequestForm
 from .services import (
     add_favorite,
     build_query_string,
@@ -89,6 +91,7 @@ def property_detail_view(request, property_id: int):
         {
             "property": property_data,
             "is_favorite": is_favorite,
+            "rental_request_form": RentalRequestForm(),
         },
     )
 
@@ -111,3 +114,30 @@ def toggle_favorite_view(request, property_id: int):
         messages.error(request, message)
 
     return redirect(next_url)
+
+
+@require_POST
+@habita_login_required
+def submit_rental_request_view(request, property_id: int):
+    habita_user = get_habita_user(request)
+    form = RentalRequestForm(request.POST)
+
+    if not form.is_valid():
+        messages.error(request, "Revisa los datos de la solicitud.")
+        return redirect("properties:detail", property_id=property_id)
+
+    success, message = create_rental_request(
+        request=request,
+        user_id=habita_user["id"],
+        property_id=property_id,
+        message=form.cleaned_data.get("message"),
+        move_in_date=form.cleaned_data.get("move_in_date").isoformat() if form.cleaned_data.get("move_in_date") else None,
+        monthly_budget=str(form.cleaned_data.get("monthly_budget")) if form.cleaned_data.get("monthly_budget") else None,
+    )
+
+    if success:
+        messages.success(request, message)
+    else:
+        messages.error(request, message)
+
+    return redirect("properties:detail", property_id=property_id)
