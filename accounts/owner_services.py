@@ -153,3 +153,151 @@ def patch_rental_request_status(request, request_id: int, status: str, owner_not
 
     except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError):
         return False, "No fue posible actualizar la solicitud."
+
+
+
+#### ============================
+# Servicios para la sección de propietario
+#### ============================
+    
+def get_owner_property_detail(request, property_id: int) -> tuple[dict | None, str | None]:
+    try:
+        response = authenticated_request(
+            request,
+            "GET",
+            f"/properties/{property_id}",
+        )
+
+        if response.status_code == 404:
+            return None, "Propiedad no encontrada."
+
+        if response.status_code != 200:
+            return None, "No fue posible cargar la propiedad."
+
+        payload = response.json()
+        data = payload.get("data") or {}
+
+        images = data.get("images") or []
+        normalized_images = []
+        for image in images:
+            normalized_images.append(
+                {
+                    "id": image.get("id"),
+                    "image_url": _absolute_media_url(image.get("file_url")),
+                    "alt_text": image.get("alt_text") or data.get("title", "Imagen"),
+                    "is_cover": image.get("is_cover", False),
+                }
+            )
+
+        result = {
+            "id": data.get("id"),
+            "owner_id": data.get("owner_id"),
+            "title": data.get("title", ""),
+            "description": data.get("description") or "",
+            "price": data.get("price"),
+            "property_type": data.get("property_type", ""),
+            "status": data.get("status", ""),
+            "address_line": data.get("address_line", ""),
+            "neighborhood": data.get("neighborhood") or "",
+            "city": data.get("city", ""),
+            "state": data.get("state", ""),
+            "bedrooms": data.get("bedrooms", 0),
+            "bathrooms": data.get("bathrooms", 0),
+            "parking_spaces": data.get("parking_spaces"),
+            "area_m2": data.get("area_m2"),
+            "latitude": data.get("latitude"),
+            "longitude": data.get("longitude"),
+            "is_published": data.get("is_published", False),
+            "images": normalized_images,
+        }
+        return result, None
+
+    except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError, ValueError):
+        return None, "No fue posible cargar la propiedad."
+
+
+def create_owner_property(request, owner_id: int, payload: dict) -> tuple[dict | None, str | None]:
+    body = {
+        **payload,
+        "owner_id": owner_id,
+    }
+
+    try:
+        response = authenticated_request(
+            request,
+            "POST",
+            "/properties/",
+            json=body,
+        )
+
+        if response.status_code != 201:
+            return None, "No fue posible crear la propiedad."
+
+        payload = response.json()
+        return payload.get("data"), None
+
+    except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError, ValueError):
+        return None, "No fue posible crear la propiedad."
+
+
+def patch_owner_property(request, property_id: int, payload: dict) -> tuple[dict | None, str | None]:
+    try:
+        response = authenticated_request(
+            request,
+            "PATCH",
+            f"/properties/{property_id}",
+            json=payload,
+        )
+
+        if response.status_code != 200:
+            return None, "No fue posible actualizar la propiedad."
+
+        payload = response.json()
+        return payload.get("data"), None
+
+    except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError, ValueError):
+        return None, "No fue posible actualizar la propiedad."
+
+
+def upload_owner_property_images(
+    request,
+    property_id: int,
+    files: list,
+    alt_text: str = "",
+    set_first_as_cover: bool = False,
+) -> tuple[bool, str]:
+    if not files:
+        return True, "Sin imágenes nuevas."
+
+    multipart_files = []
+    for file_obj in files:
+        multipart_files.append(
+            (
+                "files",
+                (
+                    file_obj.name,
+                    file_obj.read(),
+                    getattr(file_obj, "content_type", "application/octet-stream"),
+                ),
+            )
+        )
+
+    try:
+        response = authenticated_request(
+            request,
+            "POST",
+            f"/properties/{property_id}/images",
+            files=multipart_files,
+            data={
+                "alt_text": alt_text or "",
+                "set_first_as_cover": str(set_first_as_cover).lower(),
+            },
+        )
+
+        if response.status_code == 201:
+            return True, "Imágenes cargadas correctamente."
+
+        return False, "La propiedad se guardó, pero no fue posible subir las imágenes."
+
+    except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError):
+        return False, "La propiedad se guardó, pero no fue posible subir las imágenes."

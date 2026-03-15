@@ -15,7 +15,10 @@
                 <h1>Mis propiedades</h1>
                 <p>Gestiona las propiedades que has publicado en HABITA.</p>
             </div>
-            <a href="{% url 'accounts:owner-area' %}" class="btn-primary btn-small">Volver</a>
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                <a href="{% url 'accounts:owner-property-create' %}" class="btn-primary btn-small">Nueva propiedad</a>
+                <a href="{% url 'accounts:owner-area' %}" class="btn-primary btn-small">Volver</a>
+            </div>
         </div>
 
         {% if properties_error %}
@@ -24,6 +27,14 @@
             <div class="properties-grid-dashboard">
                 {% for property in properties %}
                     <article class="property-card-dashboard">
+                        <div style="margin-top:14px; display:flex; gap:12px; flex-wrap:wrap;">
+                            <a href="{% url 'accounts:owner-property-requests' property.id %}" class="btn-secondary-link">
+                                Ver solicitudes
+                            </a>
+                            <a href="{% url 'accounts:owner-property-edit' property.id %}" class="btn-secondary-link">
+                                Editar propiedad
+                            </a>
+                        </div>
                         <div class="property-card-dashboard__image">
                             {% if property.cover_image_url %}
                                 <img src="{{ property.cover_image_url }}" alt="{{ property.title }}">
