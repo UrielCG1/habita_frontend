@@ -19,6 +19,15 @@
         {% include "includes/navbar.html" %}
 
         <main class="site-main">
+            {% if messages %}
+                <div class="container" style="padding-top: 12px;">
+                    {% for message in messages %}
+                        <div class="message-box message-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
             {% block content %}{% endblock %}
         </main>
 

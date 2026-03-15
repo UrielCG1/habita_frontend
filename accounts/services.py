@@ -73,3 +73,9 @@ def save_auth_session(request, auth_data: dict) -> None:
         },
     }
     request.session.modified = True
+    
+    
+def clear_auth_session(request) -> None:
+    request.session.pop("habita_logged_in", None)
+    request.session.pop("habita_auth", None)
+    request.session.modified = True

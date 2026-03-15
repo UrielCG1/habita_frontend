@@ -2,15 +2,18 @@ from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
+from .decorators import habita_login_required
 from .forms import LoginForm
 from .services import (
     AuthServiceError,
     BackendUnavailableError,
     InactiveUserError,
     InvalidCredentialsError,
+    clear_auth_session,
     login_with_backend,
     save_auth_session,
 )
+from .utils import get_habita_user
 
 
 def login_view(request):
@@ -50,5 +53,24 @@ def login_view(request):
         {
             "form": form,
             "next_url": next_url,
+        },
+    )
+
+
+def logout_view(request):
+    if request.session.get("habita_logged_in"):
+        clear_auth_session(request)
+        messages.info(request, "Tu sesión ha sido cerrada correctamente.")
+
+    return redirect("home:home")
+
+
+@habita_login_required
+def dashboard_view(request):
+    return render(
+        request,
+        "accounts/dashboard.html",
+        {
+            "habita_user": get_habita_user(request),
         },
     )

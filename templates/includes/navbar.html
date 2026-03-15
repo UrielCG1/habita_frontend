@@ -16,8 +16,17 @@
         </nav>
 
         <div class="nav-actions">
-            <a href="{% url 'accounts:login' %}" class="btn-link">Iniciar Sesión</a>
-            <a href="#" class="btn-primary btn-nav">Registrarse</a>
+            {% if habita_logged_in and habita_user %}
+                <a href="{% url 'accounts:dashboard' %}" class="btn-link">
+                    {{ habita_user.full_name }}
+                </a>
+                <a href="{% url 'accounts:logout' %}" class="btn-primary btn-small">
+                    Cerrar sesión
+                </a>
+            {% else %}
+                <a href="{% url 'accounts:login' %}" class="btn-link">Iniciar Sesión</a>
+                <a href="{% url 'accounts:login' %}" class="btn-primary btn-small">Registrarse</a>
+            {% endif %}
         </div>
     </div>
 </header>

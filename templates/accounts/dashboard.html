@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Mi panel | HABITA{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+    <div class="auth-container" style="max-width: 720px;">
+        <div class="auth-card">
+            <div class="auth-brand" style="text-align:left;">
+                <h1>Mi panel</h1>
+                <p>Sesión activa dentro de HABITA.</p>
+            </div>
+
+            <div class="message-box message-success">
+                Has iniciado sesión correctamente.
+            </div>
+
+            <div class="form-group">
+                <label>Nombre</label>
+                <div class="form-input" style="display:flex;align-items:center;">{{ habita_user.full_name }}</div>
+            </div>
+
+            <div class="form-group">
+                <label>Correo</label>
+                <div class="form-input" style="display:flex;align-items:center;">{{ habita_user.email }}</div>
+            </div>
+
+            <div class="form-group">
+                <label>Rol</label>
+                <div class="form-input" style="display:flex;align-items:center;">{{ habita_user.role }}</div>
+            </div>
+
+            <div style="margin-top: 18px; display:flex; gap:12px; flex-wrap:wrap;">
+                <a href="/" class="auth-back-link">Volver al inicio</a>
+                <a href="{% url 'accounts:logout' %}" class="auth-back-link">Cerrar sesión</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
