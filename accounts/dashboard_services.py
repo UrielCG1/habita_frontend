@@ -1,5 +1,6 @@
 from decimal import Decimal, InvalidOperation
 from urllib.parse import urljoin
+from typing import Optional
 
 from django.conf import settings
 
@@ -15,7 +16,7 @@ def _backend_root() -> str:
     return settings.BACKEND_API_BASE_URL.removesuffix("/api")
 
 
-def _absolute_media_url(file_url: str | None) -> str | None:
+def _absolute_media_url(file_url: Optional[str]) -> Optional[str]:
     if not file_url:
         return None
 
@@ -89,7 +90,7 @@ def _normalize_rental_request(item: dict) -> dict:
     }
 
 
-def get_user_favorites(request, user_id: int, limit: int = 6) -> tuple[list[dict], str | None]:
+def get_user_favorites(request, user_id: int, limit: int = 6) -> tuple[list[dict], Optional[str]]:
     try:
         response = authenticated_request(
             request,
@@ -113,7 +114,7 @@ def get_user_favorites(request, user_id: int, limit: int = 6) -> tuple[list[dict
         return [], "No fue posible cargar favoritos."
 
 
-def get_user_rental_requests(request, user_id: int, limit: int = 5) -> tuple[list[dict], str | None]:
+def get_user_rental_requests(request, user_id: int, limit: int = 5) -> tuple[list[dict], Optional[str]]:
     try:
         response = authenticated_request(
             request,
@@ -141,9 +142,9 @@ def create_rental_request(
     request,
     user_id: int,
     property_id: int,
-    message: str | None = None,
-    move_in_date: str | None = None,
-    monthly_budget: str | None = None,
+    message: Optional[str] = None,
+    move_in_date: Optional[str] = None,
+    monthly_budget: Optional[str] = None,
 ) -> tuple[bool, str]:
     payload = {
         "user_id": user_id,

@@ -108,3 +108,32 @@ class RegisterForm(forms.Form):
             self.add_error("confirm_password", "Las contraseñas no coinciden.")
 
         return cleaned_data
+    
+    
+class OwnerRequestStatusForm(forms.Form):
+    status = forms.ChoiceField(
+        label="Nuevo estado",
+        choices=(
+            ("pending", "Pendiente"),
+            ("accepted", "Aceptada"),
+            ("rejected", "Rechazada"),
+            ("cancelled", "Cancelada"),
+        ),
+        widget=forms.Select(
+            attrs={
+                "class": "form-input",
+            }
+        ),
+    )
+
+    owner_notes = forms.CharField(
+        label="Notas del propietario",
+        required=False,
+        widget=forms.Textarea(
+            attrs={
+                "rows": 3,
+                "class": "form-textarea",
+                "placeholder": "Notas internas o respuesta para esta solicitud...",
+            }
+        ),
+    )

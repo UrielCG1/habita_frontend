@@ -1,5 +1,6 @@
 from decimal import Decimal, InvalidOperation
 from urllib.parse import urljoin
+from typing import Optional
 
 import requests
 from django.conf import settings
@@ -9,7 +10,7 @@ def _backend_base_url() -> str:
     return settings.BACKEND_API_BASE_URL.removesuffix("/api")
 
 
-def _absolute_media_url(file_url: str | None) -> str | None:
+def _absolute_media_url(file_url: Optional[str]) -> Optional[str]:
     if not file_url:
         return None
 
@@ -45,7 +46,7 @@ def _build_location(item: dict) -> str:
     return ", ".join(parts) if parts else "Ubicación no disponible"
 
 
-def get_featured_properties(limit: int = 3) -> tuple[list[dict], str | None]:
+def get_featured_properties(limit: int = 3) -> tuple[list[dict], Optional[str]]:
     url = f"{settings.BACKEND_API_BASE_URL}/properties/"
     params = {
         "limit": limit,

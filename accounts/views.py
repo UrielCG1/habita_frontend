@@ -1,10 +1,12 @@
 from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.views.decorators.http import require_POST
 
 from .dashboard_services import get_dashboard_summary, get_user_favorites, get_user_rental_requests
 from .decorators import habita_login_required, habita_role_required
-from .forms import LoginForm, RegisterForm
+from .forms import LoginForm, RegisterForm, OwnerRequestStatusForm
+from .owner_services import get_owner_properties, get_property_rental_requests, patch_rental_request_status
 from .services import (
     AuthServiceError,
     BackendUnavailableError,
@@ -180,3 +182,75 @@ def my_requests_view(request):
             "rental_requests_error": rental_requests_error,
         },
     )
+    
+    
+@habita_role_required("owner", "admin")
+def owner_properties_view(request):
+    habita_user = get_habita_user(request)
+    properties, properties_error = get_owner_properties(request, owner_id=habita_user["id"])
+
+    return render(
+        request,
+        "accounts/owner_properties.html",
+        {
+            "habita_user": habita_user,
+            "properties": properties,
+            "properties_error": properties_error,
+        },
+    )
+
+
+@habita_role_required("owner", "admin")
+def owner_property_requests_view(request, property_id: int):
+    habita_user = get_habita_user(request)
+    status_filter = request.GET.get("status", "").strip() or None
+
+    properties, _ = get_owner_properties(request, owner_id=habita_user["id"])
+    owned_property = next((item for item in properties if item["id"] == property_id), None)
+
+    if not owned_property:
+        messages.error(request, "No tienes acceso a esa propiedad.")
+        return redirect("accounts:owner-properties")
+
+    rental_requests, rental_requests_error = get_property_rental_requests(
+        request,
+        property_id=property_id,
+        status=status_filter,
+    )
+
+    return render(
+        request,
+        "accounts/owner_property_requests.html",
+        {
+            "habita_user": habita_user,
+            "owned_property": owned_property,
+            "rental_requests": rental_requests,
+            "rental_requests_error": rental_requests_error,
+            "status_filter": status_filter or "",
+            "status_form": OwnerRequestStatusForm(),
+        },
+    )
+
+
+@require_POST
+@habita_role_required("owner", "admin")
+def owner_update_request_status_view(request, property_id: int, request_id: int):
+    form = OwnerRequestStatusForm(request.POST)
+
+    if not form.is_valid():
+        messages.error(request, "Revisa los datos del cambio de estado.")
+        return redirect("accounts:owner-property-requests", property_id=property_id)
+
+    success, message = patch_rental_request_status(
+        request=request,
+        request_id=request_id,
+        status=form.cleaned_data["status"],
+        owner_notes=form.cleaned_data.get("owner_notes", ""),
+    )
+
+    if success:
+        messages.success(request, message)
+    else:
+        messages.error(request, message)
+
+    return redirect("accounts:owner-property-requests", property_id=property_id)

@@ -1,5 +1,6 @@
 from decimal import Decimal, InvalidOperation
 from urllib.parse import urlencode, urljoin
+from typing import Optional
 
 import requests
 from django.conf import settings
@@ -17,7 +18,7 @@ def _backend_root() -> str:
     return settings.BACKEND_API_BASE_URL.removesuffix("/api")
 
 
-def _absolute_media_url(file_url: str | None) -> str | None:
+def _absolute_media_url(file_url: Optional[str]) -> Optional[str]:
     if not file_url:
         return None
 
@@ -130,7 +131,7 @@ def _normalize_review(item: dict) -> dict:
     }
 
 
-def get_properties_list(filters: dict, page: int = 1, limit: int = 9) -> tuple[list[dict], dict, str | None]:
+def get_properties_list(filters: dict, page: int = 1, limit: int = 9) -> tuple[list[dict], dict, Optional[str]]:
     skip = max(page - 1, 0) * limit
 
     params = {
@@ -178,7 +179,7 @@ def get_properties_list(filters: dict, page: int = 1, limit: int = 9) -> tuple[l
     return [_normalize_property_card(item) for item in items], pagination, None
 
 
-def get_property_detail(property_id: int) -> tuple[dict | None, str | None]:
+def get_property_detail(property_id: int) -> tuple[Optional[dict], Optional[str]]:
     url = f"{settings.BACKEND_API_BASE_URL}/properties/{property_id}"
 
     try:
@@ -284,7 +285,7 @@ def remove_favorite(request, user_id: int, property_id: int) -> tuple[bool, str]
         return False, "No fue posible eliminar la propiedad de favoritos."
 
 
-def get_property_reviews(property_id: int) -> tuple[list[dict], dict, str | None]:
+def get_property_reviews(property_id: int) -> tuple[list[dict], dict, Optional[str]]:
     url = f"{settings.BACKEND_API_BASE_URL}/properties/{property_id}/reviews"
 
     try:
@@ -313,7 +314,7 @@ def get_property_reviews(property_id: int) -> tuple[list[dict], dict, str | None
     return reviews, {"count": count, "average": average}, None
 
 
-def get_user_review_for_property(request, user_id: int, property_id: int) -> dict | None:
+def get_user_review_for_property(request, user_id: int, property_id: int) -> Optional[dict]:
     if not is_habita_authenticated(request):
         return None
 
@@ -341,7 +342,7 @@ def get_user_review_for_property(request, user_id: int, property_id: int) -> dic
         return None
 
 
-def save_review(request, user_id: int, property_id: int, rating: int, comment: str, review_id: int | None = None) -> tuple[bool, str]:
+def save_review(request, user_id: int, property_id: int, rating: int, comment: str, review_id: Optional[int] = None) -> tuple[bool, str]:
     try:
         if review_id:
             response = authenticated_request(

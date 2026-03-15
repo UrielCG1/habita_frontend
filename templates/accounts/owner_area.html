@@ -4,15 +4,56 @@
 {% block title %}Área de propietario | HABITA{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 {% endblock %}
 
 {% block content %}
-<section class="auth-section">
-    <div class="auth-container" style="max-width: 720px;">
-        <div class="auth-card">
-            <h1>Área de propietario</h1>
-            <p>Bienvenido, {{ habita_user.full_name }}.</p>
+<section class="dashboard-section">
+    <div class="container">
+        <div class="dashboard-header">
+            <div>
+                <h1>Área de propietario</h1>
+                <p>Bienvenido, {{ habita_user.full_name }}.</p>
+            </div>
+        </div>
+
+        <div class="dashboard-stats">
+            <article class="stat-card">
+                <h3>Gestión</h3>
+                <strong>Owner</strong>
+            </article>
+            <article class="stat-card">
+                <h3>Acceso</h3>
+                <strong>Activo</strong>
+            </article>
+            <article class="stat-card">
+                <h3>Rol</h3>
+                <strong>{{ habita_user.role|title }}</strong>
+            </article>
+        </div>
+
+        <div class="dashboard-grid">
+            <section class="dashboard-panel">
+                <div class="panel-heading">
+                    <h2>Acciones rápidas</h2>
+                </div>
+
+                <div class="request-list">
+                    <a href="{% url 'accounts:owner-properties' %}" class="btn-secondary-link">Ver mis propiedades</a>
+                    <a href="{% url 'accounts:dashboard' %}" class="btn-secondary-link">Ir a mi panel general</a>
+                    <a href="{% url 'accounts:favorites' %}" class="btn-secondary-link">Ver favoritos</a>
+                </div>
+            </section>
+
+            <section class="dashboard-panel">
+                <div class="panel-heading">
+                    <h2>Resumen</h2>
+                </div>
+
+                <p class="empty-text">
+                    Desde esta área podrás revisar solicitudes por propiedad y después publicarlas o editarlas.
+                </p>
+            </section>
         </div>
     </div>
 </section>

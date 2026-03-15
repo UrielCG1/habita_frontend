@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Mis propiedades | HABITA{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="dashboard-section">
+    <div class="container">
+        <div class="dashboard-header">
+            <div>
+                <h1>Mis propiedades</h1>
+                <p>Gestiona las propiedades que has publicado en HABITA.</p>
+            </div>
+            <a href="{% url 'accounts:owner-area' %}" class="btn-primary btn-small">Volver</a>
+        </div>
+
+        {% if properties_error %}
+            <div class="message-box message-error">{{ properties_error }}</div>
+        {% elif properties %}
+            <div class="properties-grid-dashboard">
+                {% for property in properties %}
+                    <article class="property-card-dashboard">
+                        <div class="property-card-dashboard__image">
+                            {% if property.cover_image_url %}
+                                <img src="{{ property.cover_image_url }}" alt="{{ property.title }}">
+                            {% else %}
+                                <img src="{% static 'img/property-placeholder.jpg' %}" alt="{{ property.title }}">
+                            {% endif %}
+                        </div>
+
+                        <div class="property-card-dashboard__body">
+                            <span class="property-type-chip">{{ property.property_type }}</span>
+                            <h3>{{ property.title }}</h3>
+                            <p>{{ property.location }}</p>
+                            <strong>{{ property.price }}</strong>
+
+                            <div class="property-card-dashboard__meta">
+                                <span>{{ property.bedrooms }} rec.</span>
+                                <span>{{ property.bathrooms }} baños</span>
+                                <span>{{ property.status }}</span>
+                            </div>
+
+                            <div style="margin-top:14px;">
+                                <a href="{% url 'accounts:owner-property-requests' property.id %}" class="btn-secondary-link">
+                                    Ver solicitudes
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="empty-text">Aún no tienes propiedades publicadas.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

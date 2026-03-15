@@ -1,8 +1,10 @@
+from typing import Optional
+
 def get_habita_auth_session(request) -> dict:
     return request.session.get("habita_auth", {})
 
 
-def get_habita_user(request) -> dict | None:
+def get_habita_user(request) -> Optional[dict]:
     auth_data = get_habita_auth_session(request)
     user = auth_data.get("user")
 

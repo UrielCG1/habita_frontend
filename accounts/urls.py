@@ -8,6 +8,9 @@ from .views import (
     logout_view,
     my_requests_view,
     owner_area_view,
+    owner_properties_view,
+    owner_property_requests_view,
+    owner_update_request_status_view,
     register_view,
 )
 
@@ -22,4 +25,8 @@ urlpatterns = [
     path("my-requests/", my_requests_view, name="my-requests"),
     path("owner-area/", owner_area_view, name="owner-area"),
     path("admin-area/", admin_area_view, name="admin-area"),
+    
+    path("owner-properties/", owner_properties_view, name="owner-properties"),
+    path("owner-properties/<int:property_id>/requests/", owner_property_requests_view, name="owner-property-requests"),
+    path("owner-properties/<int:property_id>/requests/<int:request_id>/update/", owner_update_request_status_view, name="owner-update-request-status"),
 ]
