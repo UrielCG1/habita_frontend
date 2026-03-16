@@ -40,7 +40,7 @@ def _default_redirect_for_role(user: dict) -> str:
     if role == "admin":
         return reverse("accounts:admin-area")
     if role == "owner":
-        return reverse("accounts:owner-area")
+        return reverse("accounts:owner-properties")
     return reverse("accounts:dashboard")
 
 
