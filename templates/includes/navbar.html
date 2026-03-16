@@ -31,8 +31,15 @@
 
         <div class="header-actions">
             {% if habita_logged_in and habita_user %}
+                <div class="log-user-avatar">
+                    {{ habita_user.first_name|slice:":2"|upper }}
+                </div>
                 <span class="nav-user-label">{{ habita_user.full_name }}</span>
-                <a href="{% url 'accounts:logout' %}" class="btn-primary btn-small">Cerrar sesión</a>
+                <a href="{% url 'accounts:logout' %}" class="btn-primary btn-small">
+                    <span class="material-symbols-outlined">
+                        logout
+                    </span>
+                </a>
             {% else %}
                 <a href="{% url 'accounts:login' %}" class="btn-link">Iniciar Sesión</a>
                 <a href="{% url 'accounts:register' %}" class="btn-primary btn-small">Registrarse</a>

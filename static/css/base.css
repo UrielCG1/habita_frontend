@@ -122,6 +122,19 @@ textarea {
    NAVBAR GLOBAL
 ========================= */
 
+
+.log-user-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    background: rgba(0, 76, 109, 0.10);
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+}
+
 .site-header {
     position: sticky;
     top: 0;

@@ -143,16 +143,6 @@ def dashboard_view(request):
     )
 
 
-@habita_role_required("owner", "admin")
-def owner_area_view(request):
-    return render(
-        request,
-        "accounts/owner_area.html",
-        {
-            "habita_user": get_habita_user(request),
-        },
-    )
-
 
 @habita_role_required("admin")
 def admin_area_view(request):
