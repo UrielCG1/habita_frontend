@@ -5,7 +5,6 @@ from .views import (
     dashboard_view,
     login_view,
     logout_view,
-    owner_area_view,
     owner_properties_view,
     owner_property_requests_view,
     owner_update_request_status_view,
