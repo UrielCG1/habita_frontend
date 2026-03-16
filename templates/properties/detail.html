@@ -122,9 +122,24 @@
         <div class="detail-reviews-section">
             <div class="detail-panel">
                 <div class="reviews-header">
-                    <div>
-                        <h2>Reseñas</h2>
-                        <p>{{ reviews_summary.count }} reseña{{ reviews_summary.count|pluralize:"s" }} · Promedio {{ reviews_summary.average }}/5</p>
+                    <div class="reviews-header__title">
+                        <h2>Reseñas y comentarios</h2>
+                        <p>Conoce la experiencia de otros usuarios en esta propiedad.</p>
+                    </div>
+
+                    <div class="reviews-score-card"
+                        aria-label="Promedio de {{ reviews_summary.average|floatformat:1 }} de 5 basado en {{ reviews_summary.count }} reseñas">
+                        <div class="reviews-score-card__value">
+                            {{ reviews_summary.average|floatformat:1 }}
+                        </div>
+
+                        <div class="reviews-score-card__meta">
+                            <div class="rating-stars rating-stars--summary" aria-hidden="true">
+                                <span class="rating-stars__base">★★★★★</span>
+                                <span class="rating-stars__fill" style="width: {{ reviews_summary.average_percent }}%;">★★★★★</span>
+                            </div>
+                            <p>{{ reviews_summary.count }} reseña{{ reviews_summary.count|pluralize:"s" }}</p>
+                        </div>
                     </div>
                 </div>
 
@@ -134,15 +149,26 @@
 
                 {% if habita_logged_in %}
                     <div class="review-form-box">
-                        <h3>
-                            {% if user_review %}
-                                Edita tu reseña
-                            {% else %}
-                                Escribe tu reseña
-                            {% endif %}
-                        </h3>
+                        <div class="review-form-box__header">
+                            <div>
+                                <h3>
+                                    {% if user_review %}
+                                        Edita tu reseña
+                                    {% else %}
+                                        Escribe tu reseña
+                                    {% endif %}
+                                </h3>
+                                <p>
+                                    {% if user_review %}
+                                        Ya tienes una reseña para esta propiedad. Puedes actualizarla o eliminarla.
+                                    {% else %}
+                                        Comparte tu experiencia para ayudar a otros usuarios.
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
 
-                        <form method="post" action="{% url 'properties:submit-review' property.id %}" class="request-form">
+                        <form method="post" action="{% url 'properties:submit-review' property.id %}" class="request-form review-form">
                             {% csrf_token %}
 
                             <div class="request-form-grid">
@@ -161,15 +187,15 @@
                                 <button type="submit" class="btn-primary">
                                     {% if user_review %}Actualizar reseña{% else %}Publicar reseña{% endif %}
                                 </button>
-
-                                {% if user_review %}
-                                    <form method="post" action="{% url 'properties:delete-review' property.id %}">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn-danger">Eliminar reseña</button>
-                                    </form>
-                                {% endif %}
                             </div>
                         </form>
+
+                        {% if user_review %}
+                            <form method="post" action="{% url 'properties:delete-review' property.id %}" class="review-delete-form">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-danger">Eliminar reseña</button>
+                            </form>
+                        {% endif %}
                     </div>
                 {% else %}
                     <p class="empty-text">Inicia sesión para dejar una reseña.</p>
@@ -180,9 +206,21 @@
                         {% for review in reviews %}
                             <article class="review-card">
                                 <div class="review-card__top">
-                                    <div>
-                                        <h3>{{ review.user_name }}</h3>
-                                        <p class="review-card__rating">{{ review.rating }}/5</p>
+                                    <div class="review-card__author">
+                                        <div class="review-card__avatar">
+                                            {{ review.user_initials }}
+                                        </div>
+
+                                        <div class="review-card__author-data">
+                                            <h3>{{ review.user_name }}</h3>
+                                            <p class="review-card__date">{{ review.display_date }}</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="rating-stars rating-stars--review"
+                                        aria-label="{{ review.rating }} de 5 estrellas">
+                                        <span class="rating-stars__base">★★★★★</span>
+                                        <span class="rating-stars__fill" style="width: {% widthratio review.rating 5 100 %}%;">★★★★★</span>
                                     </div>
                                 </div>
 
@@ -195,7 +233,9 @@
                         {% endfor %}
                     </div>
                 {% else %}
-                    <p class="empty-text">Aún no hay reseñas para esta propiedad.</p>
+                    <div class="reviews-empty">
+                        <p class="empty-text">Aún no hay reseñas para esta propiedad.</p>
+                    </div>
                 {% endif %}
             </div>
         </div>

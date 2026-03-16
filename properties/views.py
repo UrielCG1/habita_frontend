@@ -77,6 +77,24 @@ def properties_list_view(request):
     )
 
 
+from datetime import datetime
+
+SPANISH_MONTHS = {
+    1: "Enero",
+    2: "Febrero",
+    3: "Marzo",
+    4: "Abril",
+    5: "Mayo",
+    6: "Junio",
+    7: "Julio",
+    8: "Agosto",
+    9: "Septiembre",
+    10: "Octubre",
+    11: "Noviembre",
+    12: "Diciembre",
+}
+
+
 def property_detail_view(request, property_id: int):
     property_data, error = get_property_detail(property_id)
 
@@ -87,7 +105,35 @@ def property_detail_view(request, property_id: int):
     is_favorite = False
     user_review = None
     review_form = ReviewForm()
+
     reviews, reviews_summary, reviews_error = get_property_reviews(property_id)
+
+    reviews_summary = reviews_summary or {"count": 0, "average": 0}
+    average = float(reviews_summary.get("average") or 0)
+    reviews_summary["average"] = round(average, 1)
+    reviews_summary["average_percent"] = round((average / 5) * 100, 2)
+
+    normalized_reviews = []
+    for review in reviews or []:
+        review = dict(review)
+
+        user_name = (review.get("user_name") or "Usuario").strip()
+        name_parts = [part for part in user_name.split() if part]
+        review["user_initials"] = "".join(part[0].upper() for part in name_parts[:2]) or "U"
+
+        created_at = review.get("created_at")
+        review["display_date"] = "Fecha no disponible"
+
+        if created_at:
+            try:
+                dt = datetime.fromisoformat(str(created_at).replace("Z", "+00:00"))
+                review["display_date"] = f"{SPANISH_MONTHS[dt.month]} {dt.year}"
+            except ValueError:
+                review["display_date"] = str(created_at)[:10]
+
+        normalized_reviews.append(review)
+
+    reviews = normalized_reviews
 
     if is_habita_authenticated(request):
         habita_user = get_habita_user(request)
@@ -116,7 +162,6 @@ def property_detail_view(request, property_id: int):
             "user_review": user_review,
         },
     )
-
 
 @require_POST
 @habita_login_required
