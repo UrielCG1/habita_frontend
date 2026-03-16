@@ -34,6 +34,60 @@
         {% include "includes/footer.html" %}
     </div>
 
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const userMenu = document.querySelector("[data-user-menu]");
+        if (!userMenu) return;
+
+        const trigger = userMenu.querySelector("[data-user-trigger]");
+        const dropdown = userMenu.querySelector("[data-user-dropdown]");
+
+        if (!trigger || !dropdown) return;
+
+        function openMenu() {
+            userMenu.classList.add("is-open");
+            dropdown.hidden = false;
+            trigger.setAttribute("aria-expanded", "true");
+        }
+
+        function closeMenu() {
+            userMenu.classList.remove("is-open");
+            dropdown.hidden = true;
+            trigger.setAttribute("aria-expanded", "false");
+        }
+
+        function toggleMenu() {
+            const isOpen = userMenu.classList.contains("is-open");
+            if (isOpen) {
+                closeMenu();
+            } else {
+                openMenu();
+            }
+        }
+
+        trigger.addEventListener("click", function (event) {
+            event.stopPropagation();
+            toggleMenu();
+        });
+
+        dropdown.addEventListener("click", function (event) {
+            event.stopPropagation();
+        });
+
+        document.addEventListener("click", function (event) {
+            if (!userMenu.contains(event.target)) {
+                closeMenu();
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                closeMenu();
+            }
+        });
+    });
+    </script>
+
     {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -31,17 +31,75 @@
 
         <div class="header-actions">
             {% if habita_logged_in and habita_user %}
-                <div class="log-user-avatar">
-                    {{ habita_user.full_name|slice:":2"|upper }}
+                <div class="nav-user-menu" data-user-menu>
+                    <button
+                        type="button"
+                        class="nav-user-trigger"
+                        data-user-trigger
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                        aria-label="Abrir menú de usuario"
+                    >
+                        <span class="nav-user-trigger__avatar">
+                            {{ habita_user.full_name|slice:":2"|upper }}
+                        </span>
+                        <span class="material-symbols-outlined nav-user-trigger__icon">expand_more</span>
+                    </button>
+
+                    <div class="nav-user-dropdown" data-user-dropdown hidden>
+                        <div class="nav-user-dropdown__header">
+                            <div class="nav-user-dropdown__avatar">
+                                {{ habita_user.full_name|slice:":2"|upper }}
+                            </div>
+
+                            <div class="nav-user-dropdown__info">
+                                <strong>{{ habita_user.full_name }}</strong>
+
+                                <span class="nav-user-dropdown__role">
+                                    {% if habita_user.role == "tenant" %}
+                                        Inquilino
+                                    {% elif habita_user.role == "owner" %}
+                                        Propietario
+                                    {% elif habita_user.role == "admin" %}
+                                        Administrador
+                                    {% else %}
+                                        Usuario
+                                    {% endif %}
+                                </span>
+
+                                {% if habita_user.email %}
+                                    <p class="nav-user-dropdown__email">{{ habita_user.email }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="nav-user-dropdown__actions">
+                            {% if habita_user.role == "tenant" %}
+                                <a href="{% url 'accounts:activity' %}" class="nav-user-dropdown__link">
+                                    <span class="material-symbols-outlined">person</span>
+                                    Ver perfil
+                                </a>
+                            {% elif habita_user.role == "owner" %}
+                                <a href="{% url 'accounts:owner-properties' %}" class="nav-user-dropdown__link">
+                                    <span class="material-symbols-outlined">person</span>
+                                    Ver perfil
+                                </a>
+                            {% elif habita_user.role == "admin" %}
+                                <a href="{% url 'accounts:admin-area' %}" class="nav-user-dropdown__link">
+                                    <span class="material-symbols-outlined">person</span>
+                                    Ver perfil
+                                </a>
+                            {% endif %}
+
+                            <a href="{% url 'accounts:logout' %}" class="nav-user-dropdown__link nav-user-dropdown__link--danger">
+                                <span class="material-symbols-outlined">logout</span>
+                                Cerrar sesión
+                            </a>
+                        </div>
+                    </div>
                 </div>
-                <span class="nav-user-label">{{ habita_user.full_name }}</span>
-                <a href="{% url 'accounts:logout' %}" class="btn-primary btn-small">
-                    <span class="material-symbols-outlined">
-                        logout
-                    </span>
-                </a>
             {% else %}
-                <a href="{% url 'accounts:login' %}" class="btn-link">Iniciar Sesión</a>
+                <a href="{% url 'accounts:login' %}" class="btn-link nav-login">Iniciar Sesión</a>
                 <a href="{% url 'accounts:register' %}" class="btn-primary btn-small">Registrarse</a>
             {% endif %}
         </div>
