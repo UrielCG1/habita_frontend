@@ -2,153 +2,263 @@
 {% load static %}
 
 {% block title %}
-    {% if mode == "edit" %}Editar propiedad{% else %}Nueva propiedad{% endif %} | HABITA
+    {% if mode == "edit" %}Editar propiedad{% else %}Registrar nueva propiedad{% endif %} | HABITA
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-<link rel="stylesheet" href="{% static 'css/properties.css' %}">
+<link rel="stylesheet" href="{% static 'css/property_form.css' %}">
 {% endblock %}
 
 {% block content %}
-<section class="dashboard-section">
-    <div class="container">
-        <div class="dashboard-header">
-            <div>
-                <h1>
-                    {% if mode == "edit" %}Editar propiedad{% else %}Publicar nueva propiedad{% endif %}
-                </h1>
-                <p>
-                    {% if mode == "edit" %}
-                        Actualiza la información de tu inmueble.
-                    {% else %}
-                        Registra una nueva propiedad en HABITA.
-                    {% endif %}
-                </p>
+<section class="property-form-page">
+    <div class="container property-form-container">
+
+        <div class="property-form-topbar">
+            <a href="{% if admin_mode %}{% url 'accounts:admin-area' %}{% else %}{% url 'accounts:owner-properties' %}{% endif %}" class="property-form-back">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Volver al listado
+            </a>
+
+            <div class="property-form-header-actions">
+                <a href="{% if admin_mode %}{% url 'accounts:admin-area' %}{% else %}{% url 'accounts:owner-properties' %}{% endif %}" class="btn-outline-form">
+                    Cancelar
+                </a>
+                <button type="submit" form="property-form" name="submit_mode" value="save" class="btn-primary-form">
+                    <span class="material-symbols-outlined">save</span>
+                    Guardar Propiedad
+                </button>
             </div>
-            <a href="{% if admin_mode %}{% url 'accounts:admin-area' %}{% else %}{% url 'accounts:owner-properties' %}{% endif %}" class="btn-primary btn-small">Volver</a>
         </div>
 
-        <div class="detail-panel">
-            <form method="post" enctype="multipart/form-data" class="request-form">
-                {% csrf_token %}
+        <div class="property-form-heading">
+            <h1>{% if mode == "edit" %}Editar Propiedad{% else %}Registrar Nueva Propiedad{% endif %}</h1>
+            <p>Ingresa los detalles técnicos, ubicación y material multimedia para publicar el inmueble.</p>
+        </div>
 
-                <div class="request-form-grid">
-                    <div class="form-group">
-                        <label for="{{ form.title.id_for_label }}">Título</label>
+        <form id="property-form" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <section class="property-form-card">
+                <div class="property-form-card__header">
+                    <span class="material-symbols-outlined">info</span>
+                    <h2>Información General</h2>
+                </div>
+
+                <div class="property-form-grid property-form-grid--2">
+                    <div class="property-form-field property-form-field--full">
+                        <label for="{{ form.title.id_for_label }}">Título de la Propiedad</label>
                         {{ form.title }}
                     </div>
-                    <div class="form-group">
-                        <label for="{{ form.price.id_for_label }}">Precio mensual</label>
+
+                    <div>
+                        <label for="{{ form.price.id_for_label }}">Precio (MXN)</label>
                         {{ form.price }}
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label for="{{ form.description.id_for_label }}">Descripción</label>
-                    {{ form.description }}
-                </div>
-
-                <div class="request-form-grid">
-                    <div class="form-group">
-                        <label for="{{ form.property_type.id_for_label }}">Tipo</label>
-                        {{ form.property_type }}
+                    <div class="property-form-inline-2">
+                        <div>
+                            <label for="{{ form.property_type.id_for_label }}">Tipo</label>
+                            {{ form.property_type }}
+                        </div>
+                        <div>
+                            <label for="{{ form.status.id_for_label }}">Estatus</label>
+                            {{ form.status }}
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="{{ form.status.id_for_label }}">Estado</label>
-                        {{ form.status }}
+
+                    <div class="property-form-field property-form-field--full">
+                        <label for="{{ form.description.id_for_label }}">Descripción</label>
+                        {{ form.description }}
                     </div>
                 </div>
+            </section>
 
-                <div class="form-group">
-                    <label for="{{ form.address_line.id_for_label }}">Dirección</label>
-                    {{ form.address_line }}
+            <section class="property-form-card">
+                <div class="property-form-card__header">
+                    <span class="material-symbols-outlined">location_on</span>
+                    <h2>Ubicación</h2>
                 </div>
 
-                <div class="request-form-grid">
-                    <div class="form-group">
+                <div class="property-form-grid property-form-grid--2">
+                    <div class="property-form-field property-form-field--full">
+                        <label for="{{ form.address_line.id_for_label }}">Dirección Completa</label>
+                        {{ form.address_line }}
+                    </div>
+
+                    <div>
                         <label for="{{ form.neighborhood.id_for_label }}">Colonia</label>
                         {{ form.neighborhood }}
                     </div>
-                    <div class="form-group">
-                        <label for="{{ form.city.id_for_label }}">Ciudad</label>
-                        {{ form.city }}
+
+                    <div class="property-form-inline-2">
+                        <div>
+                            <label for="{{ form.city.id_for_label }}">Ciudad</label>
+                            {{ form.city }}
+                        </div>
+                        <div>
+                            <label for="{{ form.state.id_for_label }}">Estado</label>
+                            {{ form.state }}
+                        </div>
                     </div>
                 </div>
 
-                <div class="request-form-grid">
-                    <div class="form-group">
-                        <label for="{{ form.state.id_for_label }}">Estado</label>
-                        {{ form.state }}
+                <div class="property-form-coords">
+                    <div class="property-form-coords__title">
+                        <span class="material-symbols-outlined">gps_fixed</span>
+                        Coordenadas (Opcional)
                     </div>
-                    <div class="form-group">
-                        <label for="{{ form.area_m2.id_for_label }}">Área en m²</label>
-                        {{ form.area_m2 }}
+
+                    <div class="property-form-inline-2">
+                        <div>
+                            <label for="{{ form.latitude.id_for_label }}">Latitud</label>
+                            {{ form.latitude }}
+                        </div>
+                        <div>
+                            <label for="{{ form.longitude.id_for_label }}">Longitud</label>
+                            {{ form.longitude }}
+                        </div>
                     </div>
                 </div>
+            </section>
 
-                <div class="request-form-grid">
-                    <div class="form-group">
+            <section class="property-form-card">
+                <div class="property-form-card__header">
+                    <span class="material-symbols-outlined">bed</span>
+                    <h2>Características</h2>
+                </div>
+
+                <div class="property-form-inline-4">
+                    <div>
                         <label for="{{ form.bedrooms.id_for_label }}">Recámaras</label>
                         {{ form.bedrooms }}
                     </div>
-                    <div class="form-group">
+                    <div>
                         <label for="{{ form.bathrooms.id_for_label }}">Baños</label>
                         {{ form.bathrooms }}
                     </div>
-                </div>
-
-                <div class="request-form-grid">
-                    <div class="form-group">
-                        <label for="{{ form.parking_spaces.id_for_label }}">Estacionamiento</label>
+                    <div>
+                        <label for="{{ form.parking_spaces.id_for_label }}">Estac.</label>
                         {{ form.parking_spaces }}
                     </div>
-                    <div class="form-group">
-                        <label for="{{ form.images.id_for_label }}">Imágenes</label>
-                        {{ form.images }}
+                    <div>
+                        <label for="{{ form.area_m2.id_for_label }}">Área (m²)</label>
+                        {{ form.area_m2 }}
                     </div>
+                </div>
+            </section>
+
+            <section class="property-form-card">
+                <div class="property-form-card__header">
+                    <span class="material-symbols-outlined">image</span>
+                    <h2>Galería de Imágenes</h2>
                 </div>
 
-                <div class="request-form-grid">
-                    <div class="form-group">
-                        <label for="{{ form.latitude.id_for_label }}">Latitud</label>
-                        {{ form.latitude }}
-                    </div>
-                    <div class="form-group">
-                        <label for="{{ form.longitude.id_for_label }}">Longitud</label>
-                        {{ form.longitude }}
-                    </div>
+                <label for="{{ form.images.id_for_label }}" class="upload-dropzone">
+                    <span class="material-symbols-outlined">cloud_upload</span>
+                    <strong>Haz clic o arrastra fotos aquí</strong>
+                    <small>Soporta JPG, PNG</small>
+                </label>
+
+                <div class="hidden-input-wrap">
+                    {{ form.images }}
                 </div>
 
-                <div class="form-group" style="display:flex; align-items:center; gap:10px;">
-                    {{ form.is_published }}
-                    <label for="{{ form.is_published.id_for_label }}">Publicar propiedad</label>
-                </div>
+                <div id="selected-images-preview" class="property-images-grid property-images-grid--selected"></div>
 
                 {% if mode == "edit" and property_obj.images %}
-                    <div class="detail-gallery" style="margin-top: 20px;">
-                        <h2>Imágenes actuales</h2>
-                        <div class="detail-gallery-grid">
-                            {% for image in property_obj.images %}
-                                <div class="detail-gallery-item">
-                                    {% if image.image_url %}
-                                        <img src="{{ image.image_url }}" alt="{{ image.alt_text }}">
-                                    {% else %}
-                                        <img src="{% static 'img/property-placeholder.jpg' %}" alt="Imagen">
-                                    {% endif %}
+                    <div class="property-images-grid">
+                        {% for image in property_obj.images %}
+                            <div class="property-image-card">
+                                {% if image.image_url %}
+                                    <img src="{{ image.image_url }}" alt="{{ image.alt_text }}">
+                                {% else %}
+                                    <img src="{% static 'img/property-placeholder.jpg' %}" alt="Imagen">
+                                {% endif %}
+
+                                <div class="property-image-actions">
+                                    <form method="post" action="{% if admin_mode %}{% url 'accounts:admin-property-image-delete' property_obj.id image.id %}{% else %}{% url 'accounts:owner-property-image-delete' property_obj.id image.id %}{% endif %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="image-icon-btn image-icon-btn--danger">
+                                            <span class="material-symbols-outlined">delete</span>
+                                        </button>
+                                    </form>
+
+                                    <form method="post" action="{% if admin_mode %}{% url 'accounts:admin-property-image-cover' property_obj.id image.id %}{% else %}{% url 'accounts:owner-property-image-cover' property_obj.id image.id %}{% endif %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="image-icon-btn {% if image.is_cover %}image-icon-btn--active{% endif %}">
+                                            <span class="material-symbols-outlined">star</span>
+                                        </button>
+                                    </form>
                                 </div>
-                            {% endfor %}
-                        </div>
+
+                                {% if image.is_cover %}
+                                    <span class="property-image-badge">Principal</span>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
                     </div>
                 {% endif %}
+            </section>
 
-                <div class="review-actions" style="margin-top:20px;">
-                    <button type="submit" class="btn-primary">
-                        {% if mode == "edit" %}Guardar cambios{% else %}Publicar propiedad{% endif %}
-                    </button>
+            <section class="property-form-card property-form-card--publish">
+                <div class="publish-row">
+                    <div class="publish-row__left">
+                        <div class="publish-row__icon">
+                            <span class="material-symbols-outlined">public</span>
+                        </div>
+                        <div>
+                            <h2>Publicar inmediatamente</h2>
+                            <p>Haz que tu propiedad sea visible para todos los clientes registrados y visitantes web.</p>
+                        </div>
+                    </div>
+
+                    <div class="publish-toggle-wrap">
+                        {{ form.is_published }}
+                    </div>
                 </div>
-            </form>
-        </div>
+            </section>
+
+            <div class="property-form-footer-actions">
+                <button type="submit" name="submit_mode" value="publish" class="btn-publish-main">
+                    <span class="material-symbols-outlined">publish</span>
+                    Publicar Propiedad
+                </button>
+
+                <button type="submit" name="submit_mode" value="draft" class="btn-draft-main">
+                    Guardar como Borrador
+                </button>
+            </div>
+        </form>
     </div>
 </section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const input = document.getElementById("{{ form.images.id_for_label }}");
+    const preview = document.getElementById("selected-images-preview");
+
+    if (!input || !preview) return;
+
+    input.addEventListener("change", function () {
+        preview.innerHTML = "";
+
+        const files = Array.from(input.files || []);
+        files.forEach((file) => {
+            if (!file.type.startsWith("image/")) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const card = document.createElement("div");
+                card.className = "property-image-card property-image-card--preview";
+                card.innerHTML = `
+                    <img src="${e.target.result}" alt="${file.name}">
+                    <span class="property-image-badge property-image-badge--preview">Nueva</span>
+                `;
+                preview.appendChild(card);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+});
+</script>
 {% endblock %}

@@ -16,6 +16,8 @@ from .owner_services import (
     patch_rental_request_status,
     upload_owner_property_images,
     delete_property_by_id,
+    set_property_image_as_cover,
+    delete_property_image_by_id,
 )
 from .services import (
     AuthServiceError,
@@ -289,6 +291,14 @@ def owner_property_create_view(request):
     form = OwnerPropertyForm(request.POST or None, request.FILES or None)
 
     if request.method == "POST" and form.is_valid():
+        submit_mode = request.POST.get("submit_mode", "save")
+        
+        is_published_value = form.cleaned_data["is_published"]
+        if submit_mode == "publish":
+            is_published_value = True
+        elif submit_mode == "draft":
+            is_published_value = False
+
         payload = {
             "title": form.cleaned_data["title"],
             "description": form.cleaned_data["description"],
@@ -305,7 +315,7 @@ def owner_property_create_view(request):
             "area_m2": str(form.cleaned_data["area_m2"]) if form.cleaned_data["area_m2"] is not None else None,
             "latitude": str(form.cleaned_data["latitude"]) if form.cleaned_data["latitude"] is not None else None,
             "longitude": str(form.cleaned_data["longitude"]) if form.cleaned_data["longitude"] is not None else None,
-            "is_published": form.cleaned_data["is_published"],
+            "is_published": is_published_value,
         }
 
         created_property, error = create_owner_property(request, owner_id=habita_user["id"], payload=payload)
@@ -468,6 +478,14 @@ def admin_property_edit_view(request, property_id: int):
     form = OwnerPropertyForm(request.POST or None, request.FILES or None, initial=initial)
 
     if request.method == "POST" and form.is_valid():
+        submit_mode = request.POST.get("submit_mode", "save")
+        
+        is_published_value = form.cleaned_data["is_published"]
+        if submit_mode == "publish":
+            is_published_value = True
+        elif submit_mode == "draft":
+            is_published_value = False
+
         payload = {
             "title": form.cleaned_data["title"],
             "description": form.cleaned_data["description"],
@@ -484,7 +502,7 @@ def admin_property_edit_view(request, property_id: int):
             "area_m2": str(form.cleaned_data["area_m2"]) if form.cleaned_data["area_m2"] is not None else None,
             "latitude": str(form.cleaned_data["latitude"]) if form.cleaned_data["latitude"] is not None else None,
             "longitude": str(form.cleaned_data["longitude"]) if form.cleaned_data["longitude"] is not None else None,
-            "is_published": form.cleaned_data["is_published"],
+            "is_published": is_published_value,
         }
 
         updated_property, patch_error = patch_owner_property(request, property_id=property_id, payload=payload)
@@ -530,3 +548,55 @@ def admin_property_delete_view(request, property_id: int):
         messages.error(request, message)
 
     return redirect("accounts:admin-area")
+
+
+@require_POST
+@habita_role_required("owner", "admin")
+def owner_set_cover_image_view(request, property_id: int, image_id: int):
+    success, message = set_property_image_as_cover(request, image_id=image_id)
+
+    if success:
+        messages.success(request, message)
+    else:
+        messages.error(request, message)
+
+    return redirect("accounts:owner-property-edit", property_id=property_id)
+
+
+@require_POST
+@habita_role_required("owner", "admin")
+def owner_delete_property_image_view(request, property_id: int, image_id: int):
+    success, message = delete_property_image_by_id(request, image_id=image_id)
+
+    if success:
+        messages.success(request, message)
+    else:
+        messages.error(request, message)
+
+    return redirect("accounts:owner-property-edit", property_id=property_id)
+
+
+@require_POST
+@habita_role_required("admin")
+def admin_set_cover_image_view(request, property_id: int, image_id: int):
+    success, message = set_property_image_as_cover(request, image_id=image_id)
+
+    if success:
+        messages.success(request, message)
+    else:
+        messages.error(request, message)
+
+    return redirect("accounts:admin-property-edit", property_id=property_id)
+
+
+@require_POST
+@habita_role_required("admin")
+def admin_delete_property_image_view(request, property_id: int, image_id: int):
+    success, message = delete_property_image_by_id(request, image_id=image_id)
+
+    if success:
+        messages.success(request, message)
+    else:
+        messages.error(request, message)
+
+    return redirect("accounts:admin-property-edit", property_id=property_id)

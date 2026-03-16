@@ -320,3 +320,39 @@ def delete_property_by_id(request, property_id: int) -> tuple[bool, str]:
 
     except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError):
         return False, "No fue posible eliminar la propiedad."
+    
+    
+
+def set_property_image_as_cover(request, image_id: int) -> tuple[bool, str]:
+    try:
+        response = authenticated_request(
+            request,
+            "PATCH",
+            f"/property-images/{image_id}",
+            json={"is_cover": True},
+        )
+
+        if response.status_code == 200:
+            return True, "Imagen principal actualizada correctamente."
+
+        return False, "No fue posible marcar la imagen como principal."
+
+    except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError):
+        return False, "No fue posible marcar la imagen como principal."
+
+
+def delete_property_image_by_id(request, image_id: int) -> tuple[bool, str]:
+    try:
+        response = authenticated_request(
+            request,
+            "DELETE",
+            f"/property-images/{image_id}",
+        )
+
+        if response.status_code == 200:
+            return True, "Imagen eliminada correctamente."
+
+        return False, "No fue posible eliminar la imagen."
+
+    except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError):
+        return False, "No fue posible eliminar la imagen."
