@@ -12,6 +12,7 @@ from .owner_services import (
     get_owner_properties,
     get_owner_property_detail,
     get_property_rental_requests,
+    get_owner_requests_overview,
     patch_owner_property,
     patch_rental_request_status,
     upload_owner_property_images,
@@ -600,3 +601,26 @@ def admin_delete_property_image_view(request, property_id: int, image_id: int):
         messages.error(request, message)
 
     return redirect("accounts:admin-property-edit", property_id=property_id)
+
+
+@habita_role_required("owner", "admin")
+def owner_requests_view(request):
+    habita_user = get_habita_user(request)
+    status_filter = request.GET.get("status", "").strip() or None
+
+    rental_requests, rental_requests_error = get_owner_requests_overview(
+        request,
+        owner_id=habita_user["id"],
+        status=status_filter,
+    )
+
+    return render(
+        request,
+        "accounts/owner_requests.html",
+        {
+            "habita_user": habita_user,
+            "rental_requests": rental_requests,
+            "rental_requests_error": rental_requests_error,
+            "status_filter": status_filter or "",
+        },
+    )

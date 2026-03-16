@@ -19,6 +19,7 @@ from .views import (
     admin_set_cover_image_view,
     owner_delete_property_image_view,
     owner_set_cover_image_view,
+    owner_requests_view,
 )
 
 app_name = "accounts"
@@ -32,6 +33,7 @@ urlpatterns = [
     path("activity/", activity_view, name="activity"),
     
     path("owner-area/", owner_area_view, name="owner-area"),
+    path("owner-requests/", owner_requests_view, name="owner-requests"),
     path("admin-area/", admin_area_view, name="admin-area"),
     
     path("owner-properties/", owner_properties_view, name="owner-properties"),

@@ -356,3 +356,31 @@ def delete_property_image_by_id(request, image_id: int) -> tuple[bool, str]:
 
     except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError):
         return False, "No fue posible eliminar la imagen."
+    
+    
+def get_owner_requests_overview(request, owner_id: int, status: Optional[str] = None) -> tuple[list[dict], Optional[str]]:
+    properties, properties_error = get_owner_properties(request, owner_id=owner_id, limit=200)
+
+    if properties_error:
+        return [], properties_error
+
+    all_requests = []
+
+    for property_item in properties:
+        property_requests, property_requests_error = get_property_rental_requests(
+            request,
+            property_id=property_item["id"],
+            status=status,
+        )
+
+        if property_requests_error:
+            continue
+
+        for req in property_requests:
+            req["property_status"] = property_item.get("status")
+            req["property_price"] = property_item.get("price")
+            req["property_location"] = property_item.get("location")
+            req["property_cover_image_url"] = property_item.get("cover_image_url")
+            all_requests.append(req)
+
+    return all_requests, None

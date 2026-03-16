@@ -1,31 +1,38 @@
 {% load static %}
+
 <header class="site-header">
-    <div class="container navbar-row">
+    <div class="container header-row">
         <a href="{% url 'home:home' %}" class="brand">
-            <span class="brand-mark">
+            <div class="brand-icon">
                 <span class="material-symbols-outlined">home_work</span>
-            </span>
-            <span class="brand-name">HABITA</span>
+            </div>
+            <span class="brand-text">HABITA</span>
         </a>
 
         <nav class="main-nav">
+            <a href="{% url 'home:home' %}">Inicio</a>
             <a href="{% url 'properties:list' %}">Propiedades</a>
-            <a href="#">Zonas</a>
-            <a href="#">Nosotros</a>
-            <a href="#">Contacto</a>
+
+            {% if habita_logged_in and habita_user %}
+                {% if habita_user.role == "tenant" %}
+                    <a href="{% url 'accounts:activity' %}">Mi actividad</a>
+                {% elif habita_user.role == "owner" %}
+                    <a href="{% url 'accounts:owner-properties' %}">Mis propiedades</a>
+                    <a href="{% url 'accounts:owner-requests' %}">Solicitudes recibidas</a>
+                    <a href="{% url 'accounts:owner-property-create' %}">Nueva propiedad</a>
+                {% elif habita_user.role == "admin" %}
+                    <a href="{% url 'accounts:admin-area' %}">Panel admin</a>
+                {% endif %}
+            {% else %}
+                <a href="#">Nosotros</a>
+                <a href="#">Contacto</a>
+            {% endif %}
         </nav>
 
-        <div class="nav-actions">
+        <div class="header-actions">
             {% if habita_logged_in and habita_user %}
-                <a href="{% url 'accounts:activity' %}" class="btn-link">
-                    {{ habita_user.full_name }}
-                </a>
-                <a href="{% url 'accounts:activity' %}" class="btn-link">
-                    Mi actividad
-                </a>
-                <a href="{% url 'accounts:logout' %}" class="btn-primary btn-small">
-                    Cerrar sesión
-                </a>
+                <span class="nav-user-label">{{ habita_user.full_name }}</span>
+                <a href="{% url 'accounts:logout' %}" class="btn-primary btn-small">Cerrar sesión</a>
             {% else %}
                 <a href="{% url 'accounts:login' %}" class="btn-link">Iniciar Sesión</a>
                 <a href="{% url 'accounts:register' %}" class="btn-primary btn-small">Registrarse</a>

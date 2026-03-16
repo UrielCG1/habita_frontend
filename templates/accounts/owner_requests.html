@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Solicitudes recibidas | HABITA{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="dashboard-section">
+    <div class="container">
+        <div class="dashboard-header">
+            <div>
+                <h1>Solicitudes recibidas</h1>
+                <p>Administra todas las solicitudes de las propiedades que ofreces.</p>
+            </div>
+            <a href="{% url 'accounts:owner-area' %}" class="btn-primary btn-small">Volver</a>
+        </div>
+
+        <form method="get" class="filters-panel" style="margin-bottom:24px;">
+            <div class="filters-grid" style="grid-template-columns: 220px;">
+                <select name="status">
+                    <option value="">Todos los estados</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pendiente</option>
+                    <option value="accepted" {% if status_filter == 'accepted' %}selected{% endif %}>Aceptada</option>
+                    <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rechazada</option>
+                    <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelada</option>
+                </select>
+            </div>
+
+            <div class="filters-actions">
+                <button type="submit" class="btn-primary">Filtrar</button>
+                <a href="{% url 'accounts:owner-requests' %}" class="btn-secondary-link">Limpiar</a>
+            </div>
+        </form>
+
+        {% if rental_requests_error %}
+            <div class="message-box message-error">{{ rental_requests_error }}</div>
+        {% elif rental_requests %}
+            <div class="request-list request-list--full">
+                {% for item in rental_requests %}
+                    <article class="request-item request-item--full">
+                        <div class="request-item__media">
+                            {% if item.property_cover_image_url %}
+                                <img src="{{ item.property_cover_image_url }}" alt="{{ item.property_title }}">
+                            {% else %}
+                                <img src="{% static 'img/property-placeholder.jpg' %}" alt="{{ item.property_title }}">
+                            {% endif %}
+                        </div>
+
+                        <div class="request-item__body">
+                            <h2>{{ item.user_name }}</h2>
+                            <p><strong>Propiedad:</strong> {{ item.property_title }}</p>
+                            <p><strong>Ubicación:</strong> {{ item.property_location }}</p>
+                            <p><strong>Correo:</strong> {{ item.user_email }}</p>
+                            {% if item.user_phone %}
+                                <p><strong>Teléfono:</strong> {{ item.user_phone }}</p>
+                            {% endif %}
+                            <p><strong>Estado:</strong> {{ item.status }}</p>
+                            <p><strong>Presupuesto:</strong> {{ item.monthly_budget }}</p>
+
+                            {% if item.move_in_date %}
+                                <p><strong>Mudanza estimada:</strong> {{ item.move_in_date }}</p>
+                            {% endif %}
+
+                            {% if item.message %}
+                                <p><strong>Mensaje:</strong> {{ item.message }}</p>
+                            {% endif %}
+
+                            {% if item.owner_notes %}
+                                <p><strong>Notas:</strong> {{ item.owner_notes }}</p>
+                            {% endif %}
+
+                            <div style="margin-top: 14px;">
+                                <a href="{% url 'accounts:owner-property-requests' item.property_id %}" class="btn-secondary-link">
+                                    Gestionar en detalle
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="empty-text">Aún no tienes solicitudes recibidas.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
