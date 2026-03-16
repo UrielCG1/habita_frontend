@@ -240,3 +240,98 @@ def get_dashboard_summary(request, user_id: int) -> dict:
 
 
 # activity
+
+
+def _role_label(role: str | None) -> str:
+    value = (role or "").strip().lower()
+
+    if value == "tenant":
+        return "Arrendatario"
+    if value == "owner":
+        return "Propietario"
+    if value == "admin":
+        return "Administrador"
+    return "Usuario HABITA"
+
+
+def _initials(full_name: str | None) -> str:
+    if not full_name:
+        return "HU"
+
+    parts = [part for part in full_name.strip().split() if part]
+    if len(parts) == 1:
+        return parts[0][:2].upper()
+
+    return f"{parts[0][0]}{parts[1][0]}".upper()
+
+
+def _format_member_since(value: str | None) -> str:
+    if not value:
+        return "Miembro de HABITA"
+
+    try:
+        dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        months = {
+            1: "Enero",
+            2: "Febrero",
+            3: "Marzo",
+            4: "Abril",
+            5: "Mayo",
+            6: "Junio",
+            7: "Julio",
+            8: "Agosto",
+            9: "Septiembre",
+            10: "Octubre",
+            11: "Noviembre",
+            12: "Diciembre",
+        }
+        return f"Miembro desde {months[dt.month]} {dt.year}"
+    except Exception:
+        return "Miembro de HABITA"
+
+
+def get_user_activity_profile(request, user_id: int, favorites_count: int, requests_count: int) -> dict:
+    session_user = (
+        request.session.get("habita_auth", {}).get("user", {}) or {}
+    )
+
+    profile = {
+        "full_name": session_user.get("full_name", "Usuario HABITA"),
+        "email": session_user.get("email", ""),
+        "role": session_user.get("role", ""),
+        "role_label": _role_label(session_user.get("role")),
+        "member_since": "Miembro de HABITA",
+        "initials": _initials(session_user.get("full_name")),
+        "favorites_count": favorites_count,
+        "requests_count": requests_count,
+    }
+
+    try:
+        response = authenticated_request(
+            request,
+            "GET",
+            f"/users/{user_id}",
+        )
+
+        if response.status_code == 200:
+            payload = response.json()
+            data = payload.get("data") or {}
+
+            full_name = data.get("full_name") or profile["full_name"]
+            role = data.get("role") or profile["role"]
+
+            profile.update(
+                {
+                    "full_name": full_name,
+                    "email": data.get("email") or profile["email"],
+                    "role": role,
+                    "role_label": _role_label(role),
+                    "member_since": _format_member_since(data.get("created_at")),
+                    "initials": _initials(full_name),
+                }
+            )
+
+    except Exception:
+        pass
+
+    return profile

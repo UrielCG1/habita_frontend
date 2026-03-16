@@ -10,6 +10,51 @@
 {% block content %}
 <section class="activity-page">
     <div class="container">
+
+        <section class="activity-profile-card">
+            <div class="activity-profile-card__left">
+                <div class="activity-profile-avatar">
+                    {{ activity_profile.initials }}
+                </div>
+
+                <div class="activity-profile-info">
+                    <div class="activity-profile-topline">
+                        <h2>{{ activity_profile.full_name }}</h2>
+                        <span class="activity-role-chip">{{ activity_profile.role_label }}</span>
+                    </div>
+
+                    <div class="activity-profile-meta">
+                        <span>
+                            <span class="material-symbols-outlined">mail</span>
+                            {{ activity_profile.email }}
+                        </span>
+                        <span>
+                            <span class="material-symbols-outlined">calendar_month</span>
+                            {{ activity_profile.member_since }}
+                        </span>
+                    </div>
+
+                    <div class="activity-profile-stats">
+                        <div class="activity-mini-stat">
+                            <span class="material-symbols-outlined">favorite</span>
+                            <strong>{{ activity_profile.favorites_count }}</strong>
+                            <span>Guardadas</span>
+                        </div>
+
+                        <div class="activity-mini-stat">
+                            <span class="material-symbols-outlined">description</span>
+                            <strong>{{ activity_profile.requests_count }}</strong>
+                            <span>En curso</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="activity-profile-card__right">
+                <button type="button" class="activity-edit-btn">Editar perfil</button>
+            </div>
+        </section>
+
         <div class="activity-header">
             <h1>Mi actividad</h1>
             <p>Gestiona tus propiedades guardadas y el seguimiento de tus trámites en HABITA.</p>
@@ -61,9 +106,7 @@
                             </div>
 
                             <div class="request-card__notes">
-                                <p class="request-card__notes-title">
-                                    Notas del propietario:
-                                </p>
+                                <p class="request-card__notes-title">Notas del propietario:</p>
 
                                 {% if item.owner_notes %}
                                     <p class="request-card__notes-text">{{ item.owner_notes }}</p>
@@ -127,9 +170,7 @@
                                     <span>{{ property.location }}</span>
                                 </div>
 
-                                <p class="favorite-card__price">
-                                    {{ property.price }}
-                                </p>
+                                <p class="favorite-card__price">{{ property.price }}</p>
 
                                 <div class="favorite-card__actions">
                                     <a href="{% url 'properties:detail' property.id %}" class="favorite-card__detail-btn">

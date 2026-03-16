@@ -17,7 +17,7 @@
 
         <div class="nav-actions">
             {% if habita_logged_in and habita_user %}
-                <a href="{% url 'accounts:dashboard' %}" class="btn-link">
+                <a href="{% url 'accounts:activity' %}" class="btn-link">
                     {{ habita_user.full_name }}
                 </a>
                 <a href="{% url 'accounts:activity' %}" class="btn-link">

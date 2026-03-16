@@ -3,10 +3,8 @@ from django.urls import path
 from .views import (
     admin_area_view,
     dashboard_view,
-    favorites_view,
     login_view,
     logout_view,
-    my_requests_view,
     owner_area_view,
     owner_properties_view,
     owner_property_requests_view,
@@ -28,9 +26,6 @@ urlpatterns = [
     path("dashboard/", dashboard_view, name="dashboard"),
     
     path("activity/", activity_view, name="activity"),
-    
-    path("favorites/", favorites_view, name="favorites"),
-    path("my-requests/", my_requests_view, name="my-requests"),
     
     path("owner-area/", owner_area_view, name="owner-area"),
     path("admin-area/", admin_area_view, name="admin-area"),

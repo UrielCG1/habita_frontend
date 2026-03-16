@@ -3,7 +3,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
-from .dashboard_services import get_dashboard_summary, get_user_favorites, get_user_rental_requests
+from .dashboard_services import get_dashboard_summary, get_user_favorites, get_user_rental_requests, get_user_rental_requests, get_user_activity_profile
 from .decorators import habita_login_required, habita_role_required
 from .forms import LoginForm, RegisterForm, OwnerRequestStatusForm, OwnerPropertyForm
 from .admin_services import get_admin_dashboard
@@ -140,22 +140,6 @@ def dashboard_view(request):
     )
 
 
-@habita_login_required
-def favorites_view(request):
-    habita_user = get_habita_user(request)
-    favorites, favorites_error = get_user_favorites(request, user_id=habita_user["id"], limit=50)
-
-    return render(
-        request,
-        "accounts/favorites.html",
-        {
-            "habita_user": habita_user,
-            "favorites": favorites,
-            "favorites_error": favorites_error,
-        },
-    )
-
-
 @habita_role_required("owner", "admin")
 def owner_area_view(request):
     return render(
@@ -182,22 +166,6 @@ def admin_area_view(request):
         },
     )
     
-    
-@habita_login_required
-def my_requests_view(request):
-    habita_user = get_habita_user(request)
-    rental_requests, rental_requests_error = get_user_rental_requests(request, user_id=habita_user["id"], limit=50)
-
-    return render(
-        request,
-        "accounts/my_requests.html",
-        {
-            "habita_user": habita_user,
-            "rental_requests": rental_requests,
-            "rental_requests_error": rental_requests_error,
-        },
-    )
-    
 ### my_activity view
 @habita_login_required
 def activity_view(request):
@@ -215,11 +183,19 @@ def activity_view(request):
         limit=50,
     )
 
+    activity_profile = get_user_activity_profile(
+        request=request,
+        user_id=habita_user["id"],
+        favorites_count=len(favorites),
+        requests_count=len(rental_requests),
+    )
+
     return render(
         request,
         "accounts/activity.html",
         {
             "habita_user": habita_user,
+            "activity_profile": activity_profile,
             "favorites": favorites,
             "favorites_error": favorites_error,
             "rental_requests": rental_requests,
