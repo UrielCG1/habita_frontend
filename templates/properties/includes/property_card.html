@@ -18,7 +18,7 @@
     <div class="property-card__body">
         <div class="property-card__heading">
             <h3>{{ property.title }}</h3>
-            <p>{{ property.neighborhood|default:property.zone|default:'Querétaro' }}, Querétaro</p>
+            <p>{{ property.neighborhood|default:'Querétaro' }}, Querétaro</p>
         </div>
 
         <div class="property-card__price-row">
@@ -29,7 +29,7 @@
             <span>{{ property.bedrooms|default:0 }} rec</span>
             <span>{{ property.bathrooms|default:0 }} baños</span>
             {% if property.parking_spaces %}<span>{{ property.parking_spaces }} est.</span>{% endif %}
-            {% if property.area_m2 or property.area %}<span>{{ property.area_m2|default:property.area }} m²</span>{% endif %}
+            {% if property.area %}<span>{{ property.area_m2|default:property.area }} m²</span>{% endif %}
         </div>
     </div>
 </article>
