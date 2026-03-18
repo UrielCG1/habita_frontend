@@ -1,0 +1,51 @@
+<footer class="habita-footer">
+    <div class="habita-shell habita-footer__grid">
+        <div class="habita-footer__brand-block">
+            <a href="{% url 'home' %}" class="habita-brand">
+                <span class="habita-brand__mark">H</span>
+                <span class="habita-brand__text">HABITA</span>
+            </a>
+            <p>
+                La plataforma premium de renta de propiedades en Querétaro.
+                Transparencia, seguridad y confianza en cada paso.
+            </p>
+        </div>
+
+        <div>
+            <h4>Navegación</h4>
+            <ul>
+                <li><a href="{% url 'home' %}">Inicio</a></li>
+                <li><a href="{% url 'properties:list' %}">Propiedades</a></li>
+                <li><a href="{% url 'about' %}">Nosotros</a></li>
+                <li><a href="{% url 'contact' %}">Contacto</a></li>
+            </ul>
+        </div>
+
+        <div>
+            <h4>Tipos de propiedad</h4>
+            <ul>
+                <li><a href="{% url 'properties:list' %}?type=casa">Casas</a></li>
+                <li><a href="{% url 'properties:list' %}?type=departamento">Departamentos</a></li>
+                <li><a href="{% url 'properties:list' %}?type=estudio">Estudios</a></li>
+                <li><a href="{% url 'properties:list' %}?type=loft">Lofts</a></li>
+            </ul>
+        </div>
+
+        <div>
+            <h4>Contacto</h4>
+            <ul>
+                <li>Querétaro, México</li>
+                <li><a href="mailto:hola@habita.mx">hola@habita.mx</a></li>
+                <li><a href="tel:+524421234567">+52 442 123 4567</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="habita-shell habita-footer__bottom">
+        <p>© {% now "Y" %} HABITA. Todos los derechos reservados.</p>
+        <div>
+            <a href="#">Privacidad</a>
+            <a href="#">Términos</a>
+        </div>
+    </div>
+</footer>

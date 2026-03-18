@@ -1,0 +1,70 @@
+{% load static %}
+<nav class="habita-navbar" data-habita-navbar>
+    <div class="habita-shell habita-navbar__inner">
+        <a href="{% url 'home' %}" class="habita-brand">
+            <span class="habita-brand__mark">H</span>
+            <span class="habita-brand__text">HABITA</span>
+        </a>
+
+        <button class="habita-navbar__toggle" type="button" aria-label="Abrir menú" data-navbar-toggle>
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <div class="habita-navbar__panel" data-navbar-panel>
+            <div class="habita-navbar__links">
+                <a href="{% url 'home' %}" class="{% if request.path == '/' %}is-active{% endif %}">Inicio</a>
+                <a href="{% url 'properties:list' %}" class="{% if '/properties' in request.path %}is-active{% endif %}">Propiedades</a>
+
+                {% if current_user.is_authenticated and current_user.role == 'renter' %}
+                    <a href="{% url 'activity:index' %}" class="{% if '/activity' in request.path %}is-active{% endif %}">Mi actividad</a>
+                {% endif %}
+
+                {% if current_user.is_authenticated and current_user.role == 'owner' %}
+                    <a href="{% url 'properties:my_list' %}" class="{% if '/mis-propiedades' in request.path %}is-active{% endif %}">Mis propiedades</a>
+                    <a href="{% url 'requests:list' %}" class="{% if '/solicitudes' in request.path %}is-active{% endif %}">Solicitudes</a>
+                {% endif %}
+
+                {% if not current_user.is_authenticated %}
+                    <a href="{% url 'about' %}" class="{% if '/nosotros' in request.path %}is-active{% endif %}">Nosotros</a>
+                    <a href="{% url 'contact' %}" class="{% if '/contacto' in request.path %}is-active{% endif %}">Contacto</a>
+                {% endif %}
+            </div>
+
+            <div class="habita-navbar__actions">
+                {% if current_user.is_authenticated %}
+                    <div class="habita-user-menu" data-user-menu>
+                        <button type="button" class="habita-user-menu__trigger" data-user-menu-trigger>
+                            <span class="habita-user-menu__avatar">{{ current_user.initials|default:'H' }}</span>
+                            <span class="habita-user-menu__name">{{ current_user.full_name|default:'Usuario HABITA' }}</span>
+                            <span class="habita-user-menu__caret">▾</span>
+                        </button>
+                        <div class="habita-user-menu__dropdown" data-user-menu-dropdown>
+                            <div class="habita-user-menu__summary">
+                                <span class="habita-user-menu__avatar habita-user-menu__avatar--large">{{ current_user.initials|default:'H' }}</span>
+                                <div>
+                                    <strong>{{ current_user.full_name|default:'Usuario HABITA' }}</strong>
+                                    <small>{{ current_user.role|default:'user' }}</small>
+                                </div>
+                            </div>
+                            <div class="habita-user-menu__items">
+                                {% if current_user.role == 'renter' %}
+                                    <a href="{% url 'activity:index' %}">Ver perfil</a>
+                                {% elif current_user.role == 'owner' %}
+                                    <a href="{% url 'properties:my_list' %}">Ver perfil</a>
+                                {% elif current_user.role == 'admin' %}
+                                    <a href="{% url 'admin_panel:index' %}">Ver perfil</a>
+                                {% endif %}
+                                <a href="{% url 'logout' %}" class="is-danger">Cerrar sesión</a>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{% url 'login' %}" class="habita-btn habita-btn--ghost">Iniciar sesión</a>
+                    <a href="{% url 'register' %}" class="habita-btn habita-btn--primary">Registrarse</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>

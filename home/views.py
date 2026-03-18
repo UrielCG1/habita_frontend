@@ -20,4 +20,4 @@ def home_view(request):
             "Centro",
         ],
     }
-    return render(request, "home/home.html", context)
+    return render(request, "home/home_redesign.html", context)

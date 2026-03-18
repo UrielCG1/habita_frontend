@@ -1,0 +1,1109 @@
+:root {
+    --habita-bg: #f2f2f2;
+    --habita-surface: #ffffff;
+    --habita-surface-soft: #f8fafc;
+    --habita-text: #24323d;
+    --habita-text-soft: #5d6a74;
+    --habita-border: #dde5ea;
+    --habita-primary: #004c6d;
+    --habita-primary-strong: #00344b;
+    --habita-accent: #f6c324;
+    --habita-accent-soft: #fff4ca;
+    --habita-shadow: 0 18px 48px rgba(0, 36, 52, 0.08);
+    --habita-radius-lg: 24px;
+    --habita-radius-md: 18px;
+    --habita-radius-sm: 12px;
+    --habita-shell: 1240px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--habita-bg);
+    color: var(--habita-text);
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+.habita-page {
+    min-height: 100vh;
+}
+
+.habita-shell {
+    width: min(calc(100% - 32px), var(--habita-shell));
+    margin: 0 auto;
+}
+
+.eyebrow {
+    display: inline-block;
+    margin-bottom: 12px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.eyebrow--dark {
+    color: var(--habita-primary);
+}
+
+.section-block {
+    padding: 88px 0;
+}
+
+.section-block--tight {
+    padding: 48px 0 88px;
+}
+
+.section-head {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.section-head--centered {
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.section-head h2,
+.page-hero h1,
+.home-hero h1,
+.auth-card h1 {
+    margin: 0;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    font-family: Georgia, "Times New Roman", serif;
+}
+
+.section-head h2,
+.page-hero h1 {
+    font-size: clamp(2rem, 3vw, 3.2rem);
+}
+
+.section-head p,
+.page-hero p,
+.home-hero p,
+.auth-card p {
+    margin: 10px 0 0;
+    color: var(--habita-text-soft);
+    line-height: 1.7;
+}
+
+.habita-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 48px;
+    padding: 0 20px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    text-decoration: none;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.22s ease;
+}
+
+.habita-btn:hover {
+    transform: translateY(-1px);
+}
+
+.habita-btn--block {
+    width: 100%;
+}
+
+.habita-btn--primary {
+    background: var(--habita-primary);
+    color: #fff;
+}
+
+.habita-btn--primary:hover {
+    background: var(--habita-primary-strong);
+}
+
+.habita-btn--accent {
+    background: var(--habita-accent);
+    color: #1f2933;
+}
+
+.habita-btn--accent:hover {
+    filter: brightness(0.98);
+}
+
+.habita-btn--ghost,
+.habita-btn--ghost-border {
+    background: #fff;
+    color: var(--habita-primary);
+    border-color: var(--habita-border);
+}
+
+.habita-btn--outline-light {
+    background: transparent;
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+.habita-btn--outline-light:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.habita-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.habita-brand__mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    background: var(--habita-primary);
+    color: #fff;
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.habita-brand__text {
+    color: var(--habita-text);
+    font-size: 1.28rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    font-family: Georgia, "Times New Roman", serif;
+}
+
+.habita-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 80;
+    backdrop-filter: blur(14px);
+    background: rgba(255, 255, 255, 0.92);
+    border-bottom: 1px solid rgba(221, 229, 234, 0.9);
+}
+
+.habita-navbar__inner {
+    min-height: 78px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.habita-navbar__panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex: 1;
+}
+
+.habita-navbar__links,
+.habita-navbar__actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.habita-navbar__links {
+    margin-left: auto;
+}
+
+.habita-navbar__links a {
+    padding: 12px 16px;
+    border-radius: 999px;
+    color: var(--habita-text-soft);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.habita-navbar__links a:hover,
+.habita-navbar__links a.is-active {
+    background: rgba(0, 76, 109, 0.08);
+    color: var(--habita-primary);
+}
+
+.habita-navbar__toggle {
+    display: none;
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    border: 1px solid var(--habita-border);
+    border-radius: 12px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.habita-navbar__toggle span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    margin: 4px auto;
+    background: var(--habita-primary);
+}
+
+.habita-user-menu {
+    position: relative;
+}
+
+.habita-user-menu__trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 48px;
+    padding: 8px 14px 8px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--habita-border);
+    background: #fff;
+    cursor: pointer;
+}
+
+.habita-user-menu__avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--habita-primary);
+    color: #fff;
+    font-weight: 700;
+}
+
+.habita-user-menu__avatar--large {
+    width: 48px;
+    height: 48px;
+}
+
+.habita-user-menu__name {
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 600;
+}
+
+.habita-user-menu__dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 270px;
+    padding: 14px;
+    border-radius: 18px;
+    border: 1px solid var(--habita-border);
+    background: #fff;
+    box-shadow: var(--habita-shadow);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+    transition: 0.2s ease;
+}
+
+.habita-user-menu.is-open .habita-user-menu__dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.habita-user-menu__summary {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--habita-border);
+}
+
+.habita-user-menu__summary small {
+    display: block;
+    margin-top: 3px;
+    color: var(--habita-text-soft);
+    text-transform: capitalize;
+}
+
+.habita-user-menu__items {
+    display: flex;
+    flex-direction: column;
+    padding-top: 12px;
+}
+
+.habita-user-menu__items a {
+    padding: 12px 10px;
+    border-radius: 12px;
+    color: var(--habita-text);
+    text-decoration: none;
+}
+
+.habita-user-menu__items a:hover {
+    background: var(--habita-surface-soft);
+}
+
+.habita-user-menu__items a.is-danger {
+    color: #b42318;
+}
+
+.home-hero {
+    position: relative;
+    padding: 96px 0 140px;
+    background-size: cover;
+    background-position: center;
+}
+
+.home-hero__content {
+    display: flex;
+    align-items: center;
+    min-height: 440px;
+}
+
+.home-hero__text {
+    max-width: 700px;
+    color: #fff;
+}
+
+.home-hero h1 {
+    font-size: clamp(2.8rem, 5vw, 5rem);
+    color: #fff;
+}
+
+.home-hero p {
+    max-width: 640px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.08rem;
+}
+
+.home-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 28px;
+}
+
+.quick-search-wrap {
+    margin-top: -54px;
+    position: relative;
+    z-index: 3;
+}
+
+.quick-search-card,
+.catalog-filters__card,
+.auth-card,
+.trust-card,
+.empty-state,
+.property-card,
+.page-hero,
+.catalog-toolbar,
+.active-filters,
+.habita-footer,
+.auth-card {
+    background: var(--habita-surface);
+}
+
+.quick-search-card {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    padding: 24px;
+    border-radius: var(--habita-radius-lg);
+    border: 1px solid var(--habita-border);
+    box-shadow: var(--habita-shadow);
+}
+
+.field-group,
+.auth-form .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.field-group label,
+.checkbox-row,
+.field-group__inline {
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.field-group__inline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.field-group__inline a {
+    color: var(--habita-primary);
+    text-decoration: none;
+    font-size: 0.92rem;
+}
+
+.field-group input,
+.field-group select {
+    width: 100%;
+    min-height: 50px;
+    padding: 0 16px;
+    border-radius: 14px;
+    border: 1px solid var(--habita-border);
+    background: #fff;
+    color: var(--habita-text);
+    outline: none;
+}
+
+.field-group input:focus,
+.field-group select:focus {
+    border-color: rgba(0, 76, 109, 0.35);
+    box-shadow: 0 0 0 4px rgba(0, 76, 109, 0.08);
+}
+
+.field-group--action {
+    justify-content: end;
+}
+
+.properties-grid {
+    display: grid;
+    gap: 24px;
+}
+
+.properties-grid--three,
+.properties-grid--catalog {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.properties-grid--list {
+    grid-template-columns: 1fr;
+}
+
+.property-card {
+    overflow: hidden;
+    border-radius: 22px;
+    border: 1px solid var(--habita-border);
+    box-shadow: 0 12px 30px rgba(0, 41, 59, 0.05);
+    transition: 0.22s ease;
+}
+
+.property-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--habita-shadow);
+}
+
+.property-card--horizontal {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+}
+
+.property-card__image-wrap {
+    position: relative;
+    display: block;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    text-decoration: none;
+}
+
+.property-card--horizontal .property-card__image-wrap {
+    height: 100%;
+    aspect-ratio: auto;
+    min-height: 100%;
+}
+
+.property-card__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.35s ease;
+}
+
+.property-card:hover .property-card__image {
+    transform: scale(1.05);
+}
+
+.property-card__type,
+.property-card__favorite {
+    position: absolute;
+    top: 16px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.property-card__type {
+    left: 16px;
+    min-height: 34px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: var(--habita-primary);
+    color: #fff;
+    font-size: 0.86rem;
+    font-weight: 700;
+}
+
+.property-card__favorite {
+    right: 16px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--habita-primary);
+    font-size: 1rem;
+}
+
+.property-card__favorite.is-active {
+    color: #c1121f;
+}
+
+.property-card__body {
+    padding: 20px;
+}
+
+.property-card__heading h3 {
+    margin: 0;
+    font-size: 1.16rem;
+}
+
+.property-card__heading p {
+    margin: 8px 0 0;
+    color: var(--habita-text-soft);
+}
+
+.property-card__price-row {
+    display: flex;
+    align-items: end;
+    gap: 6px;
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--habita-border);
+}
+
+.property-card__price-row strong {
+    font-size: 1.45rem;
+    color: var(--habita-primary);
+}
+
+.property-card__price-row span,
+.property-card__meta {
+    color: var(--habita-text-soft);
+}
+
+.property-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 16px;
+    font-size: 0.95rem;
+}
+
+.trust-section {
+    padding: 88px 0;
+    background: linear-gradient(180deg, rgba(201, 232, 255, 0.18), rgba(201, 232, 255, 0.3));
+}
+
+.trust-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.trust-card {
+    padding: 28px;
+    border: 1px solid var(--habita-border);
+    border-radius: 24px;
+}
+
+.trust-card__icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 76, 109, 0.1);
+    color: var(--habita-primary);
+    font-weight: 800;
+    font-size: 1.3rem;
+}
+
+.trust-card h3 {
+    margin: 20px 0 10px;
+    font-size: 1.2rem;
+}
+
+.trust-card p {
+    margin: 0;
+    color: var(--habita-text-soft);
+    line-height: 1.7;
+}
+
+.page-hero {
+    padding: 52px 0 32px;
+    border-bottom: 1px solid var(--habita-border);
+}
+
+.page-hero--compact {
+    padding-top: 40px;
+}
+
+.catalog-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 28px;
+    align-items: start;
+}
+
+.catalog-filters {
+    position: sticky;
+    top: 100px;
+}
+
+.catalog-filters__card {
+    padding: 24px;
+    border-radius: 24px;
+    border: 1px solid var(--habita-border);
+}
+
+.catalog-filters__header,
+.catalog-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.catalog-filters__header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.catalog-clear {
+    color: var(--habita-primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.catalog-toolbar {
+    margin-bottom: 18px;
+    padding: 20px 22px;
+    border-radius: 20px;
+    border: 1px solid var(--habita-border);
+}
+
+.catalog-toolbar__left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.catalog-toolbar p {
+    margin: 0;
+    color: var(--habita-text-soft);
+}
+
+.catalog-mobile-filter-btn {
+    display: none;
+}
+
+.catalog-view-switch {
+    display: inline-flex;
+    padding: 4px;
+    background: var(--habita-surface-soft);
+    border-radius: 999px;
+    border: 1px solid var(--habita-border);
+}
+
+.catalog-view-switch button {
+    min-height: 40px;
+    padding: 0 16px;
+    border: 0;
+    background: transparent;
+    border-radius: 999px;
+    color: var(--habita-text-soft);
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.catalog-view-switch button.is-active {
+    background: var(--habita-primary);
+    color: #fff;
+}
+
+.active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 16px 18px;
+    border: 1px solid var(--habita-border);
+    border-radius: 18px;
+}
+
+.active-filters span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 0 12px;
+    border-radius: 999px;
+    background: var(--habita-accent-soft);
+    color: var(--habita-primary-strong);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.empty-state {
+    border-radius: 24px;
+    border: 1px solid var(--habita-border);
+    padding: 48px 32px;
+    text-align: center;
+}
+
+.empty-state h3 {
+    margin: 0 0 10px;
+    font-size: 1.3rem;
+}
+
+.empty-state p {
+    max-width: 520px;
+    margin: 0 auto;
+    color: var(--habita-text-soft);
+}
+
+.empty-state--catalog {
+    grid-column: 1 / -1;
+}
+
+.habita-footer {
+    margin-top: 0;
+    border-top: 1px solid var(--habita-border);
+}
+
+.habita-footer__grid,
+.habita-footer__bottom {
+    display: grid;
+    gap: 24px;
+}
+
+.habita-footer__grid {
+    grid-template-columns: 1.6fr 1fr 1fr 1fr;
+    padding: 56px 0 30px;
+}
+
+.habita-footer__grid h4 {
+    margin: 0 0 14px;
+    font-size: 0.86rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.habita-footer__grid p,
+.habita-footer__grid li,
+.habita-footer__bottom p,
+.habita-footer__bottom a {
+    color: var(--habita-text-soft);
+}
+
+.habita-footer__grid ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    display: grid;
+    gap: 12px;
+}
+
+.habita-footer__grid a,
+.habita-footer__bottom a {
+    text-decoration: none;
+}
+
+.habita-footer__grid a:hover,
+.habita-footer__bottom a:hover {
+    color: var(--habita-primary);
+}
+
+.habita-footer__bottom {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding: 20px 0 36px;
+    border-top: 1px solid var(--habita-border);
+}
+
+.habita-footer__bottom div {
+    display: inline-flex;
+    gap: 18px;
+}
+
+.auth-page {
+    padding: 56px 0 80px;
+}
+
+.auth-shell {
+    width: min(calc(100% - 32px), 720px);
+    margin: 0 auto;
+}
+
+.auth-card {
+    padding: 34px;
+    border-radius: 28px;
+    border: 1px solid var(--habita-border);
+    box-shadow: var(--habita-shadow);
+}
+
+.auth-card--wide {
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.auth-card__header {
+    text-align: center;
+}
+
+.auth-card__mark {
+    margin-bottom: 18px;
+}
+
+.auth-card__header h1 {
+    font-size: clamp(2rem, 3vw, 2.6rem);
+}
+
+.auth-form {
+    display: grid;
+    gap: 18px;
+    margin-top: 30px;
+}
+
+.auth-divider {
+    position: relative;
+    margin: 28px 0;
+    text-align: center;
+}
+
+.auth-divider::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background: var(--habita-border);
+}
+
+.auth-divider span {
+    position: relative;
+    display: inline-block;
+    padding: 0 14px;
+    background: #fff;
+    color: var(--habita-text-soft);
+}
+
+.auth-card__footnote {
+    margin-top: 24px;
+    text-align: center;
+}
+
+.auth-card__footnote a,
+.checkbox-row a {
+    color: var(--habita-primary);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--habita-text-soft);
+}
+
+.checkbox-row--start {
+    align-items: start;
+}
+
+.checkbox-row input {
+    margin-top: 2px;
+}
+
+.account-type-grid,
+.field-row-two {
+    display: grid;
+    gap: 16px;
+}
+
+.account-type-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.field-row-two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.account-type-option {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 20px;
+    border-radius: 20px;
+    border: 2px solid var(--habita-border);
+    background: #fff;
+    cursor: pointer;
+}
+
+.account-type-option input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.account-type-option strong {
+    font-size: 1rem;
+}
+
+.account-type-option span {
+    color: var(--habita-text-soft);
+}
+
+.account-type-option.is-active {
+    border-color: var(--habita-primary);
+    background: rgba(0, 76, 109, 0.04);
+}
+
+@media (max-width: 1100px) {
+    .properties-grid--three,
+    .properties-grid--catalog,
+    .trust-grid,
+    .habita-footer__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .catalog-layout {
+        grid-template-columns: 280px 1fr;
+    }
+
+    .property-card--horizontal {
+        grid-template-columns: 280px 1fr;
+    }
+}
+
+@media (max-width: 920px) {
+    .habita-navbar__toggle {
+        display: block;
+    }
+
+    .habita-navbar__panel {
+        position: absolute;
+        top: calc(100% + 1px);
+        left: 0;
+        right: 0;
+        padding: 18px 16px 22px;
+        background: rgba(255, 255, 255, 0.98);
+        border-bottom: 1px solid var(--habita-border);
+        box-shadow: 0 20px 40px rgba(0, 24, 34, 0.08);
+        display: none;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .habita-navbar__panel.is-open {
+        display: flex;
+    }
+
+    .habita-navbar__links,
+    .habita-navbar__actions {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .habita-navbar__links {
+        margin-left: 0;
+    }
+
+    .habita-user-menu__dropdown {
+        position: static;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .quick-search-card,
+    .field-row-two,
+    .account-type-grid,
+    .catalog-layout,
+    .property-card--horizontal,
+    .habita-footer__grid,
+    .habita-footer__bottom,
+    .trust-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .section-head,
+    .catalog-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .catalog-filters {
+        position: static;
+        display: none;
+    }
+
+    .catalog-filters.is-open {
+        display: block;
+    }
+
+    .catalog-mobile-filter-btn {
+        display: inline-flex;
+    }
+
+    .properties-grid--three,
+    .properties-grid--catalog {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .home-hero {
+        padding: 72px 0 120px;
+    }
+
+    .section-block,
+    .trust-section {
+        padding: 64px 0;
+    }
+
+    .auth-card,
+    .catalog-filters__card,
+    .quick-search-card,
+    .catalog-toolbar,
+    .page-hero,
+    .empty-state,
+    .trust-card {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    .properties-grid--three,
+    .properties-grid--catalog {
+        grid-template-columns: 1fr;
+    }
+
+    .home-hero__actions,
+    .catalog-toolbar__left,
+    .habita-footer__bottom div {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .habita-user-menu__name {
+        max-width: 120px;
+    }
+}

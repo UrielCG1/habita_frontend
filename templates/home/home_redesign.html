@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Inicio | HABITA{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home-redesign.css' %}">
+{% endblock %}
+
+{% block content %}
+{% include "includes/habita_navbar.html" %}
+
+<main class="habita-page">
+    <section class="home-hero" style="background-image: linear-gradient(rgba(0, 76, 109, 0.82), rgba(0, 76, 109, 0.72)), url('{% static 'img/hero-home.jpg' %}');">
+        <div class="habita-shell home-hero__content">
+            <div class="home-hero__text">
+                <span class="eyebrow">Renta confiable en Querétaro</span>
+                <h1>Tu próximo hogar en Querétaro te espera</h1>
+                <p>
+                    Descubre propiedades premium para rentar con transparencia,
+                    información clara y una experiencia mucho más confiable.
+                </p>
+                <div class="home-hero__actions">
+                    <a href="{% url 'properties:list' %}" class="habita-btn habita-btn--accent">Explorar propiedades</a>
+                    <a href="{% url 'about' %}" class="habita-btn habita-btn--outline-light">Conoce HABITA</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="quick-search-wrap">
+        <div class="habita-shell">
+            <form method="get" action="{% url 'properties:list' %}" class="quick-search-card">
+                <div class="field-group">
+                    <label for="zone">Ubicación</label>
+                    <select id="zone" name="zone">
+                        <option value="">Todas las zonas</option>
+                        {% for zone in zones %}
+                            <option value="{{ zone.slug|default:zone.id|default:zone.name|default:zone }}">{{ zone.name|default:zone }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label for="type">Tipo de propiedad</label>
+                    <select id="type" name="type">
+                        <option value="">Todos los tipos</option>
+                        {% for property_type in property_types %}
+                            <option value="{{ property_type.slug|default:property_type.id|default:property_type.value|default:property_type.name|default:property_type }}">{{ property_type.name|default:property_type.label|default:property_type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label for="max_price">Presupuesto mensual</label>
+                    <select id="max_price" name="max_price">
+                        <option value="">Sin límite</option>
+                        <option value="10000">Hasta $10,000</option>
+                        <option value="20000">Hasta $20,000</option>
+                        <option value="35000">Hasta $35,000</option>
+                        <option value="50000">Hasta $50,000</option>
+                    </select>
+                </div>
+                <div class="field-group field-group--action">
+                    <button type="submit" class="habita-btn habita-btn--primary habita-btn--block">Buscar</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <section class="section-block">
+        <div class="habita-shell">
+            <div class="section-head">
+                <div>
+                    <span class="eyebrow eyebrow--dark">selección destacada</span>
+                    <h2>Propiedades destacadas</h2>
+                    <p>Una selección curada de opciones atractivas y verificadas.</p>
+                </div>
+                <a href="{% url 'properties:list' %}" class="habita-btn habita-btn--ghost-border">Ver todas</a>
+            </div>
+
+            <div class="properties-grid properties-grid--three">
+                {% for property in featured_properties %}
+                    {% include "properties/includes/property_card.html" with property=property %}
+                {% empty %}
+                    <div class="empty-state">
+                        <h3>Aún no hay propiedades destacadas</h3>
+                        <p>Cuando tengas resultados reales desde la API, aquí se mostrarán automáticamente.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <section class="trust-section">
+        <div class="habita-shell">
+            <div class="section-head section-head--centered">
+                <span class="eyebrow eyebrow--dark">confianza HABITA</span>
+                <h2>¿Por qué elegir HABITA?</h2>
+                <p>Un diseño más elegante debe ir acompañado por una experiencia más clara y confiable.</p>
+            </div>
+
+            <div class="trust-grid">
+                <article class="trust-card">
+                    <div class="trust-card__icon">✓</div>
+                    <h3>Listados verificados</h3>
+                    <p>Cada propiedad puede presentarse con mayor claridad y jerarquía visual.</p>
+                </article>
+                <article class="trust-card">
+                    <div class="trust-card__icon">◎</div>
+                    <h3>Proceso transparente</h3>
+                    <p>Filtros, precios y acciones se entienden rápido, sin saturar la vista.</p>
+                </article>
+                <article class="trust-card">
+                    <div class="trust-card__icon">↔</div>
+                    <h3>Comunicación directa</h3>
+                    <p>La interfaz da una sensación premium y de confianza, que es justo lo que HABITA necesita.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+</main>
+
+{% include "includes/habita_footer.html" %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/habita-ui.js' %}"></script>
+{% endblock %}
