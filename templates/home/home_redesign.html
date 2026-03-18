@@ -36,7 +36,7 @@
                     <select id="zone" name="zone">
                         <option value="">Todas las zonas</option>
                         {% for zone in zones %}
-                            <option value="{{ zone.slug|default:zone.id|default:zone.name|default:zone }}">{{ zone.name|default:zone }}</option>
+                            <option value="{{ zone }}">{{ zone }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -44,9 +44,10 @@
                     <label for="type">Tipo de propiedad</label>
                     <select id="type" name="type">
                         <option value="">Todos los tipos</option>
-                        {% for property_type in property_types %}
-                            <option value="{{ property_type.slug|default:property_type.id|default:property_type.value|default:property_type.name|default:property_type }}">{{ property_type.name|default:property_type.label|default:property_type }}</option>
-                        {% endfor %}
+                            <option value="">Cualquiera</option>
+                            <option value="house">Casa</option>
+                            <option value="apartment">Departamento</option>
+                            <option value="room">Habitación</option>
                     </select>
                 </div>
                 <div class="field-group">
