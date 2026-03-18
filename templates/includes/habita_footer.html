@@ -1,7 +1,7 @@
 <footer class="habita-footer">
     <div class="habita-shell habita-footer__grid">
         <div class="habita-footer__brand-block">
-            <a href="{% url 'home' %}" class="habita-brand">
+            <a href="{% url 'home:home' %}" class="habita-brand">
                 <span class="habita-brand__mark">H</span>
                 <span class="habita-brand__text">HABITA</span>
             </a>
@@ -14,10 +14,10 @@
         <div>
             <h4>Navegación</h4>
             <ul>
-                <li><a href="{% url 'home' %}">Inicio</a></li>
+                <li><a href="{% url 'home:home' %}">Inicio</a></li>
                 <li><a href="{% url 'properties:list' %}">Propiedades</a></li>
-                <li><a href="{% url 'about' %}">Nosotros</a></li>
-                <li><a href="{% url 'contact' %}">Contacto</a></li>
+                <li><a href="#">Nosotros</a></li>
+                <li><a href="#">Contacto</a></li>
             </ul>
         </div>
 
