@@ -125,7 +125,7 @@ def logout_view(request):
         clear_auth_session(request)
         messages.info(request, "Tu sesión ha sido cerrada correctamente.")
 
-    return redirect("home:home")
+    return redirect("home:login")
 
 
 @habita_login_required
