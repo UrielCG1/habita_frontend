@@ -22,14 +22,14 @@
         </div>
 
         <div class="property-card__price-row">
-            <strong>${{ property.price|default:property.monthly_rent|floatformat:0 }}</strong>
+            <strong>${{ property.price|floatformat:0 }}</strong>
         </div>
 
         <div class="property-card__meta">
             <span>{{ property.bedrooms|default:0 }} rec</span>
             <span>{{ property.bathrooms|default:0 }} baños</span>
             {% if property.parking_spaces %}<span>{{ property.parking_spaces }} est.</span>{% endif %}
-            {% if property.area %}<span>{{ property.area_m2|default:property.area }} m²</span>{% endif %}
+            {% if property.area %}<span>{{ property.area }} m²</span>{% endif %}
         </div>
     </div>
 </article>
