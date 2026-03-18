@@ -17,27 +17,28 @@
                 <a href="{% url 'home:home' %}" class="{% if request.path == '/' %}is-active{% endif %}">Inicio</a>
                 <a href="{% url 'properties:list' %}" class="{% if '/properties' in request.path %}is-active{% endif %}">Propiedades</a>
 
-                {% if current_user.is_authenticated and current_user.role == 'renter' %}
-                    <a href="{% url 'activity:index' %}" class="{% if '/accounts/activity/' in request.path %}is-active{% endif %}">Mi actividad</a>
-                {% endif %}
+                {% if habita_logged_in and habita_user %}
+                    {% if habita_user.role == "tenant" %}
+                        <a href="{% url 'activity:index' %}" class="{% if '/accounts/activity/' in request.path %}is-active{% endif %}">Mi actividad</a>
+                    {% endif %}
 
-                {% if current_user.is_authenticated and current_user.role == 'owner' %}
-                    <a href="{% url 'properties:list' %}" class="{% if '/properties' in request.path %}is-active{% endif %}">Mis propiedades</a>
-                    <a href="{% url 'accounts:owner-requests' %}" class="{% if '/accounts/owner-requests/' in request.path %}is-active{% endif %}">Solicitudes Recibidas</a>
-                    <a href="{% url 'accounts:owner-property-create' %}" class="{% if '/accounts/owner-property-create' in request.path %}is-active{% endif %}">Crear Propiedad</a>
-                {% endif %}
-                {% elif habita_user.role == "admin" %}
-                    <a href="{% url 'accounts:admin-area' %}" class="{% if '/accounts/admin-area' in request.path %}is-active{% endif %}">Panel admin</a>
-                {% endif %}
+                    {% elif habita_user.role == "owner" %}
+                        <a href="{% url 'properties:list' %}" class="{% if '/properties' in request.path %}is-active{% endif %}">Mis propiedades</a>
+                        <a href="{% url 'accounts:owner-requests' %}" class="{% if '/accounts/owner-requests/' in request.path %}is-active{% endif %}">Solicitudes Recibidas</a>
+                        <a href="{% url 'accounts:owner-property-create' %}" class="{% if '/accounts/owner-property-create' in request.path %}is-active{% endif %}">Crear Propiedad</a>
+                    {% endif %}
+                    {% if habita_user.role == "admin" %}
+                        <a href="{% url 'accounts:admin-area' %}" class="{% if '/accounts/admin-area' in request.path %}is-active{% endif %}">Panel admin</a>
+                    {% endif %}
 
-                {% if not current_user.is_authenticated %}
+                {% else %}
                     <a href="#" class="{% if '/nosotros' in request.path %}is-active{% endif %}">Nosotros</a>
                     <a href="#" class="{% if '/contacto' in request.path %}is-active{% endif %}">Contacto</a>
                 {% endif %}
             </div>
 
             <div class="habita-navbar__actions">
-                {% if current_user.is_authenticated %}
+                {% if habita_logged_in and habita_user %}
                     <div class="habita-user-menu" data-user-menu>
                         <button type="button" class="habita-user-menu__trigger" data-user-menu-trigger>
                             <span class="habita-user-menu__avatar">{{ current_user.initials|default:'H' }}</span>
