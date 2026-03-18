@@ -1,7 +1,7 @@
 <article class="property-card {% if horizontal %}property-card--horizontal{% endif %}">
     <a href="{% url 'properties:detail' property.id %}" class="property-card__image-wrap">
-        {% if property.cover_image_url %}
-            <img src="{{ property.cover_image_url }}" alt="{{ property.title }}" class="property-card__image">
+        {% if property.image_url %}
+            <img src="{{ property.image_url }}" alt="{{ property.title }}" class="property-card__image">
         {% else %}
             <img src="/static/img/hero-home.jpg" alt="{{ property.title }}" class="property-card__image">
         {% endif %}
@@ -22,8 +22,7 @@
         </div>
 
         <div class="property-card__price-row">
-            <strong>${{ property.price_display|default:property.monthly_rent|floatformat:0 }}</strong>
-            <span>/ mes</span>
+            <strong>${{ property.price|default:property.monthly_rent|floatformat:0 }}</strong>
         </div>
 
         <div class="property-card__meta">

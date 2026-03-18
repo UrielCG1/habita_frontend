@@ -81,6 +81,8 @@ def get_featured_properties(limit: int = 3) -> tuple[list[dict], Optional[str]]:
                     "bathrooms": f"{item.get('bathrooms', 0)} Baños",
                     "area": _format_area(item.get("area_m2")),
                     "image_url": image_url,
+                    "parking_spaces": f"{item.get('parking_spaces', 0)}" if item.get("parking_spaces") is not None else "N/D",
+                    "neighborhood": item.get("neighborhood", ""),
                     "property_type": item.get("property_type", "").capitalize(),
                     "status": item.get("status", "").capitalize(),
                 }
