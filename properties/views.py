@@ -105,7 +105,6 @@ def property_detail_view(request, property_id: int):
     is_favorite = False
     user_review = None
     review_form = ReviewForm()
-
     reviews, reviews_summary, reviews_error = get_property_reviews(property_id)
 
     reviews_summary = reviews_summary or {"count": 0, "average": 0}
@@ -115,23 +114,22 @@ def property_detail_view(request, property_id: int):
 
     normalized_reviews = []
     for review in reviews or []:
-        review = dict(review)
+        item = dict(review)
+        user_name = (item.get("user_name") or "Usuario").strip()
+        parts = [part for part in user_name.split() if part]
+        item["user_initials"] = "".join(part[0].upper() for part in parts[:2]) or "U"
 
-        user_name = (review.get("user_name") or "Usuario").strip()
-        name_parts = [part for part in user_name.split() if part]
-        review["user_initials"] = "".join(part[0].upper() for part in name_parts[:2]) or "U"
-
-        created_at = review.get("created_at")
-        review["display_date"] = "Fecha no disponible"
+        created_at = item.get("created_at")
+        item["display_date"] = "Fecha no disponible"
 
         if created_at:
             try:
                 dt = datetime.fromisoformat(str(created_at).replace("Z", "+00:00"))
-                review["display_date"] = f"{SPANISH_MONTHS[dt.month]} {dt.year}"
+                item["display_date"] = f"{SPANISH_MONTHS[dt.month]} {dt.year}"
             except ValueError:
-                review["display_date"] = str(created_at)[:10]
+                item["display_date"] = str(created_at)[:10]
 
-        normalized_reviews.append(review)
+        normalized_reviews.append(item)
 
     reviews = normalized_reviews
 
@@ -162,6 +160,7 @@ def property_detail_view(request, property_id: int):
             "user_review": user_review,
         },
     )
+
 
 @require_POST
 @habita_login_required

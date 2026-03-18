@@ -8,241 +8,421 @@
 {% endblock %}
 
 {% block content %}
-<section class="property-detail-page">
+<section class="property-detail-page property-detail-page--redesign">
     <div class="container">
-        <div class="detail-header">
-            <div>
-                <h1>{{ property.title }}</h1>
-                <p>{{ property.location }}</p>
-            </div>
-
-            <div class="detail-actions">
-                {% if habita_logged_in %}
-                    <form method="post" action="{% url 'properties:toggle-favorite' property.id %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                        {% if is_favorite %}
-                            <input type="hidden" name="action" value="remove">
-                            <button type="submit" class="btn-secondary-link">Quitar de favoritos</button>
-                        {% else %}
-                            <input type="hidden" name="action" value="add">
-                            <button type="submit" class="btn-primary">Guardar en favoritos</button>
-                        {% endif %}
-                    </form>
-                {% else %}
-                    <a href="{% url 'accounts:login' %}?next={{ request.get_full_path }}" class="btn-primary">
-                        Inicia sesión para guardar
-                    </a>
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="detail-price-box">
-            <strong>{{ property.price }}</strong>
-            <span>{{ property.property_type }} · {{ property.status }}</span>
-        </div>
-
-        <div class="detail-gallery">
+        <div class="detail-gallery-hero">
             {% if property.images %}
-                <div class="detail-gallery-grid">
-                    {% for image in property.images %}
-                        <div class="detail-gallery-item">
-                            {% if image.image_url %}
-                                <img src="{{ image.image_url }}" alt="{{ image.alt_text }}">
+                <div class="detail-gallery-hero__grid">
+                    <div class="detail-gallery-hero__primary">
+                        {% with hero_image=property.images.0 %}
+                            {% if hero_image.image_url %}
+                                <img src="{{ hero_image.image_url }}" alt="{{ hero_image.alt_text|default:property.title }}">
                             {% else %}
                                 <img src="{% static 'img/property-placeholder.jpg' %}" alt="{{ property.title }}">
                             {% endif %}
-                        </div>
-                    {% endfor %}
+                        {% endwith %}
+                    </div>
+
+                    <div class="detail-gallery-hero__secondary">
+                        {% for image in property.images|slice:"1:5" %}
+                            <div class="detail-gallery-hero__thumb {% if forloop.last %}detail-gallery-hero__thumb--overlay{% endif %}">
+                                {% if image.image_url %}
+                                    <img src="{{ image.image_url }}" alt="{{ image.alt_text|default:property.title }}">
+                                {% else %}
+                                    <img src="{% static 'img/property-placeholder.jpg' %}" alt="{{ property.title }}">
+                                {% endif %}
+
+                                {% if forloop.last and property.images|length > 5 %}
+                                    <button type="button" class="detail-gallery-more" data-gallery-open>
+                                        <span class="material-symbols-outlined">grid_view</span>
+                                        Ver todas las fotos
+                                    </button>
+                                {% endif %}
+                            </div>
+                        {% empty %}
+                            {% for _ in "1234" %}
+                                <div class="detail-gallery-hero__thumb">
+                                    <img src="{% static 'img/property-placeholder.jpg' %}" alt="{{ property.title }}">
+                                </div>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
                 </div>
             {% else %}
-                <div class="detail-gallery-item">
+                <div class="detail-gallery-hero__fallback">
                     <img src="{% static 'img/property-placeholder.jpg' %}" alt="{{ property.title }}">
                 </div>
             {% endif %}
         </div>
 
-        <div class="detail-grid">
-            <article class="detail-panel">
-                <h2>Descripción</h2>
-                <p>{{ property.description }}</p>
-            </article>
+        <div class="detail-layout">
+            <div class="detail-main">
+                <header class="detail-hero-copy">
+                    <div class="detail-badges">
+                        <span class="detail-badge detail-badge--primary">{{ property.status|default:"Disponible" }}</span>
+                        <span class="detail-badge">Publicación HABITA</span>
+                    </div>
 
-            <article class="detail-panel">
-                <h2>Detalles</h2>
-                <ul class="detail-list">
-                    <li><strong>Dirección:</strong> {{ property.address_line }}</li>
-                    <li><strong>Colonia:</strong> {{ property.neighborhood|default:"N/D" }}</li>
-                    <li><strong>Ciudad:</strong> {{ property.city }}</li>
-                    <li><strong>Estado:</strong> {{ property.state }}</li>
-                    <li><strong>Recámaras:</strong> {{ property.bedrooms }}</li>
-                    <li><strong>Baños:</strong> {{ property.bathrooms }}</li>
-                    <li><strong>Estacionamiento:</strong> {{ property.parking_spaces|default:"N/D" }}</li>
-                    <li><strong>Área:</strong> {{ property.area }}</li>
-                </ul>
-            </article>
-        </div>
+                    <h1>{{ property.title }}</h1>
+                    <p class="detail-hero-copy__location">
+                        {{ property.price }} / mes
+                        <span>•</span>
+                        {{ property.location|default:property.city }}
+                    </p>
 
-        <div class="detail-request-section">
-            <div class="detail-panel">
-                <h2>Solicitar renta</h2>
-
-                {% if habita_logged_in %}
-                    <form method="post" action="{% url 'properties:submit-request' property.id %}" class="request-form">
-                        {% csrf_token %}
-
-                        <div class="form-group">
-                            <label for="{{ rental_request_form.message.id_for_label }}">Mensaje</label>
-                            {{ rental_request_form.message }}
+                    <div class="detail-meta-strip">
+                        <div class="detail-meta-chip">
+                            <span class="material-symbols-outlined">bed</span>
+                            <span>{{ property.bedrooms|default:"N/D" }} Recámaras</span>
                         </div>
-
-                        <div class="request-form-grid">
-                            <div class="form-group">
-                                <label for="{{ rental_request_form.move_in_date.id_for_label }}">Fecha estimada de mudanza</label>
-                                {{ rental_request_form.move_in_date }}
-                            </div>
-
-                            <div class="form-group">
-                                <label for="{{ rental_request_form.monthly_budget.id_for_label }}">Presupuesto mensual</label>
-                                {{ rental_request_form.monthly_budget }}
-                            </div>
+                        <div class="detail-meta-chip">
+                            <span class="material-symbols-outlined">shower</span>
+                            <span>{{ property.bathrooms|default:"N/D" }} Baños</span>
                         </div>
+                        <div class="detail-meta-chip">
+                            <span class="material-symbols-outlined">square_foot</span>
+                            <span>{{ property.area|default:"N/D" }}</span>
+                        </div>
+                    </div>
+                </header>
 
-                        <button type="submit" class="btn-primary">Enviar solicitud</button>
-                    </form>
-                {% else %}
-                    <p class="empty-text">Necesitas iniciar sesión para enviar una solicitud de renta.</p>
-                    <a href="{% url 'accounts:login' %}?next={{ request.get_full_path }}" class="btn-primary">
-                        Iniciar sesión
-                    </a>
-                {% endif %}
-            </div>
-        </div>
+                <section class="detail-section-block">
+                    <h2>Descripción</h2>
+                    <div class="detail-copy">
+                        <p>{{ property.description|default:"Sin descripción disponible." }}</p>
+                    </div>
+                </section>
 
-        <div class="detail-reviews-section">
-            <div class="detail-panel">
-                <div class="reviews-header">
-                    <div class="reviews-header__title">
+                <section class="detail-section-block">
+                    <h2>Detalles</h2>
+                    <div class="detail-facts-grid">
+                        <div class="detail-fact-card">
+                            <span class="detail-fact-card__label">Dirección</span>
+                            <strong>{{ property.address_line|default:"N/D" }}</strong>
+                        </div>
+                        <div class="detail-fact-card">
+                            <span class="detail-fact-card__label">Colonia</span>
+                            <strong>{{ property.neighborhood|default:"N/D" }}</strong>
+                        </div>
+                        <div class="detail-fact-card">
+                            <span class="detail-fact-card__label">Ciudad</span>
+                            <strong>{{ property.city|default:"N/D" }}</strong>
+                        </div>
+                        <div class="detail-fact-card">
+                            <span class="detail-fact-card__label">Estado</span>
+                            <strong>{{ property.state|default:"N/D" }}</strong>
+                        </div>
+                        <div class="detail-fact-card">
+                            <span class="detail-fact-card__label">Tipo</span>
+                            <strong>{{ property.property_type|default:"N/D" }}</strong>
+                        </div>
+                        <div class="detail-fact-card">
+                            <span class="detail-fact-card__label">Estacionamiento</span>
+                            <strong>{{ property.parking_spaces|default:"N/D" }}</strong>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="detail-section-block">
+                    <h2>Ubicación</h2>
+                    <p class="detail-location-text">{{ property.location|default:property.address_line }}</p>
+
+                    <div class="detail-map-card">
+                        <div class="detail-map-card__pin">
+                            <span class="material-symbols-outlined">location_on</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="detail-section-block detail-reviews-section">
+                    <div class="reviews-header reviews-header--proposal">
                         <h2>Reseñas y comentarios</h2>
-                        <p>Conoce la experiencia de otros usuarios en esta propiedad.</p>
+
+                        <div class="reviews-summary-pill" aria-label="{{ reviews_summary.average|floatformat:1 }} de 5 con {{ reviews_summary.count }} reseñas">
+                            <div class="reviews-summary-pill__score">
+                                <span class="reviews-summary-pill__value">{{ reviews_summary.average|floatformat:1 }}</span>
+                                <span class="material-symbols-outlined">star</span>
+                            </div>
+                            <span class="reviews-summary-pill__divider"></span>
+                            <span class="reviews-summary-pill__count">{{ reviews_summary.count }} reseña{{ reviews_summary.count|pluralize:"s" }}</span>
+                        </div>
                     </div>
 
-                    <div class="reviews-score-card"
-                        aria-label="Promedio de {{ reviews_summary.average|floatformat:1 }} de 5 basado en {{ reviews_summary.count }} reseñas">
-                        <div class="reviews-score-card__value">
-                            {{ reviews_summary.average|floatformat:1 }}
-                        </div>
+                    {% if reviews_error %}
+                        <div class="message-box message-error">{{ reviews_error }}</div>
+                    {% endif %}
 
-                        <div class="reviews-score-card__meta">
-                            <div class="rating-stars rating-stars--summary" aria-hidden="true">
-                                <span class="rating-stars__base">★★★★★</span>
-                                <span class="rating-stars__fill" style="width: {{ reviews_summary.average_percent }}%;">★★★★★</span>
+                    {% if habita_logged_in %}
+                        <div class="review-form-card">
+                            <div class="review-form-card__head">
+                                <div>
+                                    <h3>{% if user_review %}Edita tu reseña{% else %}Escribe tu reseña{% endif %}</h3>
+                                    <p>
+                                        {% if user_review %}
+                                            Ya existe tu reseña para esta propiedad. Puedes actualizarla o eliminarla.
+                                        {% else %}
+                                            Comparte tu experiencia para ayudar a otros usuarios.
+                                        {% endif %}
+                                    </p>
+                                </div>
                             </div>
-                            <p>{{ reviews_summary.count }} reseña{{ reviews_summary.count|pluralize:"s" }}</p>
+
+                            <form method="post" action="{% url 'properties:submit-review' property.id %}" class="detail-form detail-review-form">
+                                {% csrf_token %}
+
+                                <div class="detail-form__grid detail-form__grid--compact">
+                                    <div class="form-group">
+                                        <label for="{{ review_form.rating.id_for_label }}">Calificación</label>
+                                        {{ review_form.rating }}
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="{{ review_form.comment.id_for_label }}">Comentario</label>
+                                    {{ review_form.comment }}
+                                </div>
+
+                                <div class="detail-inline-actions">
+                                    <button type="submit" class="btn-primary">
+                                        {% if user_review %}Actualizar reseña{% else %}Publicar reseña{% endif %}
+                                    </button>
+                                </div>
+                            </form>
+
+                            {% if user_review %}
+                                <form method="post" action="{% url 'properties:delete-review' property.id %}" class="detail-delete-form">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-danger">Eliminar reseña</button>
+                                </form>
+                            {% endif %}
                         </div>
-                    </div>
-                </div>
-
-                {% if reviews_error %}
-                    <div class="message-box message-error">{{ reviews_error }}</div>
-                {% endif %}
-
-                {% if habita_logged_in %}
-                    <div class="review-form-box">
-                        <div class="review-form-box__header">
-                            <div>
-                                <h3>
-                                    {% if user_review %}
-                                        Edita tu reseña
-                                    {% else %}
-                                        Escribe tu reseña
-                                    {% endif %}
-                                </h3>
-                                <p>
-                                    {% if user_review %}
-                                        Ya tienes una reseña para esta propiedad. Puedes actualizarla o eliminarla.
-                                    {% else %}
-                                        Comparte tu experiencia para ayudar a otros usuarios.
-                                    {% endif %}
-                                </p>
-                            </div>
+                    {% else %}
+                        <div class="detail-empty-state">
+                            <p>Inicia sesión para dejar una reseña.</p>
+                            <a href="{% url 'accounts:login' %}?next={{ request.get_full_path }}" class="btn-primary">
+                                Iniciar sesión
+                            </a>
                         </div>
+                    {% endif %}
 
-                        <form method="post" action="{% url 'properties:submit-review' property.id %}" class="request-form review-form">
+                    {% if reviews %}
+                        <div class="reviews-stack">
+                            {% for review in reviews %}
+                                <article class="review-card review-card--proposal">
+                                    <div class="review-card__head">
+                                        <div class="review-card__author">
+                                            <div class="review-card__avatar">
+                                                {{ review.user_initials|default:"U" }}
+                                            </div>
+                                            <div class="review-card__identity">
+                                                <h3>{{ review.user_name|default:"Usuario" }}</h3>
+                                                <p>{{ review.display_date|default:review.created_at|default:"Fecha no disponible" }}</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="rating-stars" aria-label="{{ review.rating }} de 5 estrellas">
+                                            <span class="rating-stars__base">★★★★★</span>
+                                            <span class="rating-stars__fill" style="width: {% widthratio review.rating 5 100 %}%;">★★★★★</span>
+                                        </div>
+                                    </div>
+
+                                    <p class="review-card__comment {% if not review.comment %}review-card__comment--muted{% endif %}">
+                                        {{ review.comment|default:"Sin comentario." }}
+                                    </p>
+                                </article>
+                            {% endfor %}
+
+                            {% if reviews_summary.count > reviews|length %}
+                                <button type="button" class="reviews-more-btn">
+                                    Ver las {{ reviews_summary.count }} reseñas
+                                </button>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="detail-empty-state detail-empty-state--soft">
+                            <p>Aún no hay reseñas para esta propiedad.</p>
+                        </div>
+                    {% endif %}
+                </section>
+
+                <section id="detail-request-form" class="detail-section-block detail-request-block">
+                    <h2>Solicitar renta</h2>
+
+                    {% if habita_logged_in %}
+                        <form method="post" action="{% url 'properties:submit-request' property.id %}" class="detail-form detail-request-form">
                             {% csrf_token %}
 
-                            <div class="request-form-grid">
+                            <div class="form-group">
+                                <label for="{{ rental_request_form.message.id_for_label }}">Mensaje</label>
+                                {{ rental_request_form.message }}
+                            </div>
+
+                            <div class="detail-form__grid">
                                 <div class="form-group">
-                                    <label for="{{ review_form.rating.id_for_label }}">Calificación</label>
-                                    {{ review_form.rating }}
+                                    <label for="{{ rental_request_form.move_in_date.id_for_label }}">Fecha estimada de mudanza</label>
+                                    {{ rental_request_form.move_in_date }}
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="{{ rental_request_form.monthly_budget.id_for_label }}">Presupuesto mensual</label>
+                                    {{ rental_request_form.monthly_budget }}
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <label for="{{ review_form.comment.id_for_label }}">Comentario</label>
-                                {{ review_form.comment }}
-                            </div>
-
-                            <div class="review-actions">
-                                <button type="submit" class="btn-primary">
-                                    {% if user_review %}Actualizar reseña{% else %}Publicar reseña{% endif %}
-                                </button>
-                            </div>
+                            <button type="submit" class="btn-primary">Enviar solicitud</button>
                         </form>
+                    {% else %}
+                        <div class="detail-empty-state">
+                            <p>Necesitas iniciar sesión para enviar una solicitud de renta.</p>
+                            <a href="{% url 'accounts:login' %}?next={{ request.get_full_path }}" class="btn-primary">
+                                Iniciar sesión
+                            </a>
+                        </div>
+                    {% endif %}
+                </section>
+            </div>
 
-                        {% if user_review %}
-                            <form method="post" action="{% url 'properties:delete-review' property.id %}" class="review-delete-form">
+            <aside class="detail-sidebar">
+                <div class="detail-sidebar-card">
+                    <div class="detail-sidebar-price">
+                        <div>
+                            <p>Precio por mes</p>
+                            <strong>{{ property.price }}</strong>
+                        </div>
+                        <span class="detail-sidebar-tag">{{ property.status|default:"Disponible" }}</span>
+                    </div>
+
+                    <div class="detail-sidebar-actions">
+                        <a href="#detail-request-form" class="detail-cta detail-cta--primary">
+                            <span class="material-symbols-outlined">description</span>
+                            Solicitar renta
+                        </a>
+
+                        {% if habita_logged_in %}
+                            <form method="post" action="{% url 'properties:toggle-favorite' property.id %}" class="detail-sidebar-form">
                                 {% csrf_token %}
-                                <button type="submit" class="btn-danger">Eliminar reseña</button>
+                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                {% if is_favorite %}
+                                    <input type="hidden" name="action" value="remove">
+                                    <button type="submit" class="detail-cta detail-cta--secondary">
+                                        <span class="material-symbols-outlined">favorite</span>
+                                        Quitar de favoritos
+                                    </button>
+                                {% else %}
+                                    <input type="hidden" name="action" value="add">
+                                    <button type="submit" class="detail-cta detail-cta--secondary">
+                                        <span class="material-symbols-outlined">favorite</span>
+                                        Guardar en favoritos
+                                    </button>
+                                {% endif %}
                             </form>
+                        {% else %}
+                            <a href="{% url 'accounts:login' %}?next={{ request.get_full_path }}" class="detail-cta detail-cta--secondary">
+                                <span class="material-symbols-outlined">favorite</span>
+                                Guardar en favoritos
+                            </a>
                         {% endif %}
                     </div>
-                {% else %}
-                    <p class="empty-text">Inicia sesión para dejar una reseña.</p>
-                {% endif %}
 
-                {% if reviews %}
-                    <div class="reviews-list">
-                        {% for review in reviews %}
-                            <article class="review-card">
-                                <div class="review-card__top">
-                                    <div class="review-card__author">
-                                        <div class="review-card__avatar">
-                                            {{ review.user_initials }}
-                                        </div>
+                    <div class="detail-manager-block">
+                        <h3>Contacto del propietario</h3>
 
-                                        <div class="review-card__author-data">
-                                            <h3>{{ review.user_name }}</h3>
-                                            <p class="review-card__date">{{ review.display_date }}</p>
-                                        </div>
-                                    </div>
+                        <div class="detail-manager-profile">
+                            <div class="detail-manager-avatar">
+                                {{ property.owner_name|default:"PH"|slice:":2"|upper }}
+                            </div>
+                            <div>
+                                <strong>{{ property.owner_name|default:"Propietario HABITA" }}</strong>
+                                <p>{{ property.owner_role|default:"Owner" }}</p>
+                            </div>
+                        </div>
 
-                                    <div class="rating-stars rating-stars--review"
-                                        aria-label="{{ review.rating }} de 5 estrellas">
-                                        <span class="rating-stars__base">★★★★★</span>
-                                        <span class="rating-stars__fill" style="width: {% widthratio review.rating 5 100 %}%;">★★★★★</span>
-                                    </div>
-                                </div>
-
-                                {% if review.comment %}
-                                    <p class="review-card__comment">{{ review.comment }}</p>
-                                {% else %}
-                                    <p class="review-card__comment review-card__comment--muted">Sin comentario.</p>
-                                {% endif %}
-                            </article>
-                        {% endfor %}
+                        <div class="detail-manager-info">
+                            <div>
+                                <span class="material-symbols-outlined">call</span>
+                                <span>{{ property.owner_phone|default:"No disponible" }}</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined">mail</span>
+                                <span>{{ property.owner_email|default:"No disponible" }}</span>
+                            </div>
+                        </div>
                     </div>
-                {% else %}
-                    <div class="reviews-empty">
-                        <p class="empty-text">Aún no hay reseñas para esta propiedad.</p>
+
+                    <div class="detail-sidebar-note">
+                        <div class="detail-sidebar-note__title">
+                            <span class="material-symbols-outlined">info</span>
+                            Aviso importante
+                        </div>
+                        <p>Las visitas están sujetas a disponibilidad. Agenda con anticipación para confirmar horario.</p>
                     </div>
-                {% endif %}
-            </div>
+                </div>
+            </aside>
         </div>
 
-        <div class="detail-back">
+        <div class="detail-back detail-back--proposal">
             <a href="{% url 'properties:list' %}" class="btn-secondary-link">← Volver al catálogo</a>
         </div>
     </div>
 </section>
+
+{% if property.images and property.images|length > 1 %}
+<div class="gallery-modal" data-gallery-modal hidden>
+    <div class="gallery-modal__backdrop" data-gallery-close></div>
+    <div class="gallery-modal__dialog" role="dialog" aria-modal="true" aria-label="Galería de imágenes">
+        <div class="gallery-modal__header">
+            <h3>Galería de la propiedad</h3>
+            <button type="button" class="gallery-modal__close" data-gallery-close>
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <div class="gallery-modal__grid">
+            {% for image in property.images %}
+                <div class="gallery-modal__item">
+                    {% if image.image_url %}
+                        <img src="{{ image.image_url }}" alt="{{ image.alt_text|default:property.title }}">
+                    {% else %}
+                        <img src="{% static 'img/property-placeholder.jpg' %}" alt="{{ property.title }}">
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+    (function () {
+        const modal = document.querySelector('[data-gallery-modal]');
+        const openButtons = document.querySelectorAll('[data-gallery-open]');
+        const closeButtons = document.querySelectorAll('[data-gallery-close]');
+
+        if (!modal || !openButtons.length) return;
+
+        const openModal = () => {
+            modal.hidden = false;
+            document.body.classList.add('gallery-modal-open');
+        };
+
+        const closeModal = () => {
+            modal.hidden = true;
+            document.body.classList.remove('gallery-modal-open');
+        };
+
+        openButtons.forEach((button) => {
+            button.addEventListener('click', openModal);
+        });
+
+        closeButtons.forEach((button) => {
+            button.addEventListener('click', closeModal);
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && !modal.hidden) {
+                closeModal();
+            }
+        });
+    })();
+</script>
 {% endblock %}
