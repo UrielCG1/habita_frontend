@@ -18,7 +18,10 @@
     <div class="property-card__body">
         <div class="property-card__heading">
             <h3>{{ property.title }}</h3>
-            <p>{{ property.neighborhood|default:'Querétaro' }}, Querétaro</p>
+            <div class="property-location">
+                <span class="material-symbols-outlined">location_on</span>
+                <p>{{ property.neighborhood|default:'Querétaro' }}, Querétaro</p>
+            </div>
         </div>
 
         <div class="property-card__price-row">

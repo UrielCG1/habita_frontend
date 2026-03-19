@@ -37,16 +37,16 @@
                 {% if habita_logged_in and habita_user %}
                     <div class="habita-user-menu" data-user-menu>
                         <button type="button" class="habita-user-menu__trigger" data-user-menu-trigger>
-                            <span class="habita-user-menu__avatar">{{ current_user.initials|default:'H' }}</span>
-                            <span class="habita-user-menu__name">{{ current_user.full_name|default:'Usuario HABITA' }}</span>
+                            <span class="habita-user-menu__avatar">{{ habita_user.full_name|slice:":2"|upper }}</span>
+                            <span class="habita-user-menu__name">{{ habita_user.full_name|default:'Usuario HABITA' }}</span>
                             <span class="habita-user-menu__caret">▾</span>
                         </button>
                         <div class="habita-user-menu__dropdown" data-user-menu-dropdown>
                             <div class="habita-user-menu__summary">
-                                <span class="habita-user-menu__avatar habita-user-menu__avatar--large">{{ current_user.initials|default:'H' }}</span>
+                                <span class="habita-user-menu__avatar habita-user-menu__avatar--large">{{ habita_user.full_name|slice:":2"|upper }}</span>
                                 <div>
-                                    <strong>{{ current_user.full_name|default:'Usuario HABITA' }}</strong>
-                                    <small>{{ current_user.role|default:'user' }}</small>
+                                    <strong>{{ habita_user.full_name|default:'Usuario HABITA' }}</strong>
+                                    <small>{{ habita_user.role|default:'user' }}</small>
                                 </div>
                             </div>
                             <div class="habita-user-menu__items">
