@@ -8,110 +8,256 @@
 {% endblock %}
 
 {% block content %}
-<section class="properties-page">
+<section class="properties-page properties-catalog">
     <div class="container">
-        <div class="page-heading">
-            <h1>Explora propiedades en Querétaro</h1>
-            <p>Encuentra opciones disponibles y filtradas según lo que buscas.</p>
+        <div class="properties-catalog__hero">
+            <div class="properties-catalog__hero-copy">
+                <span class="section-eyebrow">Catálogo HABITA</span>
+                <h1>Explora propiedades en Querétaro con una búsqueda más clara</h1>
+                <p>
+                    Filtra por zona, tipo de inmueble y presupuesto para encontrar opciones que sí encajen
+                    con lo que necesitas.
+                </p>
+            </div>
+
+            <div class="properties-catalog__hero-stats">
+                <div class="catalog-stat-card">
+                    <strong>{{ pagination.total|default:0 }}</strong>
+                    <span>publicaciones disponibles</span>
+                </div>
+                <div class="catalog-stat-card">
+                    <strong>{{ current_page }}</strong>
+                    <span>página actual</span>
+                </div>
+            </div>
         </div>
 
-        <form method="get" class="filters-panel">
-            <div class="filters-grid">
-                <input type="text" name="q" placeholder="Buscar por zona o palabra clave" value="{{ filters.q }}">
-                <input type="text" name="city" placeholder="Ciudad" value="{{ filters.city }}">
-                <input type="text" name="state" placeholder="Estado" value="{{ filters.state }}">
-
-                <select name="property_type">
-                    <option value="">Tipo de propiedad</option>
-                    <option value="house" {% if filters.property_type == 'house' %}selected{% endif %}>Casa</option>
-                    <option value="apartment" {% if filters.property_type == 'apartment' %}selected{% endif %}>Departamento</option>
-                    <option value="room" {% if filters.property_type == 'room' %}selected{% endif %}>Habitación</option>
-                </select>
-
-                <input type="number" name="min_price" placeholder="Precio mínimo" value="{{ filters.min_price }}">
-                <input type="number" name="max_price" placeholder="Precio máximo" value="{{ filters.max_price }}">
-                <input type="number" name="bedrooms" placeholder="Recámaras mínimas" value="{{ filters.bedrooms }}">
-                <input type="number" name="bathrooms" placeholder="Baños mínimos" value="{{ filters.bathrooms }}">
-            </div>
-
-            <div class="filters-actions">
-                <button type="submit" class="btn-primary">Filtrar</button>
-                <a href="{% url 'properties:list' %}" class="btn-secondary-link">Limpiar filtros</a>
-            </div>
-        </form>
-
-        {% if properties_error %}
-            <div class="message-box message-error">{{ properties_error }}</div>
-        {% endif %}
-
-        {% if properties %}
-            <div class="properties-grid-page">
-                {% for property in properties %}
-                    <article class="property-card-page">
-                        <a href="{% url 'properties:detail' property.id %}" class="property-card-page__image-link">
-                            {% if property.image_url %}
-                                <img src="{{ property.image_url }}" alt="{{ property.title }}" class="property-card-page__image">
-                            {% else %}
-                                <img src="{% static 'img/property-placeholder.jpg' %}" alt="{{ property.title }}" class="property-card-page__image">
-                            {% endif %}
-                        </a>
-
-                        <div class="property-card-page__body">
-                            <div class="property-card-page__top">
-                                <span class="property-type-chip">{{ property.property_type }}</span>
-
-                                {% if habita_logged_in %}
-                                    <form method="post" action="{% url 'properties:toggle-favorite' property.id %}">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                                        {% if property.is_favorite %}
-                                            <input type="hidden" name="action" value="remove">
-                                            <button type="submit" class="favorite-btn favorite-btn--active">★</button>
-                                        {% else %}
-                                            <input type="hidden" name="action" value="add">
-                                            <button type="submit" class="favorite-btn">☆</button>
-                                        {% endif %}
-                                    </form>
-                                {% endif %}
-                            </div>
-
-                            <h2>
-                                <a href="{% url 'properties:detail' property.id %}">{{ property.title }}</a>
-                            </h2>
-
-                            <p class="property-location">{{ property.location }}</p>
-                            <strong class="property-price">{{ property.price }}</strong>
-
-                            <div class="property-meta-row">
-                                <span>{{ property.bedrooms }} rec.</span>
-                                <span>{{ property.bathrooms }} baños</span>
-                                <span>{{ property.area }}</span>
-                            </div>
-
-                            <a href="{% url 'properties:detail' property.id %}" class="property-link">
-                                Ver detalle
-                            </a>
+        <div class="properties-catalog__layout">
+            <aside class="catalog-sidebar">
+                <form method="get" class="catalog-filter-card">
+                    <div class="catalog-filter-card__header">
+                        <div>
+                            <h2>Filtros</h2>
+                            <p>Ajusta tu búsqueda sin salir del catálogo.</p>
                         </div>
-                    </article>
-                {% endfor %}
-            </div>
+                        <span class="material-symbols-outlined">tune</span>
+                    </div>
 
-            {% if total_pages > 1 %}
-                <div class="pagination">
-                    {% if current_page > 1 %}
-                        <a href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ current_page|add:'-1' }}">Anterior</a>
-                    {% endif %}
+                    <div class="catalog-filter-fields">
+                        <div class="field-group field-group--stacked">
+                            <label for="catalog-q">Búsqueda</label>
+                            <div class="field-group__control">
+                                <span class="material-symbols-outlined">search</span>
+                                <input id="catalog-q" type="text" name="q" placeholder="Zona, colonia o palabra clave" value="{{ filters.q }}">
+                            </div>
+                        </div>
 
-                    <span>Página {{ current_page }} de {{ total_pages }}</span>
+                        <div class="field-group field-group--stacked">
+                            <label for="catalog-city">Ciudad</label>
+                            <div class="field-group__control">
+                                <span class="material-symbols-outlined">location_city</span>
+                                <input id="catalog-city" type="text" name="city" placeholder="Ej. Querétaro" value="{{ filters.city }}">
+                            </div>
+                        </div>
 
-                    {% if current_page < total_pages %}
-                        <a href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ current_page|add:'1' }}">Siguiente</a>
+                        <div class="field-group field-group--stacked">
+                            <label for="catalog-state">Estado</label>
+                            <div class="field-group__control">
+                                <span class="material-symbols-outlined">public</span>
+                                <input id="catalog-state" type="text" name="state" placeholder="Ej. Querétaro" value="{{ filters.state }}">
+                            </div>
+                        </div>
+
+                        <div class="field-group field-group--stacked">
+                            <label for="catalog-type">Tipo de propiedad</label>
+                            <div class="field-group__control">
+                                <span class="material-symbols-outlined">apartment</span>
+                                <select id="catalog-type" name="property_type">
+                                    <option value="">Todos</option>
+                                    <option value="house" {% if filters.property_type == 'house' %}selected{% endif %}>Casa</option>
+                                    <option value="apartment" {% if filters.property_type == 'apartment' %}selected{% endif %}>Departamento</option>
+                                    <option value="room" {% if filters.property_type == 'room' %}selected{% endif %}>Habitación</option>
+                                    <option value="office" {% if filters.property_type == 'office' %}selected{% endif %}>Oficina</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="catalog-filter-fields__row">
+                            <div class="field-group field-group--stacked">
+                                <label for="catalog-min-price">Precio mínimo</label>
+                                <div class="field-group__control">
+                                    <span class="material-symbols-outlined">payments</span>
+                                    <input id="catalog-min-price" type="number" name="min_price" placeholder="0" value="{{ filters.min_price }}">
+                                </div>
+                            </div>
+
+                            <div class="field-group field-group--stacked">
+                                <label for="catalog-max-price">Precio máximo</label>
+                                <div class="field-group__control">
+                                    <span class="material-symbols-outlined">request_quote</span>
+                                    <input id="catalog-max-price" type="number" name="max_price" placeholder="50000" value="{{ filters.max_price }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="catalog-filter-fields__row">
+                            <div class="field-group field-group--stacked">
+                                <label for="catalog-bedrooms">Recámaras</label>
+                                <div class="field-group__control">
+                                    <span class="material-symbols-outlined">bed</span>
+                                    <input id="catalog-bedrooms" type="number" name="bedrooms" placeholder="0" value="{{ filters.bedrooms }}">
+                                </div>
+                            </div>
+
+                            <div class="field-group field-group--stacked">
+                                <label for="catalog-bathrooms">Baños</label>
+                                <div class="field-group__control">
+                                    <span class="material-symbols-outlined">bathtub</span>
+                                    <input id="catalog-bathrooms" type="number" name="bathrooms" placeholder="0" value="{{ filters.bathrooms }}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="catalog-filter-actions">
+                        <button type="submit" class="btn-primary btn-block">Aplicar filtros</button>
+                        <a href="{% url 'properties:list' %}" class="btn-secondary btn-block">Limpiar filtros</a>
+                    </div>
+                </form>
+            </aside>
+
+            <div class="catalog-results">
+                <div class="catalog-results__topbar">
+                    <div>
+                        <h2>Resultados</h2>
+                        <p>
+                            {% if pagination.total %}
+                                {{ pagination.total }} publicaciones disponibles en este momento
+                            {% else %}
+                                Sin resultados por el momento
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    {% if query_string %}
+                        <div class="catalog-active-note">
+                            <span class="material-symbols-outlined">filter_alt</span>
+                            <span>Búsqueda filtrada</span>
+                        </div>
                     {% endif %}
                 </div>
-            {% endif %}
-        {% else %}
-            <p class="empty-text">No se encontraron propiedades con esos filtros.</p>
-        {% endif %}
+
+                {% if properties_error %}
+                    <div class="message-box message-error">{{ properties_error }}</div>
+                {% endif %}
+
+                {% if properties %}
+                    <div class="catalog-grid-premium">
+                        {% for property in properties %}
+                            <article class="catalog-card-premium">
+                                <a href="{% url 'properties:detail' property.id %}" class="catalog-card-premium__media-link">
+                                    <div class="catalog-card-premium__media">
+                                        {% if property.cover_image_url %}
+                                            <img src="{{ property.cover_image_url }}" alt="{{ property.cover_image_alt }}" class="catalog-card-premium__image">
+                                        {% else %}
+                                            <img src="{% static 'img/property-placeholder.jpg' %}" alt="{{ property.title }}" class="catalog-card-premium__image">
+                                        {% endif %}
+
+                                        <div class="catalog-card-premium__overlay"></div>
+
+                                        <div class="catalog-card-premium__badges">
+                                            <span class="property-chip property-chip--solid">{{ property.property_type_label }}</span>
+                                            <span class="property-chip property-chip--light">{{ property.status_label }}</span>
+                                        </div>
+
+                                        <div class="catalog-card-premium__price">{{ property.price_display }}</div>
+
+                                        {% if habita_logged_in %}
+                                            <form method="post" action="{% url 'properties:toggle-favorite' property.id %}" class="catalog-card-premium__favorite-form">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                                {% if property.is_favorite %}
+                                                    <input type="hidden" name="action" value="remove">
+                                                    <button type="submit" class="favorite-btn favorite-btn--active" aria-label="Quitar de favoritos">★</button>
+                                                {% else %}
+                                                    <input type="hidden" name="action" value="add">
+                                                    <button type="submit" class="favorite-btn" aria-label="Agregar a favoritos">☆</button>
+                                                {% endif %}
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </a>
+
+                                <div class="catalog-card-premium__body">
+                                    <div class="catalog-card-premium__header">
+                                        <div>
+                                            <h3>
+                                                <a href="{% url 'properties:detail' property.id %}">{{ property.title }}</a>
+                                            </h3>
+                                            <div class="catalog-card-premium__location">
+                                                <span class="material-symbols-outlined">location_on</span>
+                                                <span>{{ property.location }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <p class="catalog-card-premium__description">{{ property.short_description }}</p>
+
+                                    <div class="catalog-card-premium__meta">
+                                        <div class="meta-item">
+                                            <span class="material-symbols-outlined">bed</span>
+                                            <span>{{ property.bedrooms_display }}</span>
+                                        </div>
+                                        <div class="meta-item">
+                                            <span class="material-symbols-outlined">bathtub</span>
+                                            <span>{{ property.bathrooms_display }}</span>
+                                        </div>
+                                        <div class="meta-item">
+                                            <span class="material-symbols-outlined">directions_car</span>
+                                            <span>{{ property.parking_spaces_display }}</span>
+                                        </div>
+                                        <div class="meta-item">
+                                            <span class="material-symbols-outlined">straighten</span>
+                                            <span>{{ property.area_display }}</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="catalog-card-premium__footer">
+                                        <div class="catalog-card-premium__owner">
+                                            <span class="material-symbols-outlined">account_circle</span>
+                                            <span>{{ property.owner_name }}</span>
+                                        </div>
+
+                                        <a href="{% url 'properties:detail' property.id %}" class="text-link">Ver detalle</a>
+                                    </div>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+
+                    {% if total_pages > 1 %}
+                        <div class="catalog-pagination-premium">
+                            {% if current_page > 1 %}
+                                <a class="page-pill" href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ current_page|add:'-1' }}">Anterior</a>
+                            {% endif %}
+
+                            <span class="page-pill page-pill--current">Página {{ current_page }} de {{ total_pages }}</span>
+
+                            {% if current_page < total_pages %}
+                                <a class="page-pill" href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ current_page|add:'1' }}">Siguiente</a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="catalog-empty-state">
+                        <span class="material-symbols-outlined">search_off</span>
+                        <h3>No se encontraron propiedades con esos filtros</h3>
+                        <p>Prueba ajustando la zona, el tipo de inmueble o el rango de precio.</p>
+                        <a href="{% url 'properties:list' %}" class="btn-primary">Ver todo el catálogo</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </section>
 {% endblock %}

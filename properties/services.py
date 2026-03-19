@@ -14,8 +14,27 @@ from accounts.services import (
 from accounts.utils import is_habita_authenticated
 
 
+PROPERTY_TYPE_LABELS = {
+    "house": "Casa",
+    "apartment": "Departamento",
+    "room": "Habitación",
+    "office": "Oficina",
+    "land": "Terreno",
+    "commercial": "Comercial",
+}
+
+STATUS_LABELS = {
+    "available": "Disponible",
+    "rented": "Rentada",
+    "reserved": "Reservada",
+    "draft": "Borrador",
+    "unavailable": "No disponible",
+}
+
+
 def _backend_root() -> str:
     return settings.BACKEND_API_BASE_URL.removesuffix("/api")
+
 
 
 def _absolute_media_url(file_url: Optional[str]) -> Optional[str]:
@@ -26,6 +45,7 @@ def _absolute_media_url(file_url: Optional[str]) -> Optional[str]:
         return file_url
 
     return urljoin(f"{_backend_root()}/", file_url.lstrip("/"))
+
 
 
 def _format_price(value) -> str:
@@ -39,10 +59,12 @@ def _format_price(value) -> str:
         return str(value)
 
 
+
 def _format_area(value) -> str:
     if value in (None, ""):
         return "N/D"
     return f"{value} m²"
+
 
 
 def _build_location(item: dict) -> str:
@@ -54,26 +76,85 @@ def _build_location(item: dict) -> str:
     return ", ".join(parts) if parts else "Ubicación no disponible"
 
 
+
+def _label_for_property_type(value: Optional[str]) -> str:
+    value = (value or "").strip().lower()
+    return PROPERTY_TYPE_LABELS.get(value, value.capitalize() if value else "Propiedad")
+
+
+
+def _label_for_status(value: Optional[str]) -> str:
+    value = (value or "").strip().lower()
+    return STATUS_LABELS.get(value, value.capitalize() if value else "Sin estatus")
+
+
+
+def _truncate_text(value: Optional[str], max_length: int = 132) -> str:
+    text = (value or "").strip()
+    if not text:
+        return "Sin descripción disponible por el momento."
+    if len(text) <= max_length:
+        return text
+    return text[: max_length - 1].rstrip() + "…"
+
+
+
+def _format_bedrooms(value) -> str:
+    value = value if value not in (None, "") else 0
+    return f"{value} rec."
+
+
+
+def _format_bathrooms(value) -> str:
+    value = value if value not in (None, "") else 0
+    return f"{value} baños"
+
+
+
+def _format_parking(value) -> str:
+    value = value if value not in (None, "") else 0
+    return f"{value} estac."
+
+
+
 def _normalize_property_card(item: dict) -> dict:
     cover_image = item.get("cover_image") or {}
+    owner = item.get("owner") or {}
     image_url = _absolute_media_url(cover_image.get("file_url"))
+    property_type = item.get("property_type")
+    status = item.get("status")
 
     return {
         "id": item.get("id"),
         "title": item.get("title", "Propiedad sin título"),
         "description": item.get("description") or "",
+        "short_description": _truncate_text(item.get("description")),
         "location": _build_location(item),
         "price": _format_price(item.get("price")),
+        "price_display": _format_price(item.get("price")),
         "raw_price": item.get("price"),
         "bedrooms": item.get("bedrooms", 0),
+        "bedrooms_display": _format_bedrooms(item.get("bedrooms", 0)),
         "bathrooms": item.get("bathrooms", 0),
+        "bathrooms_display": _format_bathrooms(item.get("bathrooms", 0)),
         "parking_spaces": item.get("parking_spaces"),
+        "parking_spaces_display": _format_parking(item.get("parking_spaces", 0)),
         "area": _format_area(item.get("area_m2")),
+        "area_display": _format_area(item.get("area_m2")),
         "image_url": image_url,
-        "property_type": (item.get("property_type") or "").capitalize(),
-        "status": (item.get("status") or "").capitalize(),
+        "cover_image_url": image_url,
+        "cover_image_alt": cover_image.get("alt_text") or item.get("title", "Imagen de propiedad"),
+        "property_type": _label_for_property_type(property_type),
+        "property_type_label": _label_for_property_type(property_type),
+        "property_type_key": property_type,
+        "status": _label_for_status(status),
+        "status_label": _label_for_status(status),
+        "status_key": status,
+        "owner_name": owner.get("full_name") or "Propietario",
+        "owner_email": owner.get("email") or "",
         "is_published": item.get("is_published", False),
     }
+
 
 
 def _normalize_property_detail(item: dict) -> dict:
@@ -90,28 +171,41 @@ def _normalize_property_detail(item: dict) -> dict:
             }
         )
 
+    property_type = item.get("property_type")
+    status = item.get("status")
+
     return {
         "id": item.get("id"),
         "title": item.get("title", "Propiedad sin título"),
         "description": item.get("description") or "Sin descripción disponible.",
         "price": _format_price(item.get("price")),
+        "price_display": _format_price(item.get("price")),
         "raw_price": item.get("price"),
-        "property_type": (item.get("property_type") or "").capitalize(),
-        "status": (item.get("status") or "").capitalize(),
+        "property_type": _label_for_property_type(property_type),
+        "property_type_label": _label_for_property_type(property_type),
+        "property_type_key": property_type,
+        "status": _label_for_status(status),
+        "status_label": _label_for_status(status),
+        "status_key": status,
         "address_line": item.get("address_line") or "",
         "neighborhood": item.get("neighborhood") or "",
         "city": item.get("city") or "",
         "state": item.get("state") or "",
         "location": _build_location(item),
         "bedrooms": item.get("bedrooms", 0),
+        "bedrooms_display": _format_bedrooms(item.get("bedrooms", 0)),
         "bathrooms": item.get("bathrooms", 0),
+        "bathrooms_display": _format_bathrooms(item.get("bathrooms", 0)),
         "parking_spaces": item.get("parking_spaces"),
+        "parking_spaces_display": _format_parking(item.get("parking_spaces", 0)),
         "area": _format_area(item.get("area_m2")),
+        "area_display": _format_area(item.get("area_m2")),
         "latitude": item.get("latitude"),
         "longitude": item.get("longitude"),
         "is_published": item.get("is_published", False),
         "images": normalized_images,
     }
+
 
 
 def _normalize_review(item: dict) -> dict:
@@ -129,6 +223,7 @@ def _normalize_review(item: dict) -> dict:
         "user_name": user.get("full_name", "Usuario"),
         "user_email": user.get("email", ""),
     }
+
 
 
 def get_properties_list(filters: dict, page: int = 1, limit: int = 9) -> tuple[list[dict], dict, Optional[str]]:
@@ -179,6 +274,7 @@ def get_properties_list(filters: dict, page: int = 1, limit: int = 9) -> tuple[l
     return [_normalize_property_card(item) for item in items], pagination, None
 
 
+
 def get_property_detail(property_id: int) -> tuple[Optional[dict], Optional[str]]:
     url = f"{settings.BACKEND_API_BASE_URL}/properties/{property_id}"
 
@@ -203,6 +299,7 @@ def get_property_detail(property_id: int) -> tuple[Optional[dict], Optional[str]
         return None, "La propiedad no tiene datos válidos."
 
     return _normalize_property_detail(data), None
+
 
 
 def get_user_favorite_ids(request, user_id: int, limit: int = 200) -> set[int]:
@@ -230,6 +327,7 @@ def get_user_favorite_ids(request, user_id: int, limit: int = 200) -> set[int]:
         return set()
 
 
+
 def get_favorite_status(request, user_id: int, property_id: int) -> bool:
     if not is_habita_authenticated(request):
         return False
@@ -251,6 +349,7 @@ def get_favorite_status(request, user_id: int, property_id: int) -> bool:
         return False
 
 
+
 def add_favorite(request, user_id: int, property_id: int) -> tuple[bool, str]:
     try:
         response = authenticated_request(
@@ -268,6 +367,7 @@ def add_favorite(request, user_id: int, property_id: int) -> tuple[bool, str]:
         return False, "No fue posible agregar la propiedad a favoritos."
 
 
+
 def remove_favorite(request, user_id: int, property_id: int) -> tuple[bool, str]:
     try:
         response = authenticated_request(
@@ -283,6 +383,7 @@ def remove_favorite(request, user_id: int, property_id: int) -> tuple[bool, str]
 
     except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError):
         return False, "No fue posible eliminar la propiedad de favoritos."
+
 
 
 def get_property_reviews(property_id: int) -> tuple[list[dict], dict, Optional[str]]:
@@ -314,6 +415,7 @@ def get_property_reviews(property_id: int) -> tuple[list[dict], dict, Optional[s
     return reviews, {"count": count, "average": average}, None
 
 
+
 def get_user_review_for_property(request, user_id: int, property_id: int) -> Optional[dict]:
     if not is_habita_authenticated(request):
         return None
@@ -340,6 +442,7 @@ def get_user_review_for_property(request, user_id: int, property_id: int) -> Opt
 
     except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError, ValueError):
         return None
+
 
 
 def save_review(request, user_id: int, property_id: int, rating: int, comment: str, review_id: Optional[int] = None) -> tuple[bool, str]:
@@ -378,6 +481,7 @@ def save_review(request, user_id: int, property_id: int, rating: int, comment: s
         return False, "No fue posible guardar tu reseña."
 
 
+
 def delete_review(request, review_id: int) -> tuple[bool, str]:
     try:
         response = authenticated_request(
@@ -393,6 +497,7 @@ def delete_review(request, review_id: int) -> tuple[bool, str]:
 
     except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError):
         return False, "No fue posible eliminar tu reseña."
+
 
 
 def build_query_string(filters: dict) -> str:
