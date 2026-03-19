@@ -406,7 +406,17 @@
     letter-spacing: 0.18em;
     font-size: 12px;
     font-weight: 800;
-    color: #7fd0ff;
+    color: var(--color-primary);
+    margin-bottom: 10px;
+}
+
+.section-eyebrow-s {
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--color-primary);
     margin-bottom: 10px;
 }
 
