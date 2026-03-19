@@ -122,6 +122,8 @@ textarea {
    NAVBAR GLOBAL
 ========================= */
 
+
+
 .site-header {
     position: sticky;
     top: 0;
@@ -151,13 +153,10 @@ textarea {
 .brand-icon {
     width: 34px;
     height: 34px;
-    border-radius: 10px;
-    background: var(--color-primary);
     color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 10px 24px rgba(0, 76, 109, 0.18);
 }
 
 .brand-text {
