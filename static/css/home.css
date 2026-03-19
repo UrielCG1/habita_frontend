@@ -238,6 +238,69 @@
     font-weight: 700;
 }
 
+
+/* BENEFICIOS */
+
+
+
+.benefits-section {
+    padding: 70px 0;
+    background: rgba(0, 76, 109, 0.05);
+}
+.section-heading-b h2 {
+    margin: 0;
+    font-size: 38px;
+    font-weight: 800;
+}
+
+.section-heading-b p {
+    margin: 8px 0 0;
+    color: var(--color-text-soft);
+}
+
+.section-heading-b.centered {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.info-card {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(0, 76, 109, 0.05);
+}
+
+.benefits-grid {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.info-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+    background: rgba(0, 76, 109, 0.10);
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 18px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 .home-trust-band {
     padding: 0 0 34px;
 }
