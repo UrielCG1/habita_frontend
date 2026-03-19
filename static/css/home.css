@@ -292,7 +292,40 @@
 
 
 
+/*      owners section     */
 
+.owners-section {
+    background: var(--color-primary);
+    color: #fff;
+    padding: 80px 0;
+}
+
+.owners-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: center;
+}
+
+.owners-copy h2 {
+    margin: 0 0 20px;
+    font-size: 44px;
+    line-height: 1.1;
+    font-weight: 900;
+}
+
+.owners-copy p {
+    margin: 0 0 26px;
+    color: rgba(255, 255, 255, 0.84);
+    line-height: 1.8;
+}
+
+.owners-image-box {
+    border-radius: 22px;
+    overflow: hidden;
+    transform: rotate(2deg);
+    box-shadow: var(--shadow-md);
+}
 
 
 
