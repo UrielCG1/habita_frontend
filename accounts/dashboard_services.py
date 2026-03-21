@@ -2,6 +2,7 @@ from decimal import Decimal, InvalidOperation
 from urllib.parse import urljoin
 from typing import Optional
 from datetime import datetime
+from properties.services import _property_image_proxy_url
 
 from django.conf import settings
 
@@ -11,21 +12,6 @@ from .services import (
     UnauthorizedRefreshError,
     authenticated_request,
 )
-
-
-def _backend_root() -> str:
-    return settings.BACKEND_API_BASE_URL.removesuffix("/api")
-
-
-def _absolute_media_url(file_url: Optional[str]) -> Optional[str]:
-    if not file_url:
-        return None
-
-    if file_url.startswith("http://") or file_url.startswith("https://"):
-        return file_url
-
-    return urljoin(f"{_backend_root()}/", file_url.lstrip("/"))
-
 
 def _format_price(value) -> str:
     if value in (None, ""):
@@ -54,8 +40,7 @@ def _build_location(item: dict) -> str:
 
 def _normalize_property_card(item: dict) -> dict:
     cover_image = item.get("cover_image") or {}
-    image_url = _absolute_media_url(cover_image.get("file_url"))
-
+    image_url = _property_image_proxy_url(cover_image.get("id"))
     return {
         "id": item.get("id"),
         "title": item.get("title", "Propiedad sin título"),
@@ -111,7 +96,7 @@ def _status_key(status: Optional[str]) -> str:
 def _normalize_rental_request(item: dict) -> dict:
     property_data = item.get("property") or {}
     cover_image = property_data.get("cover_image") or {}
-    image_url = _absolute_media_url(cover_image.get("file_url"))
+    image_url = _property_image_proxy_url(cover_image.get("id"))
 
     raw_status = item.get("status") or ""
     normalized_status = raw_status.capitalize()

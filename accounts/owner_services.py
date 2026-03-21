@@ -3,6 +3,7 @@ from urllib.parse import urljoin
 from typing import Optional
 
 from django.conf import settings
+from properties.services import _property_image_proxy_url
 
 from .services import (
     AuthServiceError,
@@ -11,19 +12,6 @@ from .services import (
     authenticated_request,
 )
 
-
-def _backend_root() -> str:
-    return settings.BACKEND_API_BASE_URL.removesuffix("/api")
-
-
-def _absolute_media_url(file_url: Optional[str]) -> Optional[str]:
-    if not file_url:
-        return None
-
-    if file_url.startswith("http://") or file_url.startswith("https://"):
-        return file_url
-
-    return urljoin(f"{_backend_root()}/", file_url.lstrip("/"))
 
 
 def _format_price(value) -> str:
@@ -57,7 +45,7 @@ def _normalize_owner_property(item: dict) -> dict:
         "status": (item.get("status") or "").capitalize(),
         "bedrooms": item.get("bedrooms", 0),
         "bathrooms": item.get("bathrooms", 0),
-        "cover_image_url": _absolute_media_url(cover_image.get("file_url")),
+        "cover_image_url": _property_image_proxy_url(cover_image.get("id")),
         "is_published": item.get("is_published", False),
     }
 
@@ -79,7 +67,7 @@ def _normalize_rental_request(item: dict) -> dict:
         "user_phone": user.get("phone", ""),
         "property_title": property_data.get("title", "Propiedad"),
         "property_id": property_data.get("id"),
-        "property_image_url": _absolute_media_url(cover_image.get("file_url")),
+        "property_cover_image_url": _property_image_proxy_url(cover_image.get("id")),
     }
 
 
@@ -183,7 +171,7 @@ def get_owner_property_detail(request, property_id: int) -> tuple[Optional[dict]
             normalized_images.append(
                 {
                     "id": image.get("id"),
-                    "image_url": _absolute_media_url(image.get("file_url")),
+                    "image_url": _property_image_proxy_url(image.get("id")),
                     "alt_text": image.get("alt_text") or data.get("title", "Imagen"),
                     "is_cover": image.get("is_cover", False),
                 }

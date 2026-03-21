@@ -3,6 +3,7 @@ from urllib.parse import urljoin
 from typing import Optional
 
 from django.conf import settings
+from properties.services import _property_image_proxy_url
 
 from .services import (
     AuthServiceError,
@@ -10,20 +11,6 @@ from .services import (
     UnauthorizedRefreshError,
     authenticated_request,
 )
-
-
-def _backend_root() -> str:
-    return settings.BACKEND_API_BASE_URL.removesuffix("/api")
-
-
-def _absolute_media_url(file_url: Optional[str]) -> Optional[str]:
-    if not file_url:
-        return None
-
-    if file_url.startswith("http://") or file_url.startswith("https://"):
-        return file_url
-
-    return urljoin(f"{_backend_root()}/", file_url.lstrip("/"))
 
 
 def _format_price(value) -> str:
@@ -54,7 +41,7 @@ def _normalize_property(item: dict) -> dict:
         "owner_name": owner.get("full_name", "Sin propietario"),
         "price": _format_price(item.get("price")),
         "status": (item.get("status") or "").capitalize(),
-        "image_url": _absolute_media_url(cover_image.get("file_url")),
+        "image_url": _property_image_proxy_url(cover_image.get("id")),
     }
 
 
