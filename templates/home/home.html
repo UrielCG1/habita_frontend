@@ -161,11 +161,19 @@
                     <article class="featured-property-card">
                         <a href="{% url 'properties:detail' property.id %}" class="featured-property-card__media-link">
                             <div class="featured-property-card__media">
-                                <img
-                                    src="{{ property.cover_image_url }}"
-                                    alt="{{ property.cover_image_alt }}"
-                                    class="featured-property-card__image"
-                                >
+                                {% if property.cover_image_url %}
+                                    <img
+                                        src="{{ property.cover_image_url }}"
+                                        alt="{{ property.cover_image_alt }}"
+                                        class="featured-property-card__image"
+                                    >
+                                {% else %}
+                                    <img
+                                        src="{% static 'img/property-placeholder.jpg' %}"
+                                        alt="{{ property.title }}"
+                                        class="featured-property-card__image"
+                                    >
+                                {% endif %}
 
                                 <div class="featured-property-card__badges">
                                     <span class="property-chip property-chip--solid">{{ property.property_type_label }}</span>

@@ -7,6 +7,7 @@ from .views import (
     submit_rental_request_view,
     submit_review_view,
     toggle_favorite_view,
+    property_image_proxy
 )
 
 app_name = "properties"
@@ -18,4 +19,6 @@ urlpatterns = [
     path("<int:property_id>/request/", submit_rental_request_view, name="submit-request"),
     path("<int:property_id>/review/", submit_review_view, name="submit-review"),
     path("<int:property_id>/review/delete/", delete_review_view, name="delete-review"),
+    
+    path("images/<int:image_id>/", property_image_proxy, name="property_image_proxy"),
 ]

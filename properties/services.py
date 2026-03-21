@@ -1,5 +1,6 @@
 from decimal import Decimal, InvalidOperation
-from urllib.parse import urlencode, urljoin
+from urllib.parse import urlencode
+from django.urls import reverse
 from typing import Optional
 
 import requests
@@ -32,19 +33,10 @@ STATUS_LABELS = {
 }
 
 
-def _backend_root() -> str:
-    return settings.BACKEND_API_BASE_URL.removesuffix("/api")
-
-
-def _absolute_media_url(file_url: Optional[str]) -> Optional[str]:
-    if not file_url:
+def _property_image_proxy_url(image_id: Optional[int]) -> Optional[str]:
+    if not image_id:
         return None
-
-    if file_url.startswith("http://") or file_url.startswith("https://"):
-        return file_url
-
-    return urljoin(f"{_backend_root()}/", file_url.lstrip("/"))
-
+    return reverse("properties:property_image_proxy", kwargs={"image_id": image_id})
 
 def _format_price(value) -> str:
     if value in (None, ""):
@@ -125,7 +117,7 @@ def _build_owner_initials(owner_name: Optional[str]) -> str:
 def _normalize_property_card(item: dict) -> dict:
     cover_image = item.get("cover_image") or {}
     owner = item.get("owner") or {}
-    image_url = _absolute_media_url(cover_image.get("file_url"))
+    image_url = _property_image_proxy_url(cover_image.get("id"))
     property_type = item.get("property_type")
     status = item.get("status")
 
@@ -170,7 +162,7 @@ def _normalize_property_images(item: dict) -> list[dict]:
         normalized_images.append(
             {
                 "id": image.get("id"),
-                "image_url": _absolute_media_url(image.get("file_url")),
+                "image_url": _property_image_proxy_url(image.get("id")),
                 "alt_text": image.get("alt_text") or item.get("title", "Imagen de propiedad"),
                 "is_cover": image.get("is_cover", False),
                 "sort_order": image.get("sort_order", 0),
@@ -181,7 +173,7 @@ def _normalize_property_images(item: dict) -> list[dict]:
         normalized_images.append(
             {
                 "id": cover_image.get("id"),
-                "image_url": _absolute_media_url(cover_image.get("file_url")),
+                "image_url": _property_image_proxy_url(cover_image.get("id")),
                 "alt_text": cover_image.get("alt_text") or item.get("title", "Imagen de propiedad"),
                 "is_cover": cover_image.get("is_cover", True),
                 "sort_order": cover_image.get("sort_order", 0),
@@ -189,7 +181,13 @@ def _normalize_property_images(item: dict) -> list[dict]:
         )
 
     normalized_images = [img for img in normalized_images if img.get("image_url")]
-    normalized_images.sort(key=lambda image: (not image.get("is_cover", False), image.get("sort_order", 0), image.get("id") or 0))
+    normalized_images.sort(
+        key=lambda image: (
+            not image.get("is_cover", False),
+            image.get("sort_order", 0),
+            image.get("id") or 0,
+        )
+    )
     return normalized_images
 
 

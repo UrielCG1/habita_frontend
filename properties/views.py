@@ -257,3 +257,58 @@ def delete_review_view(request, property_id: int):
         messages.error(request, message)
 
     return redirect("properties:detail", property_id=property_id)
+
+
+import requests
+from django.conf import settings
+from django.http import Http404, HttpResponse, StreamingHttpResponse
+
+PASS_HEADERS = (
+    "Content-Length",
+    "Content-Disposition",
+    "Cache-Control",
+    "ETag",
+    "Last-Modified",
+)
+
+def _iter_upstream(response, chunk_size=8192):
+    try:
+        for chunk in response.iter_content(chunk_size=chunk_size):
+            if chunk:
+                yield chunk
+    finally:
+        response.close()
+
+def property_image_proxy(request, image_id: int):
+    backend_url = f"{settings.BACKEND_API_BASE_URL.rstrip('/')}/property-images/{image_id}/content"
+
+    upstream = requests.get(
+        backend_url,
+        stream=True,
+        timeout=(5, 30),
+    )
+
+    if upstream.status_code == 404:
+        upstream.close()
+        raise Http404("Imagen no encontrada")
+
+    if upstream.status_code >= 400:
+        body = upstream.text
+        upstream.close()
+        return HttpResponse(
+            body or "No fue posible obtener la imagen.",
+            status=upstream.status_code,
+        )
+
+    response = StreamingHttpResponse(
+        streaming_content=_iter_upstream(upstream),
+        status=upstream.status_code,
+        content_type=upstream.headers.get("Content-Type", "application/octet-stream"),
+    )
+
+    for header in PASS_HEADERS:
+        value = upstream.headers.get(header)
+        if value:
+            response[header] = value
+
+    return response

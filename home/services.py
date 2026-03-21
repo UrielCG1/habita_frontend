@@ -4,6 +4,7 @@ from urllib.parse import urljoin
 
 import requests
 from django.conf import settings
+from properties.services import _property_image_proxy_url
 
 
 PROPERTY_TYPE_LABELS = {
@@ -21,22 +22,6 @@ STATUS_LABELS = {
     "rented": "Rentada",
     "inactive": "Inactiva",
 }
-
-
-
-def _backend_base_url() -> str:
-    return settings.BACKEND_API_BASE_URL.removesuffix("/api")
-
-
-
-def _absolute_media_url(file_url: Optional[str]) -> Optional[str]:
-    if not file_url:
-        return None
-
-    if file_url.startswith(("http://", "https://")):
-        return file_url
-
-    return urljoin(f"{_backend_base_url()}/", file_url.lstrip("/"))
 
 
 
@@ -110,7 +95,8 @@ def _placeholder_image() -> str:
 def _map_property_card(item: dict) -> dict:
     cover_image = item.get("cover_image") or {}
     owner = item.get("owner") or {}
-    image_url = _absolute_media_url(cover_image.get("file_url")) or _placeholder_image()
+    # image_url = _absolute_media_url(cover_image.get("file_url")) or _placeholder_image()
+    image_url = _property_image_proxy_url(cover_image.get("id"))
 
     bedrooms = item.get("bedrooms") or 0
     bathrooms = item.get("bathrooms") or 0
