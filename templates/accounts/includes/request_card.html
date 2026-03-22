@@ -1,0 +1,114 @@
+<article class="request-card">
+    <div class="request-card__media">
+        <img src="{{ request_item.property_cover_image_url }}" alt="{{ request_item.property_title }}">
+        <div class="request-card__media-overlay"></div>
+    </div>
+
+    <div class="request-card__body">
+        <div class="request-card__head">
+            <div class="request-card__property-block">
+                {% if show_property_link %}
+                    <a href="{% url 'properties:detail' request_item.property_id %}" class="request-card__property-link">{{ request_item.property_title }}</a>
+                {% else %}
+                    <h3>{{ request_item.property_title }}</h3>
+                {% endif %}
+                {% if request_item.property_location %}
+                    <p class="request-card__location">
+                        <span class="material-symbols-outlined">location_on</span>
+                        {{ request_item.property_location }}
+                    </p>
+                {% endif %}
+            </div>
+
+            <span class="request-status-badge request-status-badge--{{ request_item.status_tone }}">{{ request_item.status_label }}</span>
+        </div>
+
+        <div class="request-applicant">
+            <div class="request-applicant__avatar">{{ request_item.user_initials }}</div>
+            <div class="request-applicant__content">
+                <strong>{{ request_item.user_name }}</strong>
+                <p>{{ request_item.user_email }}</p>
+                {% if request_item.user_phone %}
+                    <span>{{ request_item.user_phone }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="request-meta-grid">
+            <div class="request-meta-pill">
+                <span class="material-symbols-outlined">payments</span>
+                <div>
+                    <small>Presupuesto</small>
+                    <strong>{{ request_item.monthly_budget }}</strong>
+                </div>
+            </div>
+            <div class="request-meta-pill">
+                <span class="material-symbols-outlined">calendar_month</span>
+                <div>
+                    <small>Mudanza estimada</small>
+                    <strong>{{ request_item.move_in_date_display }}</strong>
+                </div>
+            </div>
+            <div class="request-meta-pill">
+                <span class="material-symbols-outlined">schedule</span>
+                <div>
+                    <small>Recibida</small>
+                    <strong>{{ request_item.created_at_display }}</strong>
+                </div>
+            </div>
+        </div>
+
+        {% if request_item.message %}
+            <div class="request-message-box">
+                <div class="request-message-box__head">
+                    <span class="material-symbols-outlined">chat</span>
+                    <strong>Mensaje del interesado</strong>
+                </div>
+                <p>{{ request_item.message }}</p>
+            </div>
+        {% endif %}
+
+        <div class="request-card__footer">
+            <form method="post" action="{% url 'accounts:owner-update-request-status' property_id=request_item.property_id request_id=request_item.id %}" class="request-owner-form">
+                {% csrf_token %}
+                <input type="hidden" name="next_url" value="{{ current_url }}">
+
+                <div class="request-owner-form__row">
+                    <label>
+                        <span>Estado</span>
+                        <select name="status">
+                            <option value="pending" {% if request_item.status_code == 'pending' %}selected{% endif %}>Pendiente</option>
+                            <option value="accepted" {% if request_item.status_code == 'accepted' %}selected{% endif %}>Aceptada</option>
+                            <option value="rejected" {% if request_item.status_code == 'rejected' %}selected{% endif %}>Rechazada</option>
+                            <option value="cancelled" {% if request_item.status_code == 'cancelled' %}selected{% endif %}>Cancelada</option>
+                        </select>
+                    </label>
+                </div>
+
+                <label class="request-owner-form__notes">
+                    <span>Notas privadas</span>
+                    <textarea name="owner_notes" rows="3" placeholder="Agrega notas internas sobre esta solicitud...">{{ request_item.owner_notes }}</textarea>
+                </label>
+
+                <div class="request-card__actions">
+                    <button type="submit" class="btn-primary btn-small">
+                        <span class="material-symbols-outlined">save</span>
+                        Guardar cambios
+                    </button>
+
+                    {% if request_item.user_email %}
+                        <a href="mailto:{{ request_item.user_email }}" class="btn-secondary btn-small">
+                            <span class="material-symbols-outlined">mail</span>
+                            Contactar
+                        </a>
+                    {% endif %}
+
+                    <a href="{% url 'properties:detail' request_item.property_id %}" class="request-card__link-action">
+                        <span class="material-symbols-outlined">visibility</span>
+                        Ver propiedad
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</article>
