@@ -1,4 +1,5 @@
 from django.contrib import messages
+from decimal import Decimal, InvalidOperation
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -198,10 +199,54 @@ def activity_view(request):
     )
     
     
+def _safe_decimal(value) -> Decimal:
+    try:
+        return Decimal(str(value))
+    except (InvalidOperation, TypeError, ValueError):
+        return Decimal("0")
+
+
 @habita_role_required("owner", "admin")
 def owner_properties_view(request):
     habita_user = get_habita_user(request)
     properties, properties_error = get_owner_properties(request, owner_id=habita_user["id"])
+
+    pending_requests, _pending_error = get_owner_requests_overview(
+        request,
+        owner_id=habita_user["id"],
+        status="pending",
+    )
+
+    pending_map = {}
+    for rental_request in pending_requests:
+        property_id = rental_request.get("property_id")
+        if not property_id:
+            continue
+        pending_map[property_id] = pending_map.get(property_id, 0) + 1
+
+    rented_statuses = {"rented", "occupied", "leased"}
+
+    for property_item in properties:
+        property_item["pending_requests_count"] = pending_map.get(property_item["id"], 0)
+        property_item["pending_requests_label"] = (
+            "1 solicitud pendiente"
+            if property_item["pending_requests_count"] == 1
+            else f'{property_item["pending_requests_count"]} solicitudes pendientes'
+        )
+
+    stats = {
+        "total": len(properties),
+        "published": sum(1 for property_item in properties if property_item.get("is_published")),
+        "available": sum(1 for property_item in properties if property_item.get("status_code") == "available"),
+        "pending_requests": len(pending_requests),
+        "monthly_income_display": "${:,.0f}/mes".format(
+            float(sum(
+                _safe_decimal(property_item.get("price_amount"))
+                for property_item in properties
+                if property_item.get("status_code") in rented_statuses
+            ))
+        ),
+    }
 
     return render(
         request,
@@ -210,6 +255,7 @@ def owner_properties_view(request):
             "habita_user": habita_user,
             "properties": properties,
             "properties_error": properties_error,
+            "stats": stats,
         },
     )
 

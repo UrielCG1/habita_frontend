@@ -8,64 +8,115 @@
 {% endblock %}
 
 {% block content %}
-<section class="dashboard-section">
+<section class="owner-properties-page">
     <div class="container">
-        <div class="dashboard-header">
-            <div>
+        <div class="owner-properties-hero">
+            <div class="owner-properties-hero__content">
+                <span class="owner-properties-hero__eyebrow">Panel del propietario</span>
                 <h1>Mis propiedades</h1>
-                <p>Gestiona las propiedades que has publicado en HABITA.</p>
+                <p>
+                    Administra tus publicaciones, revisa el estado de cada propiedad y entra rápido a las
+                    solicitudes pendientes desde un solo panel.
+                </p>
             </div>
-            <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                <a href="{% url 'accounts:owner-property-create' %}" class="btn-primary btn-small">Nueva propiedad</a>
-                <a href="{% url 'accounts:owner-properties' %}" class="btn-primary btn-small">Volver</a>
+
+            <div class="owner-properties-hero__actions">
+                <a href="{% url 'accounts:owner-property-create' %}" class="btn-primary">
+                    <span class="material-symbols-outlined">add_home</span>
+                    Nueva propiedad
+                </a>
+                <a href="{% url 'accounts:owner-requests' %}" class="btn-secondary">
+                    <span class="material-symbols-outlined">mail</span>
+                    Ver todas las solicitudes
+                </a>
             </div>
+        </div>
+
+        <div class="owner-properties-stats">
+            <article class="owner-properties-stat-card">
+                <div class="owner-properties-stat-card__icon owner-properties-stat-card__icon--primary">
+                    <span class="material-symbols-outlined">apartment</span>
+                </div>
+                <div>
+                    <span>Total propiedades</span>
+                    <strong>{{ stats.total|default:0 }}</strong>
+                </div>
+            </article>
+
+            <article class="owner-properties-stat-card">
+                <div class="owner-properties-stat-card__icon owner-properties-stat-card__icon--accent">
+                    <span class="material-symbols-outlined">campaign</span>
+                </div>
+                <div>
+                    <span>Publicadas</span>
+                    <strong>{{ stats.published|default:0 }}</strong>
+                </div>
+            </article>
+
+            <article class="owner-properties-stat-card">
+                <div class="owner-properties-stat-card__icon owner-properties-stat-card__icon--success">
+                    <span class="material-symbols-outlined">home</span>
+                </div>
+                <div>
+                    <span>Disponibles</span>
+                    <strong>{{ stats.available|default:0 }}</strong>
+                </div>
+            </article>
+
+            <article class="owner-properties-stat-card">
+                <div class="owner-properties-stat-card__icon owner-properties-stat-card__icon--soft">
+                    <span class="material-symbols-outlined">schedule</span>
+                </div>
+                <div>
+                    <span>Solicitudes pendientes</span>
+                    <strong>{{ stats.pending_requests|default:0 }}</strong>
+                </div>
+            </article>
+        </div>
+
+        <div class="owner-properties-toolbar">
+            <div>
+                <h2>Portafolio de propiedades</h2>
+                <p>
+                    {% if properties %}
+                        {{ properties|length }} {% if properties|length == 1 %}propiedad registrada{% else %}propiedades registradas{% endif %}
+                    {% else %}
+                        Aún no has publicado propiedades en HABITA.
+                    {% endif %}
+                </p>
+            </div>
+
+            {% if properties %}
+                <div class="owner-properties-toolbar__meta">
+                    <span class="material-symbols-outlined">trending_up</span>
+                    <span>Ingreso potencial rentado:</span>
+                    <strong>{{ stats.monthly_income_display }}</strong>
+                </div>
+            {% endif %}
         </div>
 
         {% if properties_error %}
             <div class="message-box message-error">{{ properties_error }}</div>
         {% elif properties %}
-            <div class="properties-grid-dashboard">
+            <div class="owner-properties-grid">
                 {% for property in properties %}
-                    <article class="property-card-dashboard">
-                        <div style="margin-top:14px; display:flex; gap:12px; flex-wrap:wrap;">
-                            <a href="{% url 'accounts:owner-property-requests' property.id %}" class="btn-secondary-link">
-                                Ver solicitudes
-                            </a>
-                            <a href="{% url 'accounts:owner-property-edit' property.id %}" class="btn-secondary-link">
-                                Editar propiedad
-                            </a>
-                        </div>
-                        <div class="property-card-dashboard__image">
-                            {% if property.cover_image_url %}
-                                <img src="{{ property.cover_image_url }}" alt="{{ property.title }}">
-                            {% else %}
-                                <img src="{% static 'img/property-placeholder.jpg' %}" alt="{{ property.title }}">
-                            {% endif %}
-                        </div>
-
-                        <div class="property-card-dashboard__body">
-                            <span class="property-type-chip">{{ property.property_type }}</span>
-                            <h3>{{ property.title }}</h3>
-                            <p>{{ property.location }}</p>
-                            <strong>{{ property.price }}</strong>
-
-                            <div class="property-card-dashboard__meta">
-                                <span>{{ property.bedrooms }} rec.</span>
-                                <span>{{ property.bathrooms }} baños</span>
-                                <span>{{ property.status }}</span>
-                            </div>
-
-                            <div style="margin-top:14px;">
-                                <a href="{% url 'accounts:owner-property-requests' property.id %}" class="btn-secondary-link">
-                                    Ver solicitudes
-                                </a>
-                            </div>
-                        </div>
-                    </article>
+                    {% include "accounts/includes/owner_property_card.html" with property=property %}
                 {% endfor %}
             </div>
         {% else %}
-            <p class="empty-text">Aún no tienes propiedades publicadas.</p>
+            <div class="owner-properties-empty">
+                <div class="owner-properties-empty__icon">
+                    <span class="material-symbols-outlined">holiday_village</span>
+                </div>
+                <h3>No tienes propiedades publicadas</h3>
+                <p>
+                    Comienza a publicar tus propiedades para recibir solicitudes y administrar tu oferta dentro de HABITA.
+                </p>
+                <a href="{% url 'accounts:owner-property-create' %}" class="btn-primary">
+                    <span class="material-symbols-outlined">add_home</span>
+                    Publicar mi primera propiedad
+                </a>
+            </div>
         {% endif %}
     </div>
 </section>

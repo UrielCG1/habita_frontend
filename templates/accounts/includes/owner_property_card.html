@@ -1,0 +1,88 @@
+{% load static %}
+
+<article class="owner-property-card">
+    <div class="owner-property-card__media">
+        {% if property.cover_image_url %}
+            <img src="{{ property.cover_image_url }}" alt="{{ property.title }}">
+        {% else %}
+            <img src="{% static 'img/property-placeholder.jpg' %}" alt="{{ property.title }}">
+        {% endif %}
+
+        <div class="owner-property-card__overlay"></div>
+
+        <div class="owner-property-card__badges">
+            <span class="owner-property-badge owner-property-badge--{{ property.status_code|default:'unknown' }}">
+                {{ property.status_label }}
+            </span>
+
+            {% if property.pending_requests_count %}
+                <span class="owner-property-badge owner-property-badge--requests">
+                    {{ property.pending_requests_count }} {% if property.pending_requests_count == 1 %}solicitud{% else %}solicitudes{% endif %}
+                </span>
+            {% endif %}
+        </div>
+
+        <details class="owner-property-menu">
+            <summary aria-label="Opciones de la propiedad">
+                <span class="material-symbols-outlined">more_vert</span>
+            </summary>
+
+            <div class="owner-property-menu__panel">
+                <a href="{% url 'properties:detail' property.id %}">
+                    <span class="material-symbols-outlined">visibility</span>
+                    Ver publicación
+                </a>
+                <a href="{% url 'accounts:owner-property-edit' property.id %}">
+                    <span class="material-symbols-outlined">edit</span>
+                    Editar propiedad
+                </a>
+                <a href="{% url 'accounts:owner-property-requests' property.id %}">
+                    <span class="material-symbols-outlined">description</span>
+                    Ver solicitudes
+                </a>
+            </div>
+        </details>
+    </div>
+
+    <div class="owner-property-card__body">
+        <div class="owner-property-card__type">{{ property.property_type_label }}</div>
+
+        <h3>{{ property.title }}</h3>
+
+        <p class="owner-property-card__location">
+            <span class="material-symbols-outlined">location_on</span>
+            {{ property.location }}
+        </p>
+
+        <div class="owner-property-card__meta">
+            <span>
+                <span class="material-symbols-outlined">bed</span>
+                {{ property.bedrooms }} rec.
+            </span>
+            <span>
+                <span class="material-symbols-outlined">bathtub</span>
+                {{ property.bathrooms }} baños
+            </span>
+            <span>
+                <span class="material-symbols-outlined">straighten</span>
+                {{ property.area_display }}
+            </span>
+        </div>
+
+        <div class="owner-property-card__footer">
+            <div>
+                <strong>{{ property.price }}</strong>
+                <small>{{ property.pending_requests_label }}</small>
+            </div>
+
+            <div class="owner-property-card__actions">
+                <a href="{% url 'accounts:owner-property-edit' property.id %}" class="btn-secondary btn-small">
+                    Editar
+                </a>
+                <a href="{% url 'accounts:owner-property-requests' property.id %}" class="btn-primary btn-small">
+                    Solicitudes
+                </a>
+            </div>
+        </div>
+    </div>
+</article>

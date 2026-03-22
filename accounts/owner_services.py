@@ -49,6 +49,60 @@ def _build_location(item: dict) -> str:
     parts = [part for part in [neighborhood, city, state] if part]
     return ", ".join(parts) if parts else "Ubicación no disponible"
 
+def _parse_amount(value) -> Decimal:
+    try:
+        return Decimal(str(value))
+    except (InvalidOperation, ValueError, TypeError):
+        return Decimal("0")
+
+
+def _format_area(value) -> str:
+    if value in (None, ""):
+        return "Área no disponible"
+
+    try:
+        area = Decimal(str(value))
+        return f"{area.normalize()} m²" if area != area.to_integral() else f"{area.quantize(Decimal('1'))} m²"
+    except (InvalidOperation, ValueError, TypeError):
+        return f"{value} m²"
+
+
+def _property_type_label(value: str) -> str:
+    mapping = {
+        "house": "Casa",
+        "apartment": "Departamento",
+        "studio": "Estudio",
+        "room": "Habitación",
+        "land": "Terreno",
+        "office": "Oficina",
+        "commercial": "Local comercial",
+    }
+    return mapping.get((value or "").lower(), (value or "Propiedad").replace("_", " ").capitalize())
+
+
+def _property_status_meta(status: str, is_published: bool) -> tuple[str, str]:
+    code = (status or "").lower().strip()
+
+    mapping = {
+        "available": ("available", "Disponible"),
+        "occupied": ("occupied", "Ocupada"),
+        "rented": ("rented", "Rentada"),
+        "leased": ("rented", "Rentada"),
+        "draft": ("draft", "Borrador"),
+        "inactive": ("inactive", "Inactiva"),
+        "paused": ("inactive", "Pausada"),
+    }
+
+    status_code, status_label = mapping.get(
+        code,
+        ("unpublished", "No publicada") if not is_published else ("unknown", (status or "Sin estado").capitalize()),
+    )
+
+    if not is_published and status_code in {"available", "occupied", "rented", "unknown"}:
+        return "unpublished", "No publicada"
+
+    return status_code, status_label
+
 
 def _get_initials(value: str, fallback: str = "U") -> str:
     parts = [part for part in (value or "").strip().split() if part]
@@ -90,23 +144,30 @@ def _normalize_status(status: Optional[str]) -> tuple[str, str, str]:
 
 def _normalize_owner_property(item: dict) -> dict:
     cover_image = item.get("cover_image") or {}
-    property_type = (item.get("property_type") or "").capitalize()
-    status_value = (item.get("status") or "").capitalize()
+    is_published = item.get("is_published", False)
+    status_code, status_label = _property_status_meta(item.get("status"), is_published)
+    price_amount = _parse_amount(item.get("price"))
 
     return {
         "id": item.get("id"),
         "title": item.get("title", "Propiedad sin título"),
         "location": _build_location(item),
         "price": _format_price(item.get("price")),
-        "property_type": property_type,
-        "property_type_label": property_type or "Propiedad",
-        "status": status_value,
-        "status_label": status_value or "Disponible",
+        "price_amount": price_amount,
+        "property_type": (item.get("property_type") or "").capitalize(),
+        "property_type_label": _property_type_label(item.get("property_type")),
+        "status": (item.get("status") or "").capitalize(),
+        "status_code": status_code,
+        "status_label": status_label,
         "bedrooms": item.get("bedrooms", 0),
         "bathrooms": item.get("bathrooms", 0),
+        "parking_spaces": item.get("parking_spaces", 0),
+        "area_m2": item.get("area_m2"),
+        "area_display": _format_area(item.get("area_m2")),
         "cover_image_url": _property_image_proxy_url(cover_image.get("id")),
-        "is_published": item.get("is_published", False),
+        "is_published": is_published,
     }
+
 
 
 def _normalize_rental_request(item: dict) -> dict:
@@ -446,19 +507,11 @@ def build_owner_requests_summary(requests: list[dict]) -> dict:
 
 
 
-def get_owner_requests_overview(
-    request,
-    owner_id: int,
-    status: Optional[str] = None,
-    property_id: Optional[int] = None,
-) -> tuple[list[dict], Optional[str]]:
+def get_owner_requests_overview(request, owner_id: int, status: Optional[str] = None) -> tuple[list[dict], Optional[str]]:
     properties, properties_error = get_owner_properties(request, owner_id=owner_id, limit=200)
 
     if properties_error:
         return [], properties_error
-
-    if property_id is not None:
-        properties = [item for item in properties if item.get("id") == property_id]
 
     all_requests = []
 
@@ -466,7 +519,7 @@ def get_owner_requests_overview(
         property_requests, property_requests_error = get_property_rental_requests(
             request,
             property_id=property_item["id"],
-            status=None,
+            status=status,
         )
 
         if property_requests_error:
@@ -474,15 +527,9 @@ def get_owner_requests_overview(
 
         for req in property_requests:
             req["property_status"] = property_item.get("status")
-            req["property_status_label"] = property_item.get("status_label")
             req["property_price"] = property_item.get("price")
             req["property_location"] = property_item.get("location")
-            req["property_cover_image_url"] = property_item.get("cover_image_url") or req.get("property_cover_image_url")
+            req["property_cover_image_url"] = property_item.get("cover_image_url")
             all_requests.append(req)
 
-    if status:
-        normalized_status = str(status).strip().lower()
-        all_requests = [item for item in all_requests if item.get("status_code") == normalized_status]
-
-    all_requests.sort(key=lambda req: (req.get("created_at_sort") is None, req.get("created_at_sort") or datetime.min), reverse=True)
     return all_requests, None
