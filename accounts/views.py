@@ -19,6 +19,7 @@ from .owner_services import (
     delete_property_by_id,
     set_property_image_as_cover,
     delete_property_image_by_id,
+    build_owner_requests_summary,
 )
 from .services import (
     AuthServiceError,
@@ -216,7 +217,7 @@ def owner_properties_view(request):
 @habita_role_required("owner", "admin")
 def owner_property_requests_view(request, property_id: int):
     habita_user = get_habita_user(request)
-    status_filter = request.GET.get("status", "").strip() or None
+    status_filter = request.GET.get("status", "").strip() or ""
 
     properties, _ = get_owner_properties(request, owner_id=habita_user["id"])
     owned_property = next((item for item in properties if item["id"] == property_id), None)
@@ -225,11 +226,16 @@ def owner_property_requests_view(request, property_id: int):
         messages.error(request, "No tienes acceso a esa propiedad.")
         return redirect("accounts:owner-properties")
 
-    rental_requests, rental_requests_error = get_property_rental_requests(
+    all_requests, rental_requests_error = get_property_rental_requests(
         request,
         property_id=property_id,
-        status=status_filter,
+        status=None,
     )
+
+    request_summary = build_owner_requests_summary(all_requests)
+    rental_requests = all_requests
+    if status_filter:
+        rental_requests = [item for item in all_requests if item.get("status_code") == status_filter]
 
     return render(
         request,
@@ -239,20 +245,21 @@ def owner_property_requests_view(request, property_id: int):
             "owned_property": owned_property,
             "rental_requests": rental_requests,
             "rental_requests_error": rental_requests_error,
-            "status_filter": status_filter or "",
-            "status_form": OwnerRequestStatusForm(),
+            "status_filter": status_filter,
+            "request_summary": request_summary,
+            "current_url": request.get_full_path(),
         },
     )
-
 
 @require_POST
 @habita_role_required("owner", "admin")
 def owner_update_request_status_view(request, property_id: int, request_id: int):
     form = OwnerRequestStatusForm(request.POST)
+    next_url = request.POST.get("next_url") or reverse("accounts:owner-property-requests", args=[property_id])
 
     if not form.is_valid():
         messages.error(request, "Revisa los datos del cambio de estado.")
-        return redirect("accounts:owner-property-requests", property_id=property_id)
+        return redirect(next_url)
 
     success, message = patch_rental_request_status(
         request=request,
@@ -266,9 +273,7 @@ def owner_update_request_status_view(request, property_id: int, request_id: int)
     else:
         messages.error(request, message)
 
-    return redirect("accounts:owner-property-requests", property_id=property_id)
-
-
+    return redirect(next_url)
 
 
 ### ============================
@@ -596,21 +601,39 @@ def admin_delete_property_image_view(request, property_id: int, image_id: int):
 @habita_role_required("owner", "admin")
 def owner_requests_view(request):
     habita_user = get_habita_user(request)
-    status_filter = request.GET.get("status", "").strip() or None
+    status_filter = request.GET.get("status", "").strip() or ""
+    property_filter = request.GET.get("property_id", "").strip() or ""
 
-    rental_requests, rental_requests_error = get_owner_requests_overview(
+    selected_property_id = None
+    if property_filter.isdigit():
+        selected_property_id = int(property_filter)
+
+    owner_properties, properties_error = get_owner_properties(request, owner_id=habita_user["id"], limit=200)
+
+    all_requests, rental_requests_error = get_owner_requests_overview(
         request,
         owner_id=habita_user["id"],
-        status=status_filter,
+        property_id=selected_property_id,
+        status=None,
     )
+
+    request_summary = build_owner_requests_summary(all_requests)
+    rental_requests = all_requests
+    if status_filter:
+        rental_requests = [item for item in all_requests if item.get("status_code") == status_filter]
 
     return render(
         request,
         "accounts/owner_requests.html",
         {
             "habita_user": habita_user,
+            "owner_properties": owner_properties,
+            "owner_properties_error": properties_error,
             "rental_requests": rental_requests,
             "rental_requests_error": rental_requests_error,
-            "status_filter": status_filter or "",
+            "status_filter": status_filter,
+            "property_filter": property_filter,
+            "request_summary": request_summary,
+            "current_url": request.get_full_path(),
         },
     )

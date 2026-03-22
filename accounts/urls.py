@@ -32,7 +32,6 @@ urlpatterns = [
     path("activity/", activity_view, name="activity"),
     
     # path("owner-area/", owner_area_view, name="owner-area"),  ### borrar
-    path("owner-requests/", owner_requests_view, name="owner-requests"), # Solicitudes recibidas
     
     # panel de administrador
     path("admin-area/", admin_area_view, name="admin-area"),
@@ -40,6 +39,7 @@ urlpatterns = [
     # propiedades del propietario
     path("owner-properties/", owner_properties_view, name="owner-properties"),
     
+    path("owner-requests/", owner_requests_view, name="owner-requests"), # Solicitudes recibidas
     # solicitudes de una propiedad específica del propietario
     path("owner-properties/<int:property_id>/requests/", owner_property_requests_view, name="owner-property-requests"),
     

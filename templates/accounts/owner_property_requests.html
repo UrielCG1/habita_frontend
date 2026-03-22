@@ -1,107 +1,109 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Solicitudes de propiedad | HABITA{% endblock %}
+{% block title %}Solicitudes de {{ owned_property.title }} | HABITA{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/owner-requests.css' %}">
 {% endblock %}
 
 {% block content %}
-<section class="dashboard-section">
+<section class="owner-requests-page">
     <div class="container">
-        <div class="dashboard-header">
-            <div>
-                <h1>Solicitudes de {{ owned_property.title }}</h1>
-                <p>{{ owned_property.location }}</p>
-            </div>
-            <a href="{% url 'accounts:owner-properties' %}" class="btn-primary btn-small">Volver a mis propiedades</a>
+        <div class="requests-breadcrumb-row">
+            <a href="{% url 'accounts:owner-requests' %}" class="requests-back-link">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Volver a solicitudes
+            </a>
         </div>
 
-        <form method="get" class="filters-panel" style="margin-bottom:24px;">
-            <div class="filters-grid" style="grid-template-columns: 1fr 220px;">
-                <input type="text" value="{{ owned_property.title }}" disabled>
-                <select name="status">
-                    <option value="">Todos los estados</option>
-                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pendiente</option>
-                    <option value="accepted" {% if status_filter == 'accepted' %}selected{% endif %}>Aceptada</option>
-                    <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rechazada</option>
-                    <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelada</option>
-                </select>
+        <div class="property-requests-hero">
+            <div class="property-requests-hero__media">
+                <img src="{{ owned_property.cover_image_url }}" alt="{{ owned_property.title }}">
             </div>
+            <div class="property-requests-hero__content">
+                <div class="requests-hero-card__eyebrow">Solicitudes por propiedad</div>
+                <h1>{{ owned_property.title }}</h1>
+                <p>{{ owned_property.location }}</p>
 
-            <div class="filters-actions">
-                <button type="submit" class="btn-primary">Filtrar</button>
-                <a href="{% url 'accounts:owner-property-requests' owned_property.id %}" class="btn-secondary-link">Limpiar</a>
+                <div class="property-requests-hero__meta">
+                    <span class="property-mini-chip">{{ owned_property.property_type_label|default:owned_property.property_type }}</span>
+                    <span class="property-mini-chip property-mini-chip--soft">{{ owned_property.status_label|default:owned_property.status }}</span>
+                    <span class="property-mini-chip property-mini-chip--gold">{{ owned_property.price }}</span>
+                </div>
             </div>
-        </form>
+            <div class="property-requests-hero__summary">
+                <div class="requests-summary-grid requests-summary-grid--compact">
+                    <article class="requests-summary-pill">
+                        <strong>{{ request_summary.total|default:0 }}</strong>
+                        <span>Total</span>
+                    </article>
+                    <article class="requests-summary-pill">
+                        <strong>{{ request_summary.pending|default:0 }}</strong>
+                        <span>Pendientes</span>
+                    </article>
+                    <article class="requests-summary-pill">
+                        <strong>{{ request_summary.accepted|default:0 }}</strong>
+                        <span>Aceptadas</span>
+                    </article>
+                    <article class="requests-summary-pill">
+                        <strong>{{ request_summary.resolved|default:0 }}</strong>
+                        <span>Resueltas</span>
+                    </article>
+                </div>
+            </div>
+        </div>
+
+        <div class="requests-toolbar-card">
+            <form method="get" class="requests-filters-form">
+                <div class="requests-filters-form__group">
+                    <label for="status">Estado</label>
+                    <select id="status" name="status">
+                        <option value="" {% if not status_filter %}selected{% endif %}>Todos los estados</option>
+                        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pendiente</option>
+                        <option value="accepted" {% if status_filter == 'accepted' %}selected{% endif %}>Aceptada</option>
+                        <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rechazada</option>
+                        <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelada</option>
+                    </select>
+                </div>
+
+                <div class="requests-filters-form__actions">
+                    <button type="submit" class="btn-primary btn-small">Aplicar filtro</button>
+                    <a href="{% url 'accounts:owner-property-requests' owned_property.id %}" class="btn-secondary btn-small">Limpiar</a>
+                </div>
+            </form>
+
+            <div class="requests-toolbar-card__meta">
+                <span class="material-symbols-outlined">mail</span>
+                <strong>{{ rental_requests|length }}</strong>
+                <span>{% if rental_requests|length == 1 %}solicitud visible{% else %}solicitudes visibles{% endif %}</span>
+            </div>
+        </div>
 
         {% if rental_requests_error %}
-            <div class="message-box message-error">{{ rental_requests_error }}</div>
+            <div class="requests-empty-card">
+                <span class="material-symbols-outlined">error</span>
+                <h3>No fue posible cargar las solicitudes</h3>
+                <p>{{ rental_requests_error }}</p>
+            </div>
         {% elif rental_requests %}
-            <div class="request-list request-list--full">
-                {% for item in rental_requests %}
-                    <article class="request-item request-item--full">
-                        <div class="request-item__media">
-                            {% if item.property_image_url %}
-                                <img src="{{ item.property_image_url }}" alt="{{ item.property_title }}">
-                            {% else %}
-                                <img src="{% static 'img/property-placeholder.jpg' %}" alt="{{ item.property_title }}">
-                            {% endif %}
-                        </div>
-
-                        <div class="request-item__body">
-                            <h2>{{ item.user_name }}</h2>
-                            <p><strong>Correo:</strong> {{ item.user_email }}</p>
-                            {% if item.user_phone %}
-                                <p><strong>Teléfono:</strong> {{ item.user_phone }}</p>
-                            {% endif %}
-                            <p><strong>Estado actual:</strong> {{ item.status }}</p>
-                            <p><strong>Presupuesto:</strong> {{ item.monthly_budget }}</p>
-
-                            {% if item.move_in_date %}
-                                <p><strong>Fecha estimada de mudanza:</strong> {{ item.move_in_date }}</p>
-                            {% endif %}
-
-                            {% if item.message %}
-                                <p><strong>Mensaje:</strong> {{ item.message }}</p>
-                            {% endif %}
-
-                            {% if item.owner_notes %}
-                                <p><strong>Notas actuales:</strong> {{ item.owner_notes }}</p>
-                            {% endif %}
-
-                            <div class="review-form-box" style="margin-top:18px;">
-                                <h3>Actualizar estado</h3>
-                                <form method="post" action="{% url 'accounts:owner-update-request-status' owned_property.id item.id %}" class="request-form">
-                                    {% csrf_token %}
-
-                                    <div class="request-form-grid">
-                                        <div class="form-group">
-                                            <label>Nuevo estado</label>
-                                            <select name="status" class="form-input">
-                                                <option value="pending" {% if item.status == 'Pending' %}selected{% endif %}>Pendiente</option>
-                                                <option value="accepted" {% if item.status == 'Accepted' %}selected{% endif %}>Aceptada</option>
-                                                <option value="rejected" {% if item.status == 'Rejected' %}selected{% endif %}>Rechazada</option>
-                                                <option value="cancelled" {% if item.status == 'Cancelled' %}selected{% endif %}>Cancelada</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label>Notas del propietario</label>
-                                        <textarea name="owner_notes" rows="3" class="form-textarea" placeholder="Escribe una nota o respuesta...">{{ item.owner_notes }}</textarea>
-                                    </div>
-
-                                    <button type="submit" class="btn-primary">Guardar cambio</button>
-                                </form>
-                            </div>
-                        </div>
-                    </article>
+            <div class="requests-list-grid">
+                {% for request_item in rental_requests %}
+                    {% include "accounts/includes/request_card.html" with request_item=request_item current_url=current_url show_property_link=False %}
                 {% endfor %}
             </div>
         {% else %}
-            <p class="empty-text">Aún no hay solicitudes para esta propiedad.</p>
+            <div class="requests-empty-card">
+                <span class="material-symbols-outlined">draft_orders</span>
+                <h3>Esta propiedad aún no tiene solicitudes en esta vista</h3>
+                <p>
+                    {% if status_filter %}
+                        No encontramos coincidencias con el estado seleccionado.
+                    {% else %}
+                        Cuando un usuario envíe una solicitud de renta para esta propiedad, aparecerá aquí.
+                    {% endif %}
+                </p>
+            </div>
         {% endif %}
     </div>
 </section>

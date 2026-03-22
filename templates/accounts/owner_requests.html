@@ -4,85 +4,103 @@
 {% block title %}Solicitudes recibidas | HABITA{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/owner-requests.css' %}">
 {% endblock %}
 
 {% block content %}
-<section class="dashboard-section">
+<section class="owner-requests-page">
     <div class="container">
-        <div class="dashboard-header">
-            <div>
+        <div class="requests-hero-card">
+            <div class="requests-hero-card__content">
+                <div class="requests-hero-card__eyebrow">Panel de propietario</div>
                 <h1>Solicitudes recibidas</h1>
-                <p>Administra todas las solicitudes de las propiedades que ofreces.</p>
+                <p>Revisa a los interesados, administra notas privadas y actualiza el estado de cada solicitud desde un solo lugar.</p>
             </div>
-            <a href="{% url 'accounts:owner-properties' %}" class="btn-primary btn-small">Volver</a>
+            <div class="requests-hero-card__aside">
+                <div class="requests-summary-grid">
+                    <article class="requests-summary-pill">
+                        <strong>{{ request_summary.total|default:0 }}</strong>
+                        <span>Total</span>
+                    </article>
+                    <article class="requests-summary-pill">
+                        <strong>{{ request_summary.pending|default:0 }}</strong>
+                        <span>Pendientes</span>
+                    </article>
+                    <article class="requests-summary-pill">
+                        <strong>{{ request_summary.accepted|default:0 }}</strong>
+                        <span>Aceptadas</span>
+                    </article>
+                    <article class="requests-summary-pill">
+                        <strong>{{ request_summary.resolved|default:0 }}</strong>
+                        <span>Resueltas</span>
+                    </article>
+                </div>
+            </div>
         </div>
 
-        <form method="get" class="filters-panel" style="margin-bottom:24px;">
-            <div class="filters-grid" style="grid-template-columns: 220px;">
-                <select name="status">
-                    <option value="">Todos los estados</option>
-                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pendiente</option>
-                    <option value="accepted" {% if status_filter == 'accepted' %}selected{% endif %}>Aceptada</option>
-                    <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rechazada</option>
-                    <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelada</option>
-                </select>
-            </div>
+        <div class="requests-toolbar-card">
+            <form method="get" class="requests-filters-form">
+                <div class="requests-filters-form__group">
+                    <label for="status">Estado</label>
+                    <select id="status" name="status">
+                        <option value="" {% if not status_filter %}selected{% endif %}>Todos los estados</option>
+                        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pendiente</option>
+                        <option value="accepted" {% if status_filter == 'accepted' %}selected{% endif %}>Aceptada</option>
+                        <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rechazada</option>
+                        <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelada</option>
+                    </select>
+                </div>
 
-            <div class="filters-actions">
-                <button type="submit" class="btn-primary">Filtrar</button>
-                <a href="{% url 'accounts:owner-requests' %}" class="btn-secondary-link">Limpiar</a>
+                <div class="requests-filters-form__group requests-filters-form__group--wide">
+                    <label for="property_id">Propiedad</label>
+                    <select id="property_id" name="property_id">
+                        <option value="" {% if not property_filter %}selected{% endif %}>Todas mis propiedades</option>
+                        {% for property in owner_properties %}
+                            <option value="{{ property.id }}" {% if property_filter == property.id|stringformat:'s' %}selected{% endif %}>{{ property.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="requests-filters-form__actions">
+                    <button type="submit" class="btn-primary btn-small">Aplicar filtros</button>
+                    <a href="{% url 'accounts:owner-requests' %}" class="btn-secondary btn-small">Limpiar</a>
+                </div>
+            </form>
+
+            <div class="requests-toolbar-card__meta">
+                <span class="material-symbols-outlined">filter_alt</span>
+                <strong>{{ rental_requests|length }}</strong>
+                <span>{% if rental_requests|length == 1 %}solicitud visible{% else %}solicitudes visibles{% endif %}</span>
             </div>
-        </form>
+        </div>
 
         {% if rental_requests_error %}
-            <div class="message-box message-error">{{ rental_requests_error }}</div>
+            <div class="requests-empty-card">
+                <span class="material-symbols-outlined">error</span>
+                <h3>No fue posible cargar las solicitudes</h3>
+                <p>{{ rental_requests_error }}</p>
+            </div>
         {% elif rental_requests %}
-            <div class="request-list request-list--full">
-                {% for item in rental_requests %}
-                    <article class="request-item request-item--full">
-                        <div class="request-item__media">
-                            {% if item.property_cover_image_url %}
-                                <img src="{{ item.property_cover_image_url }}" alt="{{ item.property_title }}">
-                            {% else %}
-                                <img src="{% static 'img/property-placeholder.jpg' %}" alt="{{ item.property_title }}">
-                            {% endif %}
-                        </div>
-
-                        <div class="request-item__body">
-                            <h2>{{ item.user_name }}</h2>
-                            <p><strong>Propiedad:</strong> {{ item.property_title }}</p>
-                            <p><strong>Ubicación:</strong> {{ item.property_location }}</p>
-                            <p><strong>Correo:</strong> {{ item.user_email }}</p>
-                            {% if item.user_phone %}
-                                <p><strong>Teléfono:</strong> {{ item.user_phone }}</p>
-                            {% endif %}
-                            <p><strong>Estado:</strong> {{ item.status }}</p>
-                            <p><strong>Presupuesto:</strong> {{ item.monthly_budget }}</p>
-
-                            {% if item.move_in_date %}
-                                <p><strong>Mudanza estimada:</strong> {{ item.move_in_date }}</p>
-                            {% endif %}
-
-                            {% if item.message %}
-                                <p><strong>Mensaje:</strong> {{ item.message }}</p>
-                            {% endif %}
-
-                            {% if item.owner_notes %}
-                                <p><strong>Notas:</strong> {{ item.owner_notes }}</p>
-                            {% endif %}
-
-                            <div style="margin-top: 14px;">
-                                <a href="{% url 'accounts:owner-property-requests' item.property_id %}" class="btn-secondary-link">
-                                    Gestionar en detalle
-                                </a>
-                            </div>
-                        </div>
-                    </article>
+            <div class="requests-list-grid">
+                {% for request_item in rental_requests %}
+                    {% include "accounts/includes/request_card.html" with request_item=request_item current_url=current_url show_property_link=True %}
                 {% endfor %}
             </div>
         {% else %}
-            <p class="empty-text">Aún no tienes solicitudes recibidas.</p>
+            <div class="requests-empty-card">
+                <span class="material-symbols-outlined">mail</span>
+                <h3>Aún no tienes solicitudes en esta vista</h3>
+                <p>
+                    {% if status_filter or property_filter %}
+                        No encontramos coincidencias con los filtros seleccionados.
+                    {% else %}
+                        Cuando un usuario envíe una solicitud de renta para una de tus propiedades, aparecerá aquí.
+                    {% endif %}
+                </p>
+                {% if status_filter or property_filter %}
+                    <a href="{% url 'accounts:owner-requests' %}" class="btn-primary">Ver todas las solicitudes</a>
+                {% endif %}
+            </div>
         {% endif %}
     </div>
 </section>
