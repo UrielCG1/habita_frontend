@@ -139,25 +139,23 @@ class OwnerRequestStatusForm(forms.Form):
     )
 
 
-class MultipleFileInput(forms.ClearableFileInput):
+class MultipleImageInput(forms.ClearableFileInput):
     allow_multiple_selected = True
 
 
-class MultipleFileField(forms.FileField):
-    def __init__(self, *args, **kwargs):
-        attrs = kwargs.pop("widget_attrs", {}) or {}
-        attrs.setdefault("class", "form-input")
-        attrs.setdefault("accept", "image/*")
-        kwargs.setdefault("widget", MultipleFileInput(attrs=attrs))
-        super().__init__(*args, **kwargs)
-
+class MultipleImageField(forms.ImageField):
     def clean(self, data, initial=None):
-        single_file_clean = super().clean
+        if not data:
+            return []
+
+        single_clean = super().clean
 
         if isinstance(data, (list, tuple)):
-            return [single_file_clean(item, initial) for item in data]
+            files = data
+        else:
+            files = [data]
 
-        return single_file_clean(data, initial)
+        return [single_clean(file, initial) for file in files]
 
 
 class OwnerPropertyForm(forms.Form):
@@ -265,8 +263,8 @@ class OwnerPropertyForm(forms.Form):
         widget=forms.CheckboxInput(attrs={"class": "form-checkbox"}),
     )
 
-    images = forms.ImageField(
+    images = MultipleImageField(
         label="Imágenes",
         required=False,
-        widget=forms.ClearableFileInput(attrs={"class": "form-input-file", "multiple": True}),
+        widget=MultipleImageInput(attrs={"class": "form-input-file"}),
     )
