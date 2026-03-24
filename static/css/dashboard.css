@@ -448,7 +448,7 @@
 
 .owner-property-badge--available {
     background: rgba(16, 185, 129, 0.96);
-    color: #047857;
+    color: #ffffff;
 }
 
 .owner-property-badge--occupied,
@@ -462,12 +462,12 @@
 .owner-property-badge--unpublished,
 .owner-property-badge--unknown {
     background: rgba(91, 100, 112, 0.94);
-    color: #4b5563;
+    color: #ffffff;
 }
 
 .owner-property-badge--requests {
     background: rgba(246, 195, 36, 0.20);
-    color: #8a6500;
+    color: #ffffff;
 }
 
 .owner-property-menu {
