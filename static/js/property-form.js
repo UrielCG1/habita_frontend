@@ -340,4 +340,95 @@ document.addEventListener("DOMContentLoaded", () => {
   bindGalleryCardEvents();
 
   window.addEventListener("beforeunload", revokeNewUrls);
+
+
+  const previewButton = document.getElementById("preview-location-btn");
+const previewStatus = document.getElementById("property-location-preview-status");
+const previewMapNode = document.getElementById("property-location-preview-map");
+
+let previewMap = null;
+let previewMarker = null;
+
+function readLocationFields() {
+  return {
+    address_line: document.getElementById("id_address_line")?.value?.trim() || "",
+    neighborhood: document.getElementById("id_neighborhood")?.value?.trim() || "",
+    city: document.getElementById("id_city")?.value?.trim() || "",
+    state: document.getElementById("id_state")?.value?.trim() || "",
+    postal_code: document.getElementById("id_postal_code")?.value?.trim() || "",
+  };
+}
+
+function ensurePreviewMap(lat, lng, title) {
+  if (!previewMapNode || typeof L === "undefined") return;
+
+  if (!previewMap) {
+    previewMap = L.map(previewMapNode).setView([lat, lng], 15);
+
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap",
+    }).addTo(previewMap);
+  } else {
+    previewMap.setView([lat, lng], 15);
+  }
+
+  if (previewMarker) {
+    previewMarker.remove();
+  }
+
+  previewMarker = L.marker([lat, lng]).addTo(previewMap);
+  if (title) {
+    previewMarker.bindPopup(title).openPopup();
+  }
+
+  setTimeout(() => {
+    previewMap.invalidateSize();
+  }, 120);
+}
+
+async function fetchLocationPreview() {
+  if (!previewButton || !previewStatus) return;
+
+  const fields = readLocationFields();
+  if (!fields.address_line || !fields.city || !fields.state) {
+    previewStatus.textContent = "Captura al menos dirección, ciudad y estado.";
+    return;
+  }
+
+  const previewUrl = previewButton.dataset.previewUrl;
+  if (!previewUrl) return;
+
+  previewStatus.textContent = "Buscando ubicación aproximada...";
+
+  const params = new URLSearchParams(fields);
+
+  try {
+    const response = await fetch(`${previewUrl}?${params.toString()}`, {
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+      },
+    });
+
+    const payload = await response.json();
+
+    if (!response.ok || !payload.success) {
+      previewStatus.textContent = payload.error || "No se pudo calcular la ubicación.";
+      return;
+    }
+
+    const data = payload.data;
+    document.getElementById("id_latitude").value = data.latitude;
+    document.getElementById("id_longitude").value = data.longitude;
+
+    previewStatus.textContent = data.display_name || "Ubicación aproximada encontrada.";
+    ensurePreviewMap(data.latitude, data.longitude, data.display_name || "Ubicación aproximada");
+  } catch (error) {
+    previewStatus.textContent = "No fue posible consultar la ubicación aproximada.";
+  }
+}
+
+if (previewButton) {
+  previewButton.addEventListener("click", fetchLocationPreview);
+}
 });

@@ -243,6 +243,13 @@ class OwnerPropertyForm(forms.Form):
         max_length=100,
         widget=forms.TextInput(attrs={"class": "form-input", "placeholder": "Querétaro"}),
     )
+    
+    postal_code = forms.CharField(
+        label="Código postal",
+        required=False,
+        max_length=10,
+        widget=forms.TextInput(attrs={"class": "form-input", "placeholder": "Ej. 76150"}),
+    )
 
     bedrooms = forms.IntegerField(
         label="Recámaras",

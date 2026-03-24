@@ -813,3 +813,24 @@
         width: 100%;
     }
 }
+
+
+.detail-map-canvas {
+    width: 100%;
+    min-height: 320px;
+    border-radius: 24px;
+    overflow: hidden;
+    background: #f8fafc;
+}
+
+.detail-map-placeholder {
+    min-height: 320px;
+    border-radius: 24px;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    background: #f8fafc;
+    border: 1px dashed rgba(15, 23, 42, 0.12);
+    color: #64748b;
+    gap: 0.5rem;
+}

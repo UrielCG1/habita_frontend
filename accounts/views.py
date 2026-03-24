@@ -467,6 +467,7 @@ def owner_property_create_view(request):
             "state": form.cleaned_data["state"],
             "bedrooms": form.cleaned_data["bedrooms"],
             "bathrooms": form.cleaned_data["bathrooms"],
+            "postal_code": form.cleaned_data.get("postal_code") or None,
             "parking_spaces": form.cleaned_data["parking_spaces"],
             "area_m2": str(form.cleaned_data["area_m2"]) if form.cleaned_data["area_m2"] is not None else None,
             "latitude": str(form.cleaned_data["latitude"]) if form.cleaned_data["latitude"] is not None else None,
@@ -548,6 +549,7 @@ def owner_property_edit_view(request, property_id: int):
         "area_m2": property_detail["area_m2"],
         "latitude": property_detail["latitude"],
         "longitude": property_detail["longitude"],
+        "postal_code": property_detail.get("postal_code"),
         "is_published": property_detail["is_published"],
     }
 
@@ -578,6 +580,7 @@ def owner_property_edit_view(request, property_id: int):
             "neighborhood": form.cleaned_data["neighborhood"],
             "city": form.cleaned_data["city"],
             "state": form.cleaned_data["state"],
+            "postal_code": form.cleaned_data.get("postal_code") or None,
             "bedrooms": form.cleaned_data["bedrooms"],
             "bathrooms": form.cleaned_data["bathrooms"],
             "parking_spaces": form.cleaned_data["parking_spaces"],
@@ -847,3 +850,55 @@ def owner_requests_view(request):
             "current_url": request.get_full_path(),
         },
     )
+    
+    
+    
+from django.conf import settings
+from django.http import JsonResponse
+import requests
+
+from accounts.decorators import habita_role_required
+
+
+@habita_role_required("owner", "admin")
+def owner_property_location_preview_view(request):
+    address_line = request.GET.get("address_line", "").strip()
+    neighborhood = request.GET.get("neighborhood", "").strip()
+    city = request.GET.get("city", "").strip()
+    state = request.GET.get("state", "").strip()
+    postal_code = request.GET.get("postal_code", "").strip()
+
+    if not address_line or not city or not state:
+        return JsonResponse(
+            {"success": False, "error": "Captura dirección, ciudad y estado."},
+            status=400,
+        )
+
+    try:
+        response = requests.get(
+            f"{settings.BACKEND_API_BASE_URL}/properties/geocode-preview",
+            params={
+                "address_line": address_line,
+                "neighborhood": neighborhood,
+                "city": city,
+                "state": state,
+                "postal_code": postal_code,
+            },
+            timeout=settings.BACKEND_REQUEST_TIMEOUT,
+        )
+
+        payload = response.json()
+
+        if response.status_code != 200:
+            return JsonResponse(
+                {"success": False, "error": payload.get("detail", "No se pudo ubicar la dirección.")},
+                status=response.status_code,
+            )
+
+        return JsonResponse({"success": True, "data": payload.get("data", {})})
+
+    except (requests.RequestException, ValueError):
+        return JsonResponse(
+            {"success": False, "error": "No fue posible consultar la ubicación aproximada."},
+            status=503,
+        )

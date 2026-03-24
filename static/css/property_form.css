@@ -615,3 +615,36 @@
         flex-direction: column;
     }
 }
+
+
+
+/* mapa */
+
+.property-location-preview {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 20px;
+    background: #fff;
+}
+
+.property-location-preview__header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.property-location-preview__status {
+    margin-bottom: 1rem;
+    color: #475569;
+    font-size: 0.95rem;
+}
+
+.property-location-preview-map {
+    height: 300px;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #f8fafc;
+}
