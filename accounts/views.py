@@ -327,7 +327,6 @@ def owner_update_request_status_view(request, property_id: int, request_id: int)
 # Formularios para la sección de propietario
 ### ============================
 
-
 def _parse_gallery_tokens(raw_value: str) -> list[str]:
     return [token.strip() for token in (raw_value or "").split(",") if token.strip()]
 
@@ -382,6 +381,7 @@ def _apply_property_gallery_changes(request, property_id: int, title: str, initi
     cover_token = (request.POST.get("cover_token") or "").strip()
 
     set_new_cover = _token_is_new(cover_token) and bool(uploaded_files)
+
     if uploaded_files:
         upload_ok, upload_message = upload_owner_property_images(
             request,
@@ -404,21 +404,25 @@ def _apply_property_gallery_changes(request, property_id: int, title: str, initi
         return warnings
 
     current_ids = list(initial_existing_ids)
+
     if uploaded_files:
         refreshed_detail, refresh_error = get_owner_property_detail(request, property_id=property_id)
         if refresh_error or not refreshed_detail:
             warnings.append("La propiedad se actualizó, pero no se pudo refrescar la galería para guardar el orden final.")
             return warnings
+
         current_ids = [image.get("id") for image in refreshed_detail.get("images", []) if image.get("id")]
 
     new_ids = [image_id for image_id in current_ids if image_id not in initial_existing_ids]
     new_tokens_in_order = [token for token in gallery_tokens if _token_is_new(token)]
+
     new_token_map = {}
     for index, token in enumerate(new_tokens_in_order):
         if index < len(new_ids):
             new_token_map[token] = new_ids[index]
 
     ordered_image_ids: list[int] = []
+
     for token in gallery_tokens:
         if _token_is_existing(token):
             image_id = _image_id_from_existing_token(token)
@@ -476,12 +480,9 @@ def owner_property_create_view(request):
             uploaded_files=uploaded_files,
         )
 
-        if warnings:
-            messages.success(request, "Propiedad creada correctamente.")
-            for warning in warnings:
-                messages.warning(request, warning)
-        else:
-            messages.success(request, "Propiedad creada correctamente.")
+        messages.success(request, "Propiedad creada correctamente.")
+        for warning in warnings:
+            messages.warning(request, warning)
 
         return redirect("accounts:owner-properties")
 
@@ -521,9 +522,11 @@ def owner_property_edit_view(request, property_id: int):
         "longitude": property_detail["longitude"],
         "is_published": property_detail["is_published"],
     }
+
     existing_image_ids = [image.get("id") for image in property_detail.get("images", []) if image.get("id")]
 
     form = OwnerPropertyForm(request.POST or None, request.FILES or None, initial=initial)
+
     if request.method == "POST" and form.is_valid():
         submit_mode = request.POST.get("submit_mode", "save")
         is_published_value = _resolve_publish_state(form, submit_mode)
@@ -546,6 +549,7 @@ def owner_property_edit_view(request, property_id: int):
         messages.success(request, "Propiedad actualizada correctamente.")
         for warning in warnings:
             messages.warning(request, warning)
+
         return redirect("accounts:owner-properties")
 
     return _render_property_form(request, form, mode="edit", property_obj=property_detail)
@@ -576,9 +580,11 @@ def admin_property_edit_view(request, property_id: int):
         "longitude": property_detail["longitude"],
         "is_published": property_detail["is_published"],
     }
+
     existing_image_ids = [image.get("id") for image in property_detail.get("images", []) if image.get("id")]
 
     form = OwnerPropertyForm(request.POST or None, request.FILES or None, initial=initial)
+
     if request.method == "POST" and form.is_valid():
         submit_mode = request.POST.get("submit_mode", "save")
         is_published_value = _resolve_publish_state(form, submit_mode)
@@ -601,10 +607,10 @@ def admin_property_edit_view(request, property_id: int):
         messages.success(request, "Propiedad actualizada correctamente.")
         for warning in warnings:
             messages.warning(request, warning)
+
         return redirect("accounts:admin-area")
 
     return _render_property_form(request, form, mode="edit", property_obj=property_detail, admin_mode=True)
-
 
 @require_POST
 @habita_role_required("admin")

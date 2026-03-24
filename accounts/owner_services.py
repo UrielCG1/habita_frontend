@@ -309,8 +309,11 @@ def get_owner_property_detail(request, property_id: int) -> tuple[Optional[dict]
                     "image_url": _property_image_proxy_url(image.get("id")),
                     "alt_text": image.get("alt_text") or data.get("title", "Imagen"),
                     "is_cover": image.get("is_cover", False),
+                    "sort_order": image.get("sort_order", 0),
                 }
             )
+
+        normalized_images.sort(key=lambda image: (not image.get("is_cover", False), image.get("sort_order", 0), image.get("id", 0)))
 
         result = {
             "id": data.get("id"),

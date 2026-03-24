@@ -42,8 +42,20 @@
 
         <form id="property-form" method="post" enctype="multipart/form-data" class="property-editor-layout">
             {% csrf_token %}
-            <input type="hidden" name="gallery_order" id="gallery-order-input" value="{% if mode == 'edit' and property_obj.images %}{% for image in property_obj.images %}e:{{ image.id }}{% if not forloop.last %},{% endif %}{% endfor %}{% endif %}">
-            <input type="hidden" name="cover_token" id="cover-token-input" value="{% if mode == 'edit' and property_obj.images %}{% for image in property_obj.images %}{% if image.is_cover %}e:{{ image.id }}{% endif %}{% endfor %}{% endif %}">
+
+            <input
+                type="hidden"
+                name="gallery_order"
+                id="gallery-order-input"
+                value="{% if mode == 'edit' and property_obj.images %}{% for image in property_obj.images %}e:{{ image.id }}{% if not forloop.last %},{% endif %}{% endfor %}{% endif %}"
+            >
+
+            <input
+                type="hidden"
+                name="cover_token"
+                id="cover-token-input"
+                value="{% if mode == 'edit' and property_obj.images %}{% for image in property_obj.images %}{% if image.is_cover %}e:{{ image.id }}{% endif %}{% endfor %}{% endif %}"
+            >
 
             <div class="property-editor-main">
                 <section class="property-editor-card">
@@ -179,6 +191,7 @@
                         <strong>Arrastra imágenes aquí o haz clic para seleccionar</strong>
                         <small>JPG, PNG o WEBP. Puedes reordenarlas antes de guardar.</small>
                     </label>
+
                     <div class="hidden-input-wrap">{{ form.images }}</div>
                     {% for error in form.images.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
 
@@ -191,29 +204,45 @@
                     <div id="gallery-grid" class="property-gallery-grid" data-gallery-grid>
                         {% if mode == "edit" and property_obj.images %}
                             {% for image in property_obj.images %}
-                                <article class="gallery-card {% if image.is_cover %}is-cover{% endif %}" draggable="true" data-token="e:{{ image.id }}" data-kind="existing" data-image-id="{{ image.id }}">
+                                <article
+                                    class="gallery-card {% if image.is_cover %}is-cover{% endif %}"
+                                    draggable="true"
+                                    data-token="e:{{ image.id }}"
+                                    data-kind="existing"
+                                    data-image-id="{{ image.id }}"
+                                >
                                     <div class="gallery-card__media">
                                         {% if image.image_url %}
                                             <img src="{{ image.image_url }}" alt="{{ image.alt_text }}">
                                         {% else %}
                                             <img src="{% static 'img/property-placeholder.jpg' %}" alt="Imagen">
                                         {% endif %}
+
                                         <button type="button" class="gallery-chip gallery-chip--drag" title="Ordenar">
                                             <span class="material-symbols-outlined">drag_indicator</span>
                                         </button>
-                                        <button type="button" class="gallery-chip gallery-chip--cover js-set-cover" data-token="e:{{ image.id }}">
+
+                                        <button
+                                            type="button"
+                                            class="gallery-chip gallery-chip--cover js-set-cover"
+                                            data-token="e:{{ image.id }}"
+                                        >
                                             <span class="material-symbols-outlined">star</span>
                                             <span>{% if image.is_cover %}Principal{% else %}Hacer principal{% endif %}</span>
                                         </button>
+
                                         <div class="gallery-card__overlay">
-                                            <form method="post" action="{% if admin_mode %}{% url 'accounts:admin-property-image-delete' property_obj.id image.id %}{% else %}{% url 'accounts:owner-property-image-delete' property_obj.id image.id %}{% endif %}" class="gallery-inline-form">
-                                                {% csrf_token %}
-                                                <button type="submit" class="gallery-icon-btn gallery-icon-btn--danger" title="Eliminar imagen">
-                                                    <span class="material-symbols-outlined">delete</span>
-                                                </button>
-                                            </form>
+                                            <button
+                                                type="button"
+                                                class="gallery-icon-btn gallery-icon-btn--danger js-delete-existing-image"
+                                                data-delete-url="{% if admin_mode %}{% url 'accounts:admin-property-image-delete' property_obj.id image.id %}{% else %}{% url 'accounts:owner-property-image-delete' property_obj.id image.id %}{% endif %}"
+                                                title="Eliminar imagen"
+                                            >
+                                                <span class="material-symbols-outlined">delete</span>
+                                            </button>
                                         </div>
                                     </div>
+
                                     <div class="gallery-card__footer">
                                         <strong>{{ image.alt_text|default:property_obj.title }}</strong>
                                         <small>{% if image.is_cover %}Actualmente principal{% else %}Imagen existente{% endif %}</small>
@@ -267,6 +296,10 @@
                     </div>
                 </section>
             </aside>
+        </form>
+
+        <form id="property-image-delete-form" method="post" hidden>
+            {% csrf_token %}
         </form>
     </div>
 </section>
