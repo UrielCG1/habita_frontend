@@ -196,7 +196,7 @@
                     {% for error in form.images.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
 
                     <div class="gallery-toolbar">
-                        <div class="gallery-toolbar__item"><span class="material-symbols-outlined">drag_indicator</span> Arrastra cada tarjeta para ordenar</div>
+                        <div class="gallery-toolbar__item"><span class="material-symbols-outlined">drag_indicator</span> Usa el icono para arrastrar y ordenar</div>
                         <div class="gallery-toolbar__item"><span class="material-symbols-outlined">star</span> La principal se usa en los listados</div>
                         <div class="gallery-toolbar__item"><span class="material-symbols-outlined">delete</span> Eliminar existente sigue funcionando</div>
                     </div>
@@ -206,7 +206,7 @@
                             {% for image in property_obj.images %}
                                 <article
                                     class="gallery-card {% if image.is_cover %}is-cover{% endif %}"
-                                    draggable="true"
+                                    draggable="false"
                                     data-token="e:{{ image.id }}"
                                     data-kind="existing"
                                     data-image-id="{{ image.id }}"
