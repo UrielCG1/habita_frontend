@@ -1,264 +1,277 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}
-    {% if mode == "edit" %}Editar propiedad{% else %}Registrar nueva propiedad{% endif %} | HABITA
-{% endblock %}
+{% block title %}{% if mode == "edit" %}Editar propiedad{% else %}Registrar nueva propiedad{% endif %} | HABITA{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/property_form.css' %}">
 {% endblock %}
 
 {% block content %}
-<section class="property-form-page">
-    <div class="container property-form-container">
+<section class="property-editor-page">
+    <div class="container property-editor-shell">
+        <div class="property-editor-breadcrumbs">
+            <a href="{% if admin_mode %}{% url 'accounts:admin-area' %}{% else %}{% url 'accounts:owner-properties' %}{% endif %}">Mis propiedades</a>
+            <span>/</span>
+            <span>{% if mode == "edit" %}Editar propiedad{% else %}Nueva propiedad{% endif %}</span>
+        </div>
 
-        <div class="property-form-topbar">
-            <a href="{% if admin_mode %}{% url 'accounts:admin-area' %}{% else %}{% url 'accounts:owner-properties' %}{% endif %}" class="property-form-back">
-                <span class="material-symbols-outlined">arrow_back</span>
-                Volver al listado
-            </a>
-
-            <div class="property-form-header-actions">
-                <a href="{% if admin_mode %}{% url 'accounts:admin-area' %}{% else %}{% url 'accounts:owner-properties' %}{% endif %}" class="btn-outline-form">
-                    Cancelar
-                </a>
-                <button type="submit" form="property-form" name="submit_mode" value="save" class="btn-primary-form">
-                    <span class="material-symbols-outlined">save</span>
-                    Guardar Propiedad
-                </button>
+        <div class="property-editor-hero">
+            <div>
+                <p class="property-editor-eyebrow">Panel de publicación</p>
+                <h1>{% if mode == "edit" %}Afina tu publicación{% else %}Publica una nueva propiedad{% endif %}</h1>
+                <p class="property-editor-subtitle">Inspirado en el diseño React, pero aterrizado a tu flujo Django actual con guardado real, carga múltiple, portada y orden de galería.</p>
+            </div>
+            <div class="property-editor-hero__meta">
+                <div class="hero-pill">
+                    <span class="material-symbols-outlined">imagesmode</span>
+                    Portada y orden visual
+                </div>
+                <div class="hero-pill">
+                    <span class="material-symbols-outlined">publish</span>
+                    Borrador o publicación
+                </div>
             </div>
         </div>
 
-        <div class="property-form-heading">
-            <h1>{% if mode == "edit" %}Editar Propiedad{% else %}Registrar Nueva Propiedad{% endif %}</h1>
-            <p>Ingresa los detalles técnicos, ubicación y material multimedia para publicar el inmueble.</p>
-        </div>
+        {% if form.non_field_errors %}
+            <div class="property-form-alert property-form-alert--error">
+                {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+            </div>
+        {% endif %}
 
-        <form id="property-form" method="post" enctype="multipart/form-data">
+        <form id="property-form" method="post" enctype="multipart/form-data" class="property-editor-layout">
             {% csrf_token %}
+            <input type="hidden" name="gallery_order" id="gallery-order-input" value="{% if mode == 'edit' and property_obj.images %}{% for image in property_obj.images %}e:{{ image.id }}{% if not forloop.last %},{% endif %}{% endfor %}{% endif %}">
+            <input type="hidden" name="cover_token" id="cover-token-input" value="{% if mode == 'edit' and property_obj.images %}{% for image in property_obj.images %}{% if image.is_cover %}e:{{ image.id }}{% endif %}{% endfor %}{% endif %}">
 
-            <section class="property-form-card">
-                <div class="property-form-card__header">
-                    <span class="material-symbols-outlined">info</span>
-                    <h2>Información General</h2>
-                </div>
-
-                <div class="property-form-grid property-form-grid--2">
-                    <div class="property-form-field property-form-field--full">
-                        <label for="{{ form.title.id_for_label }}">Título de la Propiedad</label>
-                        {{ form.title }}
-                    </div>
-
-                    <div>
-                        <label for="{{ form.price.id_for_label }}">Precio (MXN)</label>
-                        {{ form.price }}
-                    </div>
-
-                    <div class="property-form-inline-2">
+            <div class="property-editor-main">
+                <section class="property-editor-card">
+                    <div class="card-heading">
+                        <span class="material-symbols-outlined">info</span>
                         <div>
-                            <label for="{{ form.property_type.id_for_label }}">Tipo</label>
+                            <h2>Información general</h2>
+                            <p>Datos base de la publicación.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid form-grid--2">
+                        <div class="form-field form-field--full">
+                            <label for="{{ form.title.id_for_label }}">Título de la publicación</label>
+                            {{ form.title }}
+                            {% for error in form.title.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+                        </div>
+
+                        <div>
+                            <label for="{{ form.property_type.id_for_label }}">Tipo de propiedad</label>
                             {{ form.property_type }}
+                            {% for error in form.property_type.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+                        </div>
+
+                        <div>
+                            <label for="{{ form.price.id_for_label }}">Renta mensual (MXN)</label>
+                            {{ form.price }}
+                            {% for error in form.price.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+                        </div>
+
+                        <div>
+                            <label for="{{ form.status.id_for_label }}">Estado comercial</label>
+                            {{ form.status }}
+                            {% for error in form.status.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+                        </div>
+
+                        <div class="form-field form-field--full">
+                            <label for="{{ form.description.id_for_label }}">Descripción</label>
+                            {{ form.description }}
+                            <small class="field-help">Cuenta qué tiene la propiedad, para quién es ideal y qué la distingue.</small>
+                            {% for error in form.description.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+                        </div>
+                    </div>
+                </section>
+
+                <section class="property-editor-card">
+                    <div class="card-heading">
+                        <span class="material-symbols-outlined">location_on</span>
+                        <div>
+                            <h2>Ubicación</h2>
+                            <p>Dirección y referencia geográfica.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid form-grid--2">
+                        <div class="form-field form-field--full">
+                            <label for="{{ form.address_line.id_for_label }}">Dirección completa</label>
+                            {{ form.address_line }}
+                            {% for error in form.address_line.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
                         </div>
                         <div>
-                            <label for="{{ form.status.id_for_label }}">Estatus</label>
-                            {{ form.status }}
+                            <label for="{{ form.neighborhood.id_for_label }}">Colonia / zona</label>
+                            {{ form.neighborhood }}
+                            {% for error in form.neighborhood.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
                         </div>
-                    </div>
-
-                    <div class="property-form-field property-form-field--full">
-                        <label for="{{ form.description.id_for_label }}">Descripción</label>
-                        {{ form.description }}
-                    </div>
-                </div>
-            </section>
-
-            <section class="property-form-card">
-                <div class="property-form-card__header">
-                    <span class="material-symbols-outlined">location_on</span>
-                    <h2>Ubicación</h2>
-                </div>
-
-                <div class="property-form-grid property-form-grid--2">
-                    <div class="property-form-field property-form-field--full">
-                        <label for="{{ form.address_line.id_for_label }}">Dirección Completa</label>
-                        {{ form.address_line }}
-                    </div>
-
-                    <div>
-                        <label for="{{ form.neighborhood.id_for_label }}">Colonia</label>
-                        {{ form.neighborhood }}
-                    </div>
-
-                    <div class="property-form-inline-2">
                         <div>
                             <label for="{{ form.city.id_for_label }}">Ciudad</label>
                             {{ form.city }}
+                            {% for error in form.city.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
                         </div>
                         <div>
                             <label for="{{ form.state.id_for_label }}">Estado</label>
                             {{ form.state }}
+                            {% for error in form.state.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
                         </div>
-                    </div>
-                </div>
-
-                <div class="property-form-coords">
-                    <div class="property-form-coords__title">
-                        <span class="material-symbols-outlined">gps_fixed</span>
-                        Coordenadas (Opcional)
-                    </div>
-
-                    <div class="property-form-inline-2">
                         <div>
                             <label for="{{ form.latitude.id_for_label }}">Latitud</label>
                             {{ form.latitude }}
+                            {% for error in form.latitude.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
                         </div>
                         <div>
                             <label for="{{ form.longitude.id_for_label }}">Longitud</label>
                             {{ form.longitude }}
+                            {% for error in form.longitude.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
                         </div>
                     </div>
-                </div>
-            </section>
+                </section>
 
-            <section class="property-form-card">
-                <div class="property-form-card__header">
-                    <span class="material-symbols-outlined">bed</span>
-                    <h2>Características</h2>
-                </div>
-
-                <div class="property-form-inline-4">
-                    <div>
-                        <label for="{{ form.bedrooms.id_for_label }}">Recámaras</label>
-                        {{ form.bedrooms }}
+                <section class="property-editor-card">
+                    <div class="card-heading">
+                        <span class="material-symbols-outlined">bed</span>
+                        <div>
+                            <h2>Características</h2>
+                            <p>Capacidad y superficie.</p>
+                        </div>
                     </div>
-                    <div>
-                        <label for="{{ form.bathrooms.id_for_label }}">Baños</label>
-                        {{ form.bathrooms }}
-                    </div>
-                    <div>
-                        <label for="{{ form.parking_spaces.id_for_label }}">Estac.</label>
-                        {{ form.parking_spaces }}
-                    </div>
-                    <div>
-                        <label for="{{ form.area_m2.id_for_label }}">Área (m²)</label>
-                        {{ form.area_m2 }}
-                    </div>
-                </div>
-            </section>
 
-            <section class="property-form-card">
-                <div class="property-form-card__header">
-                    <span class="material-symbols-outlined">image</span>
-                    <h2>Galería de Imágenes</h2>
-                </div>
-
-                <label for="{{ form.images.id_for_label }}" class="upload-dropzone">
-                    <span class="material-symbols-outlined">cloud_upload</span>
-                    <strong>Haz clic o arrastra fotos aquí</strong>
-                    <small>Soporta JPG, PNG</small>
-                </label>
-
-                <div class="hidden-input-wrap">
-                    {{ form.images }}
-                </div>
-
-                <div id="selected-images-preview" class="property-images-grid property-images-grid--selected"></div>
-
-                {% if mode == "edit" and property_obj.images %}
-                    <div class="property-images-grid">
-                        {% for image in property_obj.images %}
-                            <div class="property-image-card">
-                                {% if image.image_url %}
-                                    <img src="{{ image.image_url }}" alt="{{ image.alt_text }}">
-                                {% else %}
-                                    <img src="{% static 'img/property-placeholder.jpg' %}" alt="Imagen">
-                                {% endif %}
-
-                                <div class="property-image-actions">
-                                    <form method="post" action="{% if admin_mode %}{% url 'accounts:admin-property-image-delete' property_obj.id image.id %}{% else %}{% url 'accounts:owner-property-image-delete' property_obj.id image.id %}{% endif %}">
-                                        {% csrf_token %}
-                                        <button type="submit" class="image-icon-btn image-icon-btn--danger">
-                                            <span class="material-symbols-outlined">delete</span>
-                                        </button>
-                                    </form>
-
-                                    <form method="post" action="{% if admin_mode %}{% url 'accounts:admin-property-image-cover' property_obj.id image.id %}{% else %}{% url 'accounts:owner-property-image-cover' property_obj.id image.id %}{% endif %}">
-                                        {% csrf_token %}
-                                        <button type="submit" class="image-icon-btn {% if image.is_cover %}image-icon-btn--active{% endif %}">
-                                            <span class="material-symbols-outlined">star</span>
-                                        </button>
-                                    </form>
-                                </div>
-
-                                {% if image.is_cover %}
-                                    <span class="property-image-badge">Principal</span>
-                                {% endif %}
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </section>
-
-            <section class="property-form-card property-form-card--publish">
-                <div class="publish-row">
-                    <div class="publish-row__left">
-                        <div class="publish-row__icon">
-                            <span class="material-symbols-outlined">public</span>
+                    <div class="form-grid form-grid--4">
+                        <div>
+                            <label for="{{ form.bedrooms.id_for_label }}">Recámaras</label>
+                            {{ form.bedrooms }}
+                            {% for error in form.bedrooms.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
                         </div>
                         <div>
-                            <h2>Publicar inmediatamente</h2>
-                            <p>Haz que tu propiedad sea visible para todos los clientes registrados y visitantes web.</p>
+                            <label for="{{ form.bathrooms.id_for_label }}">Baños</label>
+                            {{ form.bathrooms }}
+                            {% for error in form.bathrooms.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+                        </div>
+                        <div>
+                            <label for="{{ form.parking_spaces.id_for_label }}">Estacionamientos</label>
+                            {{ form.parking_spaces }}
+                            {% for error in form.parking_spaces.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+                        </div>
+                        <div>
+                            <label for="{{ form.area_m2.id_for_label }}">Área m²</label>
+                            {{ form.area_m2 }}
+                            {% for error in form.area_m2.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+                        </div>
+                    </div>
+                </section>
+
+                <section class="property-editor-card">
+                    <div class="card-heading card-heading--gallery">
+                        <span class="material-symbols-outlined">photo_library</span>
+                        <div>
+                            <h2>Galería de imágenes</h2>
+                            <p>Arrastra para ordenar. Marca una principal. El orden se guarda junto con la propiedad.</p>
                         </div>
                     </div>
 
-                    <div class="publish-toggle-wrap">
-                        {{ form.is_published }}
+                    <label for="{{ form.images.id_for_label }}" class="upload-dropzone upload-dropzone--rich">
+                        <span class="material-symbols-outlined">cloud_upload</span>
+                        <strong>Arrastra imágenes aquí o haz clic para seleccionar</strong>
+                        <small>JPG, PNG o WEBP. Puedes reordenarlas antes de guardar.</small>
+                    </label>
+                    <div class="hidden-input-wrap">{{ form.images }}</div>
+                    {% for error in form.images.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+
+                    <div class="gallery-toolbar">
+                        <div class="gallery-toolbar__item"><span class="material-symbols-outlined">drag_indicator</span> Arrastra cada tarjeta para ordenar</div>
+                        <div class="gallery-toolbar__item"><span class="material-symbols-outlined">star</span> La principal se usa en los listados</div>
+                        <div class="gallery-toolbar__item"><span class="material-symbols-outlined">delete</span> Eliminar existente sigue funcionando</div>
                     </div>
-                </div>
-            </section>
 
-            <div class="property-form-footer-actions">
-                <button type="submit" name="submit_mode" value="publish" class="btn-publish-main">
-                    <span class="material-symbols-outlined">publish</span>
-                    Publicar Propiedad
-                </button>
+                    <div id="gallery-grid" class="property-gallery-grid" data-gallery-grid>
+                        {% if mode == "edit" and property_obj.images %}
+                            {% for image in property_obj.images %}
+                                <article class="gallery-card {% if image.is_cover %}is-cover{% endif %}" draggable="true" data-token="e:{{ image.id }}" data-kind="existing" data-image-id="{{ image.id }}">
+                                    <div class="gallery-card__media">
+                                        {% if image.image_url %}
+                                            <img src="{{ image.image_url }}" alt="{{ image.alt_text }}">
+                                        {% else %}
+                                            <img src="{% static 'img/property-placeholder.jpg' %}" alt="Imagen">
+                                        {% endif %}
+                                        <button type="button" class="gallery-chip gallery-chip--drag" title="Ordenar">
+                                            <span class="material-symbols-outlined">drag_indicator</span>
+                                        </button>
+                                        <button type="button" class="gallery-chip gallery-chip--cover js-set-cover" data-token="e:{{ image.id }}">
+                                            <span class="material-symbols-outlined">star</span>
+                                            <span>{% if image.is_cover %}Principal{% else %}Hacer principal{% endif %}</span>
+                                        </button>
+                                        <div class="gallery-card__overlay">
+                                            <form method="post" action="{% if admin_mode %}{% url 'accounts:admin-property-image-delete' property_obj.id image.id %}{% else %}{% url 'accounts:owner-property-image-delete' property_obj.id image.id %}{% endif %}" class="gallery-inline-form">
+                                                {% csrf_token %}
+                                                <button type="submit" class="gallery-icon-btn gallery-icon-btn--danger" title="Eliminar imagen">
+                                                    <span class="material-symbols-outlined">delete</span>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    <div class="gallery-card__footer">
+                                        <strong>{{ image.alt_text|default:property_obj.title }}</strong>
+                                        <small>{% if image.is_cover %}Actualmente principal{% else %}Imagen existente{% endif %}</small>
+                                    </div>
+                                </article>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
 
-                <button type="submit" name="submit_mode" value="draft" class="btn-draft-main">
-                    Guardar como Borrador
-                </button>
+                    <div id="gallery-empty-state" class="gallery-empty-state {% if mode == 'edit' and property_obj.images %}is-hidden{% endif %}">
+                        <span class="material-symbols-outlined">imagesmode</span>
+                        <p>Aún no hay imágenes cargadas. Agrega fotografías para mejorar la publicación.</p>
+                    </div>
+                </section>
             </div>
+
+            <aside class="property-editor-sidebar">
+                <section class="property-editor-card property-editor-card--sticky">
+                    <div class="sidebar-price-box">
+                        <p>Resumen de publicación</p>
+                        <strong>{% if mode == 'edit' and property_obj.price_display %}{{ property_obj.price_display }}{% else %}Define el precio{% endif %}</strong>
+                        <span>{% if mode == 'edit' and property_obj.location %}{{ property_obj.location }}{% else %}Querétaro, México{% endif %}</span>
+                    </div>
+
+                    <div class="publish-card">
+                        <div>
+                            <h3>Visibilidad</h3>
+                            <p>Controla si la propiedad se publica de inmediato o queda como borrador.</p>
+                        </div>
+                        <label class="publish-switch">
+                            {{ form.is_published }}
+                            <span>Publicada</span>
+                        </label>
+                    </div>
+
+                    <div class="sidebar-tips">
+                        <h3>Checklist rápida</h3>
+                        <ul>
+                            <li>Título claro y específico</li>
+                            <li>Precio mensual correcto</li>
+                            <li>Al menos una imagen principal</li>
+                            <li>Orden visual coherente en galería</li>
+                        </ul>
+                    </div>
+
+                    <div class="sidebar-actions">
+                        <a href="{% if admin_mode %}{% url 'accounts:admin-area' %}{% else %}{% url 'accounts:owner-properties' %}{% endif %}" class="btn-secondary-form">Cancelar</a>
+                        <button type="submit" name="submit_mode" value="draft" class="btn-outline-form">Guardar como borrador</button>
+                        <button type="submit" name="submit_mode" value="save" class="btn-primary-form">Guardar cambios</button>
+                        <button type="submit" name="submit_mode" value="publish" class="btn-publish-main">Publicar propiedad</button>
+                    </div>
+                </section>
+            </aside>
         </form>
     </div>
 </section>
+{% endblock %}
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const input = document.getElementById("{{ form.images.id_for_label }}");
-    const preview = document.getElementById("selected-images-preview");
-
-    if (!input || !preview) return;
-
-    input.addEventListener("change", function () {
-        preview.innerHTML = "";
-
-        const files = Array.from(input.files || []);
-        files.forEach((file) => {
-            if (!file.type.startsWith("image/")) return;
-
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                const card = document.createElement("div");
-                card.className = "property-image-card property-image-card--preview";
-                card.innerHTML = `
-                    <img src="${e.target.result}" alt="${file.name}">
-                    <span class="property-image-badge property-image-badge--preview">Nueva</span>
-                `;
-                preview.appendChild(card);
-            };
-            reader.readAsDataURL(file);
-        });
-    });
-});
-</script>
+{% block extra_js %}
+<script src="{% static 'js/property-form.js' %}"></script>
 {% endblock %}
