@@ -15,7 +15,7 @@ class RentalRequestForm(forms.Form):
     )
 
     move_in_date = forms.DateField(
-        label="Fecha estimada de mudanza",
+        label="Fecha propuesta de visita",
         required=False,
         widget=forms.DateInput(
             attrs={
