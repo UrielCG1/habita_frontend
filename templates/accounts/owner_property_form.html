@@ -218,7 +218,7 @@
                                             <img src="{% static 'img/property-placeholder.jpg' %}" alt="Imagen">
                                         {% endif %}
 
-                                        <button type="button" class="gallery-chip gallery-chip--drag" title="Ordenar">
+                                        <button type="button" class="gallery-chip gallery-chip--drag js-drag-handle" title="Ordenar">
                                             <span class="material-symbols-outlined">drag_indicator</span>
                                         </button>
 
@@ -228,7 +228,7 @@
                                             data-token="e:{{ image.id }}"
                                         >
                                             <span class="material-symbols-outlined">star</span>
-                                            <span>{% if image.is_cover %}Principal{% else %}Hacer principal{% endif %}</span>
+                                            <span class="gallery-chip__label">{% if image.is_cover %}Principal{% else %}Hacer principal{% endif %}</span>
                                         </button>
 
                                         <div class="gallery-card__overlay">

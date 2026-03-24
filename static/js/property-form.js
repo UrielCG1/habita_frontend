@@ -15,16 +15,15 @@ document.addEventListener("DOMContentLoaded", () => {
   let draggedToken = null;
 
   const allCards = () => Array.from(galleryGrid.querySelectorAll(".gallery-card"));
-
   const existingCards = () =>
     Array.from(galleryGrid.querySelectorAll('.gallery-card[data-kind="existing"]'));
 
-  if (!coverTokenInput.value) {
-    const activeCover = existingCards().find((card) => card.classList.contains("is-cover"));
-    if (activeCover) {
-      coverTokenInput.value = activeCover.dataset.token || "";
-    }
-  }
+  const disableAllDragging = () => {
+    allCards().forEach((card) => {
+      card.draggable = false;
+      card.classList.remove("is-draggable");
+    });
+  };
 
   const updateEmptyState = () => {
     if (!emptyState) return;
@@ -40,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const syncCoverVisualState = () => {
-    const coverToken = coverTokenInput.value;
+    const coverToken = (coverTokenInput.value || "").trim();
 
     allCards().forEach((card) => {
       const isCover = card.dataset.token === coverToken;
@@ -49,9 +48,9 @@ document.addEventListener("DOMContentLoaded", () => {
       card.classList.toggle("is-cover", isCover);
 
       if (button) {
-        const label = button.querySelector("span:last-child");
-        if (label) {
-          label.textContent = isCover ? "Principal" : "Hacer principal";
+        const textNode = button.querySelector(".gallery-chip__label");
+        if (textNode) {
+          textNode.textContent = isCover ? "Principal" : "Hacer principal";
         }
       }
 
@@ -85,19 +84,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const createNewCard = (item) => {
     const card = document.createElement("article");
     card.className = "gallery-card";
-    card.draggable = true;
+    card.draggable = false;
     card.dataset.token = item.token;
     card.dataset.kind = "new";
 
     card.innerHTML = `
       <div class="gallery-card__media">
         <img src="${item.previewUrl}" alt="${item.file.name}">
-        <button type="button" class="gallery-chip gallery-chip--drag" title="Ordenar">
+        <button type="button" class="gallery-chip gallery-chip--drag js-drag-handle" title="Ordenar">
           <span class="material-symbols-outlined">drag_indicator</span>
         </button>
         <button type="button" class="gallery-chip gallery-chip--cover js-set-cover" data-token="${item.token}">
           <span class="material-symbols-outlined">star</span>
-          <span>Hacer principal</span>
+          <span class="gallery-chip__label">Hacer principal</span>
         </button>
         <div class="gallery-card__overlay">
           <button type="button" class="gallery-icon-btn gallery-icon-btn--danger js-remove-new-image" data-token="${item.token}" title="Eliminar imagen">
@@ -134,11 +133,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
+    disableAllDragging();
     syncFileInput();
     syncGalleryOrder();
     syncCoverVisualState();
     updateEmptyState();
-    bindGalleryCardEvents();
   };
 
   const moveTokenToFront = (token) => {
@@ -157,6 +156,8 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const setCoverToken = (token) => {
+    if (!token) return;
+
     coverTokenInput.value = token;
     moveTokenToFront(token);
 
@@ -193,7 +194,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const submitDeleteExistingImage = (url) => {
     if (!deleteForm || !url) return;
-
     deleteForm.action = url;
     deleteForm.submit();
   };
@@ -221,86 +221,132 @@ document.addEventListener("DOMContentLoaded", () => {
     renderNewItems();
   };
 
-  const bindGalleryCardEvents = () => {
+  const initializeServerCards = () => {
     allCards().forEach((card) => {
-      card.ondragstart = () => {
-        draggedToken = card.dataset.token;
-        card.classList.add("is-dragging");
-      };
+      card.draggable = false;
 
-      card.ondragend = () => {
-        draggedToken = null;
-        card.classList.remove("is-dragging");
-      };
-
-      card.ondragover = (event) => {
-        event.preventDefault();
-      };
-
-      card.ondrop = (event) => {
-        event.preventDefault();
-
-        const targetToken = card.dataset.token;
-        if (!draggedToken || !targetToken || draggedToken === targetToken) return;
-
-        const cards = allCards();
-        const draggedCard = cards.find((node) => node.dataset.token === draggedToken);
-        const targetCard = cards.find((node) => node.dataset.token === targetToken);
-
-        if (!draggedCard || !targetCard) return;
-
-        const draggedIndex = cards.indexOf(draggedCard);
-        const targetIndex = cards.indexOf(targetCard);
-
-        if (draggedIndex < targetIndex) {
-          targetCard.after(draggedCard);
-        } else {
-          targetCard.before(draggedCard);
+      const coverButton = card.querySelector(".js-set-cover");
+      if (coverButton) {
+        const secondSpan = coverButton.querySelectorAll("span")[1];
+        if (secondSpan && !secondSpan.classList.contains("gallery-chip__label")) {
+          secondSpan.classList.add("gallery-chip__label");
         }
-
-        const orderedTokens = allCards().map((node) => node.dataset.token);
-        galleryOrderInput.value = orderedTokens.join(",");
-
-        const newOrder = orderedTokens.filter((token) => token.startsWith("n:"));
-        newItems.sort((a, b) => newOrder.indexOf(a.token) - newOrder.indexOf(b.token));
-
-        syncFileInput();
-        syncCoverVisualState();
-        updateEmptyState();
-      };
+      }
     });
 
-    galleryGrid.querySelectorAll(".js-set-cover").forEach((button) => {
-      button.onclick = (event) => {
-        event.preventDefault();
-        const token = button.dataset.token;
-        if (!token) return;
-        setCoverToken(token);
-      };
-    });
+    if (!coverTokenInput.value) {
+      const activeCover = existingCards().find((card) => card.classList.contains("is-cover"));
+      if (activeCover) {
+        coverTokenInput.value = activeCover.dataset.token || "";
+      }
+    }
 
-    galleryGrid.querySelectorAll(".js-remove-new-image").forEach((button) => {
-      button.onclick = (event) => {
-        event.preventDefault();
-        const token = button.dataset.token;
-        if (!token) return;
-        removeNewItem(token);
-      };
-    });
-
-    galleryGrid.querySelectorAll(".js-delete-existing-image").forEach((button) => {
-      button.onclick = (event) => {
-        event.preventDefault();
-        const url = button.dataset.deleteUrl;
-        if (!url) return;
-
-        const ok = window.confirm("¿Deseas eliminar esta imagen?");
-        if (!ok) return;
-
-        submitDeleteExistingImage(url);
-      };
-    });
+    syncGalleryOrder();
+    syncCoverVisualState();
+    updateEmptyState();
   };
+
+  galleryGrid.addEventListener("click", (event) => {
+    const coverButton = event.target.closest(".js-set-cover");
+    if (coverButton) {
+      event.preventDefault();
+      event.stopPropagation();
+      const token = coverButton.dataset.token;
+      setCoverToken(token);
+      return;
+    }
+
+    const removeNewButton = event.target.closest(".js-remove-new-image");
+    if (removeNewButton) {
+      event.preventDefault();
+      event.stopPropagation();
+      const token = removeNewButton.dataset.token;
+      removeNewItem(token);
+      return;
+    }
+
+    const deleteExistingButton = event.target.closest(".js-delete-existing-image");
+    if (deleteExistingButton) {
+      event.preventDefault();
+      event.stopPropagation();
+      const url = deleteExistingButton.dataset.deleteUrl;
+      if (!url) return;
+
+      const ok = window.confirm("¿Deseas eliminar esta imagen?");
+      if (!ok) return;
+
+      submitDeleteExistingImage(url);
+    }
+  });
+
+  galleryGrid.addEventListener("mousedown", (event) => {
+    const dragHandle = event.target.closest(".js-drag-handle");
+    if (!dragHandle) {
+      disableAllDragging();
+      return;
+    }
+
+    const card = dragHandle.closest(".gallery-card");
+    if (!card) return;
+
+    disableAllDragging();
+    card.draggable = true;
+    card.classList.add("is-draggable");
+  });
+
+  galleryGrid.addEventListener("dragstart", (event) => {
+    const card = event.target.closest(".gallery-card");
+    if (!card || !card.draggable) {
+      event.preventDefault();
+      return;
+    }
+
+    draggedToken = card.dataset.token || null;
+    card.classList.add("is-dragging");
+  });
+
+  galleryGrid.addEventListener("dragend", (event) => {
+    const card = event.target.closest(".gallery-card");
+    if (card) {
+      card.classList.remove("is-dragging");
+    }
+    draggedToken = null;
+    disableAllDragging();
+  });
+
+  galleryGrid.addEventListener("dragover", (event) => {
+    event.preventDefault();
+  });
+
+  galleryGrid.addEventListener("drop", (event) => {
+    event.preventDefault();
+
+    const targetCard = event.target.closest(".gallery-card");
+    if (!targetCard || !draggedToken) return;
+
+    const draggedCard = allCards().find((node) => node.dataset.token === draggedToken);
+    if (!draggedCard || draggedCard === targetCard) return;
+
+    const cards = allCards();
+    const draggedIndex = cards.indexOf(draggedCard);
+    const targetIndex = cards.indexOf(targetCard);
+
+    if (draggedIndex < targetIndex) {
+      targetCard.after(draggedCard);
+    } else {
+      targetCard.before(draggedCard);
+    }
+
+    const orderedTokens = allCards().map((node) => node.dataset.token);
+    galleryOrderInput.value = orderedTokens.join(",");
+
+    const newOrder = orderedTokens.filter((token) => token.startsWith("n:"));
+    newItems.sort((a, b) => newOrder.indexOf(a.token) - newOrder.indexOf(b.token));
+
+    syncFileInput();
+    syncCoverVisualState();
+    updateEmptyState();
+  });
 
   if (input) {
     input.addEventListener("change", () => {
@@ -334,10 +380,6 @@ document.addEventListener("DOMContentLoaded", () => {
     syncFileInput();
   });
 
-  syncGalleryOrder();
-  syncCoverVisualState();
-  updateEmptyState();
-  bindGalleryCardEvents();
-
+  initializeServerCards();
   window.addEventListener("beforeunload", revokeNewUrls);
 });
