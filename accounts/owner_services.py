@@ -461,13 +461,13 @@ def set_property_image_as_cover(request, image_id: int) -> tuple[bool, str]:
             json={"is_cover": True},
         )
 
-        if response.status_code == 200:
-            return True, "Imagen principal actualizada correctamente."
+        if response.status_code != 200:
+            return False, "No fue posible actualizar la imagen principal."
 
-        return False, "No fue posible marcar la imagen como principal."
+        return True, "Imagen principal actualizada correctamente."
 
     except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError):
-        return False, "No fue posible marcar la imagen como principal."
+        return False, "No fue posible actualizar la imagen principal."
 
 
 def delete_property_image_by_id(request, image_id: int) -> tuple[bool, str]:
