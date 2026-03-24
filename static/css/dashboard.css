@@ -447,13 +447,13 @@
 }
 
 .owner-property-badge--available {
-    background: rgba(16, 185, 129, 0.16);
+    background: rgba(16, 185, 129, 0.96);
     color: #047857;
 }
 
 .owner-property-badge--occupied,
 .owner-property-badge--rented {
-    background: rgba(0, 76, 109, 0.14);
+    background: rgba(0, 76, 109, 0.94);
     color: var(--color-primary);
 }
 
@@ -461,7 +461,7 @@
 .owner-property-badge--draft,
 .owner-property-badge--unpublished,
 .owner-property-badge--unknown {
-    background: rgba(91, 100, 112, 0.14);
+    background: rgba(91, 100, 112, 0.94);
     color: #4b5563;
 }
 
