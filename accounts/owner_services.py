@@ -205,6 +205,8 @@ def _normalize_rental_request(item: dict) -> dict:
 
 
 def get_owner_properties(request, owner_id: int, limit: int = 100) -> tuple[list[dict], Optional[str]]:
+    safe_limit = max(1, min(int(limit or 100), 100))
+
     try:
         response = authenticated_request(
             request,
@@ -212,7 +214,7 @@ def get_owner_properties(request, owner_id: int, limit: int = 100) -> tuple[list
             "/properties/",
             params={
                 "owner_id": owner_id,
-                "limit": limit,
+                "limit": safe_limit,
                 "skip": 0,
             },
         )
@@ -509,7 +511,7 @@ def build_owner_requests_summary(requests: list[dict]) -> dict:
 
 
 def get_owner_requests_overview(request, owner_id: int, status: Optional[str] = None) -> tuple[list[dict], Optional[str]]:
-    properties, properties_error = get_owner_properties(request, owner_id=owner_id, limit=200)
+    properties, properties_error = get_owner_properties(request, owner_id=owner_id, limit=100)
 
     if properties_error:
         return [], properties_error

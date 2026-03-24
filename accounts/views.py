@@ -804,19 +804,33 @@ def owner_requests_view(request):
     if property_filter.isdigit():
         selected_property_id = int(property_filter)
 
-    owner_properties, properties_error = get_owner_properties(request, owner_id=habita_user["id"], limit=200)
+    owner_properties, properties_error = get_owner_properties(
+        request,
+        owner_id=habita_user["id"],
+        limit=100,
+    )
 
     all_requests, rental_requests_error = get_owner_requests_overview(
         request,
         owner_id=habita_user["id"],
-        # property_id=selected_property_id,
         status=None,
     )
 
-    request_summary = build_owner_requests_summary(all_requests)
     rental_requests = all_requests
+
+    if selected_property_id is not None:
+        rental_requests = [
+            item for item in rental_requests
+            if item.get("property_id") == selected_property_id
+        ]
+
     if status_filter:
-        rental_requests = [item for item in all_requests if item.get("status_code") == status_filter]
+        rental_requests = [
+            item for item in rental_requests
+            if item.get("status_code") == status_filter
+        ]
+
+    request_summary = build_owner_requests_summary(rental_requests)
 
     return render(
         request,
