@@ -686,7 +686,7 @@ def owner_requests_view(request):
     all_requests, rental_requests_error = get_owner_requests_overview(
         request,
         owner_id=habita_user["id"],
-        property_id=selected_property_id,
+        # property_id=selected_property_id,
         status=None,
     )
 
