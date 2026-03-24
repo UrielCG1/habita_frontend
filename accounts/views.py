@@ -21,6 +21,7 @@ from .owner_services import (
     set_property_image_as_cover,
     delete_property_image_by_id,
     build_owner_requests_summary,
+    reorder_property_images,
 )
 from .services import (
     AuthServiceError,
@@ -327,6 +328,130 @@ def owner_update_request_status_view(request, property_id: int, request_id: int)
 ### ============================
 
 
+def _parse_gallery_tokens(raw_value: str) -> list[str]:
+    return [token.strip() for token in (raw_value or "").split(",") if token.strip()]
+
+
+def _token_is_existing(token: str) -> bool:
+    return token.startswith("e:") and token[2:].isdigit()
+
+
+def _token_is_new(token: str) -> bool:
+    return token.startswith("n:") and len(token) > 2
+
+
+def _image_id_from_existing_token(token: str) -> int | None:
+    if _token_is_existing(token):
+        return int(token.split(":", 1)[1])
+    return None
+
+
+def _build_property_payload(form, is_published_value: bool) -> dict:
+    return {
+        "title": form.cleaned_data["title"],
+        "description": form.cleaned_data["description"],
+        "price": str(form.cleaned_data["price"]),
+        "property_type": form.cleaned_data["property_type"],
+        "status": form.cleaned_data["status"],
+        "address_line": form.cleaned_data["address_line"],
+        "neighborhood": form.cleaned_data["neighborhood"],
+        "city": form.cleaned_data["city"],
+        "state": form.cleaned_data["state"],
+        "bedrooms": form.cleaned_data["bedrooms"],
+        "bathrooms": form.cleaned_data["bathrooms"],
+        "parking_spaces": form.cleaned_data["parking_spaces"],
+        "area_m2": str(form.cleaned_data["area_m2"]) if form.cleaned_data["area_m2"] is not None else None,
+        "latitude": str(form.cleaned_data["latitude"]) if form.cleaned_data["latitude"] is not None else None,
+        "longitude": str(form.cleaned_data["longitude"]) if form.cleaned_data["longitude"] is not None else None,
+        "is_published": is_published_value,
+    }
+
+
+def _resolve_publish_state(form, submit_mode: str) -> bool:
+    is_published_value = form.cleaned_data["is_published"]
+    if submit_mode == "publish":
+        return True
+    if submit_mode == "draft":
+        return False
+    return is_published_value
+
+
+def _apply_property_gallery_changes(request, property_id: int, title: str, initial_existing_ids: list[int], uploaded_files: list) -> list[str]:
+    warnings: list[str] = []
+    gallery_tokens = _parse_gallery_tokens(request.POST.get("gallery_order", ""))
+    cover_token = (request.POST.get("cover_token") or "").strip()
+
+    set_new_cover = _token_is_new(cover_token) and bool(uploaded_files)
+    if uploaded_files:
+        upload_ok, upload_message = upload_owner_property_images(
+            request,
+            property_id=property_id,
+            files=uploaded_files,
+            alt_text=title or "",
+            set_first_as_cover=set_new_cover,
+        )
+        if not upload_ok:
+            warnings.append(upload_message)
+
+    if _token_is_existing(cover_token):
+        image_id = _image_id_from_existing_token(cover_token)
+        if image_id:
+            cover_ok, cover_message = set_property_image_as_cover(request, image_id=image_id)
+            if not cover_ok:
+                warnings.append(cover_message)
+
+    if not gallery_tokens:
+        return warnings
+
+    current_ids = list(initial_existing_ids)
+    if uploaded_files:
+        refreshed_detail, refresh_error = get_owner_property_detail(request, property_id=property_id)
+        if refresh_error or not refreshed_detail:
+            warnings.append("La propiedad se actualizó, pero no se pudo refrescar la galería para guardar el orden final.")
+            return warnings
+        current_ids = [image.get("id") for image in refreshed_detail.get("images", []) if image.get("id")]
+
+    new_ids = [image_id for image_id in current_ids if image_id not in initial_existing_ids]
+    new_tokens_in_order = [token for token in gallery_tokens if _token_is_new(token)]
+    new_token_map = {}
+    for index, token in enumerate(new_tokens_in_order):
+        if index < len(new_ids):
+            new_token_map[token] = new_ids[index]
+
+    ordered_image_ids: list[int] = []
+    for token in gallery_tokens:
+        if _token_is_existing(token):
+            image_id = _image_id_from_existing_token(token)
+            if image_id and image_id in current_ids and image_id not in ordered_image_ids:
+                ordered_image_ids.append(image_id)
+        elif token in new_token_map and new_token_map[token] not in ordered_image_ids:
+            ordered_image_ids.append(new_token_map[token])
+
+    for image_id in current_ids:
+        if image_id not in ordered_image_ids:
+            ordered_image_ids.append(image_id)
+
+    if len(ordered_image_ids) > 1:
+        reorder_ok, reorder_message = reorder_property_images(request, ordered_image_ids)
+        if not reorder_ok:
+            warnings.append(reorder_message)
+
+    return warnings
+
+
+def _render_property_form(request, form, mode: str, property_obj=None, admin_mode: bool = False):
+    return render(
+        request,
+        "accounts/owner_property_form.html",
+        {
+            "form": form,
+            "mode": mode,
+            "property_obj": property_obj,
+            "admin_mode": admin_mode,
+        },
+    )
+
+
 @habita_role_required("owner", "admin")
 def owner_property_create_view(request):
     habita_user = get_habita_user(request)
@@ -334,69 +459,33 @@ def owner_property_create_view(request):
 
     if request.method == "POST" and form.is_valid():
         submit_mode = request.POST.get("submit_mode", "save")
-        
-        is_published_value = form.cleaned_data["is_published"]
-        if submit_mode == "publish":
-            is_published_value = True
-        elif submit_mode == "draft":
-            is_published_value = False
-
-        payload = {
-            "title": form.cleaned_data["title"],
-            "description": form.cleaned_data["description"],
-            "price": str(form.cleaned_data["price"]),
-            "property_type": form.cleaned_data["property_type"],
-            "status": form.cleaned_data["status"],
-            "address_line": form.cleaned_data["address_line"],
-            "neighborhood": form.cleaned_data["neighborhood"],
-            "city": form.cleaned_data["city"],
-            "state": form.cleaned_data["state"],
-            "bedrooms": form.cleaned_data["bedrooms"],
-            "bathrooms": form.cleaned_data["bathrooms"],
-            "parking_spaces": form.cleaned_data["parking_spaces"],
-            "area_m2": str(form.cleaned_data["area_m2"]) if form.cleaned_data["area_m2"] is not None else None,
-            "latitude": str(form.cleaned_data["latitude"]) if form.cleaned_data["latitude"] is not None else None,
-            "longitude": str(form.cleaned_data["longitude"]) if form.cleaned_data["longitude"] is not None else None,
-            "is_published": is_published_value,
-        }
+        is_published_value = _resolve_publish_state(form, submit_mode)
+        payload = _build_property_payload(form, is_published_value)
 
         created_property, error = create_owner_property(request, owner_id=habita_user["id"], payload=payload)
-
         if error or not created_property:
             messages.error(request, error or "No fue posible crear la propiedad.")
-            return render(
-                request,
-                "accounts/owner_property_form.html",
-                {
-                    "form": form,
-                    "mode": "create",
-                },
-            )
+            return _render_property_form(request, form, mode="create")
 
-        uploaded_files = form.cleaned_data.get("images") or []
-        upload_ok, upload_message = upload_owner_property_images(
+        uploaded_files = list(form.cleaned_data.get("images") or [])
+        warnings = _apply_property_gallery_changes(
             request,
             property_id=created_property["id"],
-            files=uploaded_files,
-            alt_text=created_property.get("title", ""),
-            set_first_as_cover=True,
+            title=created_property.get("title", ""),
+            initial_existing_ids=[],
+            uploaded_files=uploaded_files,
         )
 
-        if upload_ok:
+        if warnings:
             messages.success(request, "Propiedad creada correctamente.")
+            for warning in warnings:
+                messages.warning(request, warning)
         else:
-            messages.warning(request, upload_message)
+            messages.success(request, "Propiedad creada correctamente.")
 
         return redirect("accounts:owner-properties")
 
-    return render(
-        request,
-        "accounts/owner_property_form.html",
-        {
-            "form": form,
-            "mode": "create",
-        },
-    )
+    return _render_property_form(request, form, mode="create")
 
 
 @habita_role_required("owner", "admin")
@@ -405,13 +494,11 @@ def owner_property_edit_view(request, property_id: int):
 
     properties, _ = get_owner_properties(request, owner_id=habita_user["id"])
     owned_property = next((item for item in properties if item["id"] == property_id), None)
-
     if not owned_property:
         messages.error(request, "No tienes acceso a esa propiedad.")
         return redirect("accounts:owner-properties")
 
     property_detail, error = get_owner_property_detail(request, property_id=property_id)
-
     if error or not property_detail:
         messages.error(request, error or "No fue posible cargar la propiedad.")
         return redirect("accounts:owner-properties")
@@ -434,66 +521,39 @@ def owner_property_edit_view(request, property_id: int):
         "longitude": property_detail["longitude"],
         "is_published": property_detail["is_published"],
     }
+    existing_image_ids = [image.get("id") for image in property_detail.get("images", []) if image.get("id")]
 
     form = OwnerPropertyForm(request.POST or None, request.FILES or None, initial=initial)
-
     if request.method == "POST" and form.is_valid():
-        payload = {
-            "title": form.cleaned_data["title"],
-            "description": form.cleaned_data["description"],
-            "price": str(form.cleaned_data["price"]),
-            "property_type": form.cleaned_data["property_type"],
-            "status": form.cleaned_data["status"],
-            "address_line": form.cleaned_data["address_line"],
-            "neighborhood": form.cleaned_data["neighborhood"],
-            "city": form.cleaned_data["city"],
-            "state": form.cleaned_data["state"],
-            "bedrooms": form.cleaned_data["bedrooms"],
-            "bathrooms": form.cleaned_data["bathrooms"],
-            "parking_spaces": form.cleaned_data["parking_spaces"],
-            "area_m2": str(form.cleaned_data["area_m2"]) if form.cleaned_data["area_m2"] is not None else None,
-            "latitude": str(form.cleaned_data["latitude"]) if form.cleaned_data["latitude"] is not None else None,
-            "longitude": str(form.cleaned_data["longitude"]) if form.cleaned_data["longitude"] is not None else None,
-            "is_published": form.cleaned_data["is_published"],
-        }
+        submit_mode = request.POST.get("submit_mode", "save")
+        is_published_value = _resolve_publish_state(form, submit_mode)
+        payload = _build_property_payload(form, is_published_value)
 
         updated_property, patch_error = patch_owner_property(request, property_id=property_id, payload=payload)
-
         if patch_error or not updated_property:
             messages.error(request, patch_error or "No fue posible actualizar la propiedad.")
-        else:
-            uploaded_files = form.cleaned_data.get("images") or []
-            if uploaded_files:
-                upload_ok, upload_message = upload_owner_property_images(
-                    request,
-                    property_id=property_id,
-                    files=uploaded_files,
-                    alt_text=updated_property.get("title", ""),
-                    set_first_as_cover=False,
-                )
-                if not upload_ok:
-                    messages.warning(request, upload_message)
+            return _render_property_form(request, form, mode="edit", property_obj=property_detail)
 
-            messages.success(request, "Propiedad actualizada correctamente.")
-            return redirect("accounts:owner-properties")
+        uploaded_files = list(form.cleaned_data.get("images") or [])
+        warnings = _apply_property_gallery_changes(
+            request,
+            property_id=property_id,
+            title=updated_property.get("title", property_detail.get("title", "")),
+            initial_existing_ids=existing_image_ids,
+            uploaded_files=uploaded_files,
+        )
 
-    return render(
-        request,
-        "accounts/owner_property_form.html",
-        {
-            "form": form,
-            "mode": "edit",
-            "property_obj": property_detail,
-        },
-    )
-    
-    
-#### PANEL DE ADMINISTRACIÓN
+        messages.success(request, "Propiedad actualizada correctamente.")
+        for warning in warnings:
+            messages.warning(request, warning)
+        return redirect("accounts:owner-properties")
+
+    return _render_property_form(request, form, mode="edit", property_obj=property_detail)
+
 
 @habita_role_required("admin")
 def admin_property_edit_view(request, property_id: int):
     property_detail, error = get_owner_property_detail(request, property_id=property_id)
-
     if error or not property_detail:
         messages.error(request, error or "No fue posible cargar la propiedad.")
         return redirect("accounts:admin-area")
@@ -516,67 +576,34 @@ def admin_property_edit_view(request, property_id: int):
         "longitude": property_detail["longitude"],
         "is_published": property_detail["is_published"],
     }
+    existing_image_ids = [image.get("id") for image in property_detail.get("images", []) if image.get("id")]
 
     form = OwnerPropertyForm(request.POST or None, request.FILES or None, initial=initial)
-
     if request.method == "POST" and form.is_valid():
         submit_mode = request.POST.get("submit_mode", "save")
-        
-        is_published_value = form.cleaned_data["is_published"]
-        if submit_mode == "publish":
-            is_published_value = True
-        elif submit_mode == "draft":
-            is_published_value = False
-
-        payload = {
-            "title": form.cleaned_data["title"],
-            "description": form.cleaned_data["description"],
-            "price": str(form.cleaned_data["price"]),
-            "property_type": form.cleaned_data["property_type"],
-            "status": form.cleaned_data["status"],
-            "address_line": form.cleaned_data["address_line"],
-            "neighborhood": form.cleaned_data["neighborhood"],
-            "city": form.cleaned_data["city"],
-            "state": form.cleaned_data["state"],
-            "bedrooms": form.cleaned_data["bedrooms"],
-            "bathrooms": form.cleaned_data["bathrooms"],
-            "parking_spaces": form.cleaned_data["parking_spaces"],
-            "area_m2": str(form.cleaned_data["area_m2"]) if form.cleaned_data["area_m2"] is not None else None,
-            "latitude": str(form.cleaned_data["latitude"]) if form.cleaned_data["latitude"] is not None else None,
-            "longitude": str(form.cleaned_data["longitude"]) if form.cleaned_data["longitude"] is not None else None,
-            "is_published": is_published_value,
-        }
+        is_published_value = _resolve_publish_state(form, submit_mode)
+        payload = _build_property_payload(form, is_published_value)
 
         updated_property, patch_error = patch_owner_property(request, property_id=property_id, payload=payload)
-
         if patch_error or not updated_property:
             messages.error(request, patch_error or "No fue posible actualizar la propiedad.")
-        else:
-            uploaded_files = form.cleaned_data.get("images") or []
-            if uploaded_files:
-                upload_ok, upload_message = upload_owner_property_images(
-                    request,
-                    property_id=property_id,
-                    files=uploaded_files,
-                    alt_text=updated_property.get("title", ""),
-                    set_first_as_cover=False,
-                )
-                if not upload_ok:
-                    messages.warning(request, upload_message)
+            return _render_property_form(request, form, mode="edit", property_obj=property_detail, admin_mode=True)
 
-            messages.success(request, "Propiedad actualizada correctamente.")
-            return redirect("accounts:admin-area")
+        uploaded_files = list(form.cleaned_data.get("images") or [])
+        warnings = _apply_property_gallery_changes(
+            request,
+            property_id=property_id,
+            title=updated_property.get("title", property_detail.get("title", "")),
+            initial_existing_ids=existing_image_ids,
+            uploaded_files=uploaded_files,
+        )
 
-    return render(
-        request,
-        "accounts/owner_property_form.html",
-        {
-            "form": form,
-            "mode": "edit",
-            "property_obj": property_detail,
-            "admin_mode": True,
-        },
-    )
+        messages.success(request, "Propiedad actualizada correctamente.")
+        for warning in warnings:
+            messages.warning(request, warning)
+        return redirect("accounts:admin-area")
+
+    return _render_property_form(request, form, mode="edit", property_obj=property_detail, admin_mode=True)
 
 
 @require_POST

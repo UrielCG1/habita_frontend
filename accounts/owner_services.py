@@ -228,7 +228,6 @@ def get_owner_properties(request, owner_id: int, limit: int = 100) -> tuple[list
         return [], "No fue posible cargar tus propiedades."
 
 
-
 def get_property_rental_requests(request, property_id: int, status: Optional[str] = None) -> tuple[list[dict], Optional[str]]:
     params = {
         "limit": 100,
@@ -468,7 +467,6 @@ def set_property_image_as_cover(request, image_id: int) -> tuple[bool, str]:
         return False, "No fue posible marcar la imagen como principal."
 
 
-
 def delete_property_image_by_id(request, image_id: int) -> tuple[bool, str]:
     try:
         response = authenticated_request(
@@ -533,3 +531,36 @@ def get_owner_requests_overview(request, owner_id: int, status: Optional[str] = 
             all_requests.append(req)
 
     return all_requests, None
+
+
+
+
+def reorder_property_images(request, ordered_image_ids: list[int]) -> tuple[bool, str]:
+    """
+    Reordena las imágenes de una propiedad actualizando sort_order
+    en el backend vía PATCH /property-images/{image_id}.
+
+    ordered_image_ids:
+        Lista ordenada de IDs de imágenes, por ejemplo:
+        [14, 9, 6, 3]
+    """
+
+    if not ordered_image_ids:
+        return True, "Sin cambios en el orden de imágenes."
+
+    try:
+        for sort_order, image_id in enumerate(ordered_image_ids):
+            response = authenticated_request(
+                request,
+                "PATCH",
+                f"/property-images/{image_id}",
+                json={"sort_order": sort_order},
+            )
+
+            if response.status_code != 200:
+                return False, "No fue posible guardar el orden de las imágenes."
+
+        return True, "Orden de imágenes actualizado correctamente."
+
+    except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError):
+        return False, "No fue posible guardar el orden de las imágenes."
