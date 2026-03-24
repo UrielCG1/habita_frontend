@@ -196,7 +196,7 @@
                     {% for error in form.images.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
 
                     <div class="gallery-toolbar">
-                        <div class="gallery-toolbar__item"><span class="material-symbols-outlined">drag_indicator</span> Usa el icono para arrastrar y ordenar</div>
+                        <div class="gallery-toolbar__item"><span class="material-symbols-outlined">drag_indicator</span> Arrastra cada tarjeta para ordenar</div>
                         <div class="gallery-toolbar__item"><span class="material-symbols-outlined">star</span> La principal se usa en los listados</div>
                         <div class="gallery-toolbar__item"><span class="material-symbols-outlined">delete</span> Eliminar existente sigue funcionando</div>
                     </div>
@@ -206,7 +206,7 @@
                             {% for image in property_obj.images %}
                                 <article
                                     class="gallery-card {% if image.is_cover %}is-cover{% endif %}"
-                                    draggable="false"
+                                    draggable="true"
                                     data-token="e:{{ image.id }}"
                                     data-kind="existing"
                                     data-image-id="{{ image.id }}"
@@ -218,7 +218,7 @@
                                             <img src="{% static 'img/property-placeholder.jpg' %}" alt="Imagen">
                                         {% endif %}
 
-                                        <button type="button" class="gallery-chip gallery-chip--drag js-drag-handle" title="Ordenar">
+                                        <button type="button" class="gallery-chip gallery-chip--drag" title="Ordenar">
                                             <span class="material-symbols-outlined">drag_indicator</span>
                                         </button>
 
@@ -228,7 +228,7 @@
                                             data-token="e:{{ image.id }}"
                                         >
                                             <span class="material-symbols-outlined">star</span>
-                                            <span class="gallery-chip__label">{% if image.is_cover %}Principal{% else %}Hacer principal{% endif %}</span>
+                                            <span>{% if image.is_cover %}Principal{% else %}Hacer principal{% endif %}</span>
                                         </button>
 
                                         <div class="gallery-card__overlay">
