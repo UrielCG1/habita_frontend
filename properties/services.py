@@ -49,29 +49,35 @@ def _format_price(value) -> str:
         return str(value)
 
 
+def _to_str_or_none(value):
+    if value in (None, "", "null"):
+        return None
+    return str(value)
+
+
+def _build_full_address(item: dict) -> str:
+    parts = [
+        item.get("address_line"),
+        item.get("neighborhood"),
+        item.get("city"),
+        item.get("state"),
+        item.get("postal_code"),
+    ]
+    return ", ".join([str(part).strip() for part in parts if part])
+
+
+def _build_location(item: dict) -> str:
+    parts = [
+        item.get("neighborhood"),
+        item.get("city"),
+    ]
+    return ", ".join([str(part).strip() for part in parts if part]) or "Querétaro"
+
+
 def _format_area(value) -> str:
     if value in (None, ""):
         return "N/D"
     return f"{value} m²"
-
-
-def _build_location(item: dict) -> str:
-    neighborhood = item.get("neighborhood")
-    city = item.get("city")
-    state = item.get("state")
-
-    parts = [part for part in [neighborhood, city, state] if part]
-    return ", ".join(parts) if parts else "Ubicación no disponible"
-
-
-def _build_full_address(item: dict) -> str:
-    address_line = item.get("address_line")
-    neighborhood = item.get("neighborhood")
-    city = item.get("city")
-    state = item.get("state")
-
-    parts = [part for part in [address_line, neighborhood, city, state] if part]
-    return ", ".join(parts) if parts else "Dirección no disponible"
 
 
 def _label_for_property_type(value: Optional[str]) -> str:
@@ -116,6 +122,31 @@ def _build_owner_initials(owner_name: Optional[str]) -> str:
 
 def _normalize_property_card(item: dict) -> dict:
     cover_image = item.get("cover_image") or {}
+    images = item.get("images") or []
+
+    normalized_images = []
+    for image in images:
+        normalized_images.append(
+            {
+                "id": image.get("id"),
+                "image_url": image.get("file_url"),
+                "alt_text": image.get("alt_text") or item.get("title", "Imagen"),
+                "is_cover": image.get("is_cover", False),
+                "sort_order": image.get("sort_order", 0),
+            }
+        )
+        
+    normalized_images.sort(
+        key=lambda image: (
+            not image.get("is_cover", False),
+            image.get("sort_order", 0),
+            image.get("id", 0),
+        )
+    )
+
+    latitude = _to_str_or_none(item.get("latitude"))
+    longitude = _to_str_or_none(item.get("longitude"))
+
     owner = item.get("owner") or {}
     image_url = _property_image_proxy_url(cover_image.get("id"))
     property_type = item.get("property_type")
@@ -129,6 +160,19 @@ def _normalize_property_card(item: dict) -> dict:
         "location": _build_location(item),
         "price": _format_price(item.get("price")),
         "price_display": _format_price(item.get("price")),
+        "address_line": item.get("address_line") or "",
+        "neighborhood": item.get("neighborhood") or "",
+        "city": item.get("city") or "",
+        "state": item.get("state") or "",
+        "latitude": latitude,
+        "longitude": longitude,
+        "postal_code": item.get("postal_code") or "",
+        "area_m2": item.get("area_m2"),
+        "has_coordinates": bool(latitude and longitude),
+        "images": normalized_images,
+        "location": _build_location(item),
+        "full_address": _build_full_address(item),
+        
         "raw_price": item.get("price"),
         "bedrooms": item.get("bedrooms", 0),
         "bedrooms_display": _format_bedrooms(item.get("bedrooms", 0)),
@@ -219,6 +263,7 @@ def _normalize_property_detail(item: dict) -> dict:
         "address_line": item.get("address_line") or "",
         "neighborhood": item.get("neighborhood") or "",
         "city": item.get("city") or "",
+        "postal_code": item.get("postal_code") or "",
         "state": item.get("state") or "",
         "location": _build_location(item),
         "full_address": _build_full_address(item),

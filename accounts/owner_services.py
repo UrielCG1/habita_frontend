@@ -315,7 +315,16 @@ def get_owner_property_detail(request, property_id: int) -> tuple[Optional[dict]
                 }
             )
 
-        normalized_images.sort(key=lambda image: (not image.get("is_cover", False), image.get("sort_order", 0), image.get("id", 0)))
+        normalized_images.sort(
+            key=lambda image: (
+                not image.get("is_cover", False),
+                image.get("sort_order", 0),
+                image.get("id", 0),
+            )
+        )
+
+        latitude = data.get("latitude")
+        longitude = data.get("longitude")
 
         result = {
             "id": data.get("id"),
@@ -329,12 +338,14 @@ def get_owner_property_detail(request, property_id: int) -> tuple[Optional[dict]
             "neighborhood": data.get("neighborhood") or "",
             "city": data.get("city", ""),
             "state": data.get("state", ""),
+            "postal_code": data.get("postal_code") or "",
             "bedrooms": data.get("bedrooms", 0),
             "bathrooms": data.get("bathrooms", 0),
             "parking_spaces": data.get("parking_spaces"),
             "area_m2": data.get("area_m2"),
-            "latitude": data.get("latitude"),
-            "longitude": data.get("longitude"),
+            "latitude": latitude,
+            "longitude": longitude,
+            "has_coordinates": latitude is not None and longitude is not None,
             "is_published": data.get("is_published", False),
             "images": normalized_images,
         }
@@ -342,7 +353,6 @@ def get_owner_property_detail(request, property_id: int) -> tuple[Optional[dict]
 
     except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError, ValueError):
         return None, "No fue posible cargar la propiedad."
-
 
 
 def create_owner_property(request, owner_id: int, payload: dict) -> tuple[Optional[dict], Optional[str]]:

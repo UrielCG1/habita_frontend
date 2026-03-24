@@ -164,86 +164,65 @@ class OwnerPropertyForm(forms.Form):
     title = forms.CharField(
         label="Título",
         max_length=180,
-        widget=forms.TextInput(
-            attrs={
-                "class": "form-input",
-                "placeholder": "Ej. Departamento céntrico en Querétaro",
-                "maxlength": "180",
-            }
-        ),
+        widget=forms.TextInput(attrs={"class": "form-input", "placeholder": "Ej. Departamento con terraza en el centro"}),
     )
     description = forms.CharField(
         label="Descripción",
         required=False,
-        widget=forms.Textarea(
-            attrs={
-                "class": "form-textarea",
-                "rows": 5,
-                "placeholder": "Describe la propiedad, lo que la hace especial y el perfil ideal del inquilino.",
-            }
-        ),
+        widget=forms.Textarea(attrs={"class": "form-textarea", "rows": 5, "placeholder": "Describe la propiedad..."}),
     )
     price = forms.DecimalField(
         label="Precio mensual",
         min_value=0,
         decimal_places=2,
         max_digits=12,
-        widget=forms.NumberInput(
-            attrs={
-                "class": "form-input",
-                "placeholder": "Ej. 12000",
-                "min": "0",
-                "step": "0.01",
-            }
-        ),
+        widget=forms.NumberInput(attrs={"class": "form-input", "placeholder": "9000.00"}),
     )
     property_type = forms.ChoiceField(
         label="Tipo de propiedad",
-        choices=(
+        choices=[
             ("house", "Casa"),
             ("apartment", "Departamento"),
-            ("studio", "Estudio"),
             ("room", "Habitación"),
+            ("studio", "Estudio"),
             ("land", "Terreno"),
-            ("office", "Oficina"),
-            ("commercial", "Local comercial"),
-        ),
-        widget=forms.Select(attrs={"class": "form-input"}),
+            ("commercial", "Comercial"),
+        ],
+        widget=forms.Select(attrs={"class": "form-select"}),
     )
     status = forms.ChoiceField(
-        label="Estado comercial",
-        choices=(
+        label="Estado",
+        choices=[
             ("available", "Disponible"),
-            ("occupied", "Ocupada"),
             ("rented", "Rentada"),
-            ("paused", "Pausada"),
-            ("hidden", "Oculta (legacy)"),
-        ),
-        widget=forms.Select(attrs={"class": "form-input"}),
+            ("maintenance", "En mantenimiento"),
+        ],
+        widget=forms.Select(attrs={"class": "form-select"}),
     )
 
     address_line = forms.CharField(
         label="Dirección",
         max_length=255,
-        widget=forms.TextInput(attrs={"class": "form-input", "placeholder": "Calle, número, interior"}),
+        widget=forms.TextInput(attrs={"class": "form-input", "placeholder": "Ej. Av. Peñuelas 120"}),
     )
     neighborhood = forms.CharField(
         label="Colonia",
         required=False,
         max_length=120,
-        widget=forms.TextInput(attrs={"class": "form-input", "placeholder": "Ej. Centro"}),
+        widget=forms.TextInput(attrs={"class": "form-input", "placeholder": "Ej. Los Vitrales"}),
     )
     city = forms.CharField(
         label="Ciudad",
         max_length=100,
+        initial="Querétaro",
         widget=forms.TextInput(attrs={"class": "form-input", "placeholder": "Querétaro"}),
     )
     state = forms.CharField(
         label="Estado",
         max_length=100,
+        initial="Querétaro",
         widget=forms.TextInput(attrs={"class": "form-input", "placeholder": "Querétaro"}),
     )
-    
     postal_code = forms.CharField(
         label="Código postal",
         required=False,
@@ -254,53 +233,40 @@ class OwnerPropertyForm(forms.Form):
     bedrooms = forms.IntegerField(
         label="Recámaras",
         min_value=0,
-        widget=forms.NumberInput(attrs={"class": "form-input", "min": "0"}),
+        widget=forms.NumberInput(attrs={"class": "form-input", "placeholder": "2"}),
     )
     bathrooms = forms.IntegerField(
         label="Baños",
         min_value=0,
-        widget=forms.NumberInput(attrs={"class": "form-input", "min": "0"}),
+        widget=forms.NumberInput(attrs={"class": "form-input", "placeholder": "2"}),
     )
     parking_spaces = forms.IntegerField(
-        label="Espacios de estacionamiento",
-        required=False,
+        label="Estacionamientos",
         min_value=0,
-        widget=forms.NumberInput(attrs={"class": "form-input", "min": "0"}),
+        required=False,
+        widget=forms.NumberInput(attrs={"class": "form-input", "placeholder": "1"}),
     )
     area_m2 = forms.DecimalField(
-        label="Área en m²",
-        required=False,
+        label="Área m²",
         min_value=0,
+        required=False,
         decimal_places=2,
         max_digits=10,
-        widget=forms.NumberInput(attrs={"class": "form-input", "min": "0", "step": "0.01", "placeholder": "Ej. 87.5"}),
+        widget=forms.NumberInput(attrs={"class": "form-input", "placeholder": "140.00"}),
     )
 
-    latitude = forms.DecimalField(
-        label="Latitud",
-        required=False,
-        decimal_places=7,
-        max_digits=10,
-        widget=forms.NumberInput(attrs={"class": "form-input", "step": "0.0000001", "placeholder": "20.5888000"}),
-    )
-    longitude = forms.DecimalField(
-        label="Longitud",
-        required=False,
-        decimal_places=7,
-        max_digits=10,
-        widget=forms.NumberInput(attrs={"class": "form-input", "step": "0.0000001", "placeholder": "-100.3899000"}),
-    )
+    latitude = forms.DecimalField(required=False, decimal_places=7, max_digits=10, widget=forms.HiddenInput())
+    longitude = forms.DecimalField(required=False, decimal_places=7, max_digits=10, widget=forms.HiddenInput())
 
     is_published = forms.BooleanField(
-        label="Publicar propiedad",
+        label="Publicada",
         required=False,
+        initial=True,
+        widget=forms.CheckboxInput(attrs={"class": "form-checkbox"}),
     )
 
-    images = MultipleFileField(
+    images = forms.ImageField(
         label="Imágenes",
         required=False,
-        widget_attrs={
-            "class": "form-input",
-            "accept": "image/*",
-        },
+        widget=forms.ClearableFileInput(attrs={"class": "form-input-file", "multiple": True}),
     )

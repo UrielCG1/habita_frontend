@@ -440,6 +440,25 @@ def _apply_property_gallery_changes(
 
     return warnings
 
+def _build_property_payload(form, is_published_value: bool) -> dict:
+    return {
+        "title": form.cleaned_data["title"],
+        "description": form.cleaned_data["description"],
+        "price": str(form.cleaned_data["price"]),
+        "property_type": form.cleaned_data["property_type"],
+        "status": form.cleaned_data["status"],
+        "address_line": form.cleaned_data["address_line"],
+        "neighborhood": form.cleaned_data["neighborhood"],
+        "city": form.cleaned_data["city"],
+        "state": form.cleaned_data["state"],
+        "postal_code": form.cleaned_data.get("postal_code") or None,
+        "bedrooms": form.cleaned_data["bedrooms"],
+        "bathrooms": form.cleaned_data["bathrooms"],
+        "parking_spaces": form.cleaned_data["parking_spaces"],
+        "area_m2": str(form.cleaned_data["area_m2"]) if form.cleaned_data["area_m2"] is not None else None,
+        "is_published": is_published_value,
+    }
+
 
 @habita_role_required("owner", "admin")
 def owner_property_create_view(request):
@@ -448,32 +467,14 @@ def owner_property_create_view(request):
 
     if request.method == "POST" and form.is_valid():
         submit_mode = request.POST.get("submit_mode", "save")
-
         is_published_value = form.cleaned_data["is_published"]
+
         if submit_mode == "publish":
             is_published_value = True
         elif submit_mode == "draft":
             is_published_value = False
 
-        payload = {
-            "title": form.cleaned_data["title"],
-            "description": form.cleaned_data["description"],
-            "price": str(form.cleaned_data["price"]),
-            "property_type": form.cleaned_data["property_type"],
-            "status": form.cleaned_data["status"],
-            "address_line": form.cleaned_data["address_line"],
-            "neighborhood": form.cleaned_data["neighborhood"],
-            "city": form.cleaned_data["city"],
-            "state": form.cleaned_data["state"],
-            "bedrooms": form.cleaned_data["bedrooms"],
-            "bathrooms": form.cleaned_data["bathrooms"],
-            "postal_code": form.cleaned_data.get("postal_code") or None,
-            "parking_spaces": form.cleaned_data["parking_spaces"],
-            "area_m2": str(form.cleaned_data["area_m2"]) if form.cleaned_data["area_m2"] is not None else None,
-            "latitude": str(form.cleaned_data["latitude"]) if form.cleaned_data["latitude"] is not None else None,
-            "longitude": str(form.cleaned_data["longitude"]) if form.cleaned_data["longitude"] is not None else None,
-            "is_published": is_published_value,
-        }
+        payload = _build_property_payload(form, is_published_value)
 
         created_property, error = create_owner_property(
             request,
@@ -493,7 +494,6 @@ def owner_property_create_view(request):
             )
 
         uploaded_files = list(form.cleaned_data.get("images") or [])
-
         warnings = _apply_property_gallery_changes(
             request=request,
             property_id=created_property["id"],
@@ -517,15 +517,14 @@ def owner_property_create_view(request):
         },
     )
 
-
 @habita_role_required("owner", "admin")
 def owner_property_edit_view(request, property_id: int):
     habita_user = get_habita_user(request)
-    properties, properties_error = get_owner_properties(request, owner_id=habita_user["id"])
-    property_obj = next((item for item in properties if item["id"] == property_id), None)
 
-    if not property_obj:
-        messages.error(request, properties_error or "No tienes acceso a esta propiedad.")
+    properties, _ = get_owner_properties(request, owner_id=habita_user["id"])
+    owned_property = next((item for item in properties if item["id"] == property_id), None)
+    if not owned_property:
+        messages.error(request, "No tienes acceso a esa propiedad.")
         return redirect("accounts:owner-properties")
 
     property_detail, error = get_owner_property_detail(request, property_id=property_id)
@@ -543,52 +542,29 @@ def owner_property_edit_view(request, property_id: int):
         "neighborhood": property_detail["neighborhood"],
         "city": property_detail["city"],
         "state": property_detail["state"],
+        "postal_code": property_detail.get("postal_code"),
         "bedrooms": property_detail["bedrooms"],
         "bathrooms": property_detail["bathrooms"],
         "parking_spaces": property_detail["parking_spaces"],
         "area_m2": property_detail["area_m2"],
-        "latitude": property_detail["latitude"],
-        "longitude": property_detail["longitude"],
-        "postal_code": property_detail.get("postal_code"),
+        "latitude": property_detail.get("latitude"),
+        "longitude": property_detail.get("longitude"),
         "is_published": property_detail["is_published"],
     }
 
-    existing_image_ids = [
-        image.get("id")
-        for image in property_detail.get("images", [])
-        if image.get("id")
-    ]
-
+    existing_image_ids = [image.get("id") for image in property_detail.get("images", []) if image.get("id")]
     form = OwnerPropertyForm(request.POST or None, request.FILES or None, initial=initial)
 
     if request.method == "POST" and form.is_valid():
         submit_mode = request.POST.get("submit_mode", "save")
-
         is_published_value = form.cleaned_data["is_published"]
+
         if submit_mode == "publish":
             is_published_value = True
         elif submit_mode == "draft":
             is_published_value = False
 
-        payload = {
-            "title": form.cleaned_data["title"],
-            "description": form.cleaned_data["description"],
-            "price": str(form.cleaned_data["price"]),
-            "property_type": form.cleaned_data["property_type"],
-            "status": form.cleaned_data["status"],
-            "address_line": form.cleaned_data["address_line"],
-            "neighborhood": form.cleaned_data["neighborhood"],
-            "city": form.cleaned_data["city"],
-            "state": form.cleaned_data["state"],
-            "postal_code": form.cleaned_data.get("postal_code") or None,
-            "bedrooms": form.cleaned_data["bedrooms"],
-            "bathrooms": form.cleaned_data["bathrooms"],
-            "parking_spaces": form.cleaned_data["parking_spaces"],
-            "area_m2": str(form.cleaned_data["area_m2"]) if form.cleaned_data["area_m2"] is not None else None,
-            "latitude": str(form.cleaned_data["latitude"]) if form.cleaned_data["latitude"] is not None else None,
-            "longitude": str(form.cleaned_data["longitude"]) if form.cleaned_data["longitude"] is not None else None,
-            "is_published": is_published_value,
-        }
+        payload = _build_property_payload(form, is_published_value)
 
         updated_property, patch_error = patch_owner_property(
             request,
@@ -609,7 +585,6 @@ def owner_property_edit_view(request, property_id: int):
             )
 
         uploaded_files = list(form.cleaned_data.get("images") or [])
-
         warnings = _apply_property_gallery_changes(
             request=request,
             property_id=property_id,

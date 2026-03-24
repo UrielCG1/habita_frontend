@@ -193,6 +193,13 @@
                                     <p>{{ property.full_address }}</p>
                                 </div>
                             </div>
+
+                            {% if property.postal_code %}
+                                <div class="detail-location-meta">
+                                    <span class="detail-location-meta__label">Código postal</span>
+                                    <span class="detail-location-meta__value">{{ property.postal_code }}</span>
+                                </div>
+                            {% endif %}
                         </div>
 
                         {% if property.has_coordinates %}
@@ -201,11 +208,12 @@
                                 class="detail-map-canvas"
                                 data-lat="{{ property.latitude }}"
                                 data-lng="{{ property.longitude }}"
-                                data-title="{{ property.title }}"
-                                data-location="{{ property.location }}"
+                                data-title="{{ property.title|escape }}"
+                                data-location="{{ property.location|escape }}"
+                                aria-label="Mapa aproximado de la propiedad"
                             ></div>
                         {% else %}
-                            <div class="detail-map-placeholder">
+                            <div class="detail-map-placeholder" aria-hidden="true">
                                 <span class="material-symbols-outlined">map</span>
                                 <p>La ubicación aproximada aún no está disponible.</p>
                             </div>
@@ -435,28 +443,37 @@
 ></script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-    const mapNode = document.getElementById("property-detail-map");
-    if (!mapNode || typeof L === "undefined") return;
+  const mapNode = document.getElementById("property-detail-map");
+  if (!mapNode || typeof L === "undefined") return;
 
-    const lat = parseFloat(mapNode.dataset.lat || "");
-    const lng = parseFloat(mapNode.dataset.lng || "");
-    const title = mapNode.dataset.title || "Propiedad";
-    const location = mapNode.dataset.location || "";
+  const lat = parseFloat(mapNode.dataset.lat || "");
+  const lng = parseFloat(mapNode.dataset.lng || "");
+  const title = mapNode.dataset.title || "Propiedad";
+  const location = mapNode.dataset.location || "";
 
-    if (Number.isNaN(lat) || Number.isNaN(lng)) return;
+  if (Number.isNaN(lat) || Number.isNaN(lng)) return;
 
-    const map = L.map(mapNode).setView([lat, lng], 15);
+  const map = L.map(mapNode, {
+    scrollWheelZoom: false,
+  }).setView([lat, lng], 15);
 
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        attribution: "&copy; OpenStreetMap",
-    }).addTo(map);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: "&copy; OpenStreetMap",
+  }).addTo(map);
 
-    L.marker([lat, lng]).addTo(map).bindPopup(`<strong>${title}</strong><br>${location}`);
+  const popupHtml = `
+    <div class="detail-map-popup">
+      <strong>${title}</strong>
+      <div>${location}</div>
+    </div>
+  `;
 
-    setTimeout(() => {
-        map.invalidateSize();
-    }, 120);
+  L.marker([lat, lng]).addTo(map).bindPopup(popupHtml).openPopup();
+
+  setTimeout(() => {
+    map.invalidateSize();
+  }, 120);
 });
 </script>
 {% endblock %}
