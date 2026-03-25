@@ -221,3 +221,55 @@ def authenticated_request(request, method: str, endpoint: str, **kwargs):
         raise BackendUnavailableError(
             "No fue posible conectar con el backend."
         ) from exc
+        
+        
+        
+from typing import Optional
+
+def get_property_geocode_preview(
+    *,
+    street: str = "",
+    county: str = "",
+    city: str = "",
+    state: str = "",
+    postalcode: str = "",
+    country: str = "Mexico",
+) -> tuple[Optional[dict], Optional[str]]:
+    url = f"{settings.BACKEND_API_BASE_URL}/properties/geocode-preview"
+
+    params = {}
+
+    if street:
+        params["street"] = street
+    if county:
+        params["county"] = county
+    if city:
+        params["city"] = city
+    if state:
+        params["state"] = state
+    if postalcode:
+        params["postalcode"] = postalcode
+    if country:
+        params["country"] = country
+
+    try:
+        response = requests.get(
+            url,
+            params=params,
+            timeout=settings.BACKEND_REQUEST_TIMEOUT,
+            headers={
+                "Accept": "application/json",
+            },
+        )
+        response.raise_for_status()
+        payload = response.json()
+
+    except requests.RequestException:
+        return None, "No fue posible consultar la ubicación aproximada en este momento."
+    except ValueError:
+        return None, "La API respondió con un formato no válido."
+
+    if not payload.get("success"):
+        return None, payload.get("error") or "No se pudo ubicar la dirección."
+
+    return payload.get("data"), None

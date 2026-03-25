@@ -33,6 +33,7 @@ from .services import (
     login_with_backend,
     register_with_backend,
     save_auth_session,
+    get_property_geocode_preview,
 )
 from .utils import get_habita_user
 
@@ -837,43 +838,61 @@ from accounts.decorators import habita_role_required
 
 @habita_role_required("owner", "admin")
 def owner_property_location_preview_view(request):
-    address_line = request.GET.get("address_line", "").strip()
-    neighborhood = request.GET.get("neighborhood", "").strip()
-    city = request.GET.get("city", "").strip()
-    state = request.GET.get("state", "").strip()
-    postal_code = request.GET.get("postal_code", "").strip()
+    street = (request.GET.get("street") or "").strip()
+    county = (request.GET.get("county") or "").strip()
+    city = (request.GET.get("city") or "").strip()
+    state = (request.GET.get("state") or "").strip()
+    postalcode = (request.GET.get("postalcode") or "").strip()
+    country = (request.GET.get("country") or "Mexico").strip()
 
-    if not address_line or not city or not state:
+    if not city or not state:
         return JsonResponse(
-            {"success": False, "error": "Captura dirección, ciudad y estado."},
+            {
+                "success": False,
+                "error": "Captura al menos ciudad y estado.",
+            },
             status=400,
         )
 
-    try:
-        response = requests.get(
-            f"{settings.BACKEND_API_BASE_URL}/properties/geocode-preview",
-            params={
-                "address_line": address_line,
-                "neighborhood": neighborhood,
-                "city": city,
-                "state": state,
-                "postal_code": postal_code,
-            },
-            timeout=settings.BACKEND_REQUEST_TIMEOUT,
-        )
-
-        payload = response.json()
-
-        if response.status_code != 200:
-            return JsonResponse(
-                {"success": False, "error": payload.get("detail", "No se pudo ubicar la dirección.")},
-                status=response.status_code,
-            )
-
-        return JsonResponse({"success": True, "data": payload.get("data", {})})
-
-    except (requests.RequestException, ValueError):
+    if not street and not county and not postalcode:
         return JsonResponse(
-            {"success": False, "error": "No fue posible consultar la ubicación aproximada."},
-            status=503,
+            {
+                "success": False,
+                "error": "Captura al menos calle, colonia o código postal.",
+            },
+            status=400,
         )
+
+    data, error = get_property_geocode_preview(
+        street=street,
+        county=county,
+        city=city,
+        state=state,
+        postalcode=postalcode,
+        country=country,
+    )
+
+    if error:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": error,
+            },
+            status=502,
+        )
+
+    if not data:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "No se pudo ubicar la dirección.",
+            },
+            status=404,
+        )
+
+    return JsonResponse(
+        {
+            "success": True,
+            "data": data,
+        }
+    )
