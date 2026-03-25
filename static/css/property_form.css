@@ -620,31 +620,209 @@
 
 /* mapa */
 
-.property-location-preview {
-    margin-top: 1.5rem;
-    padding: 1rem;
-    border: 1px solid rgba(15, 23, 42, 0.08);
+/* =========================
+   Ubicación + mapa preview
+   ========================= */
+
+.property-location-card {
+    overflow: hidden;
+}
+
+.card-heading--location {
+    margin-bottom: 20px;
+}
+
+.property-location-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
+    gap: 24px;
+    align-items: start;
+}
+
+.property-location-fields {
+    display: grid;
+    gap: 18px;
+    min-width: 0;
+}
+
+.property-location-intro {
+    padding: 18px;
     border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    background:
+        radial-gradient(circle at top right, rgba(201, 169, 97, 0.12), transparent 32%),
+        linear-gradient(180deg, #fbfcfe 0%, #f8fafc 100%);
+}
+
+.property-location-intro p {
+    margin: 0 0 14px;
+    color: #475569;
+    line-height: 1.6;
+}
+
+.property-location-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.location-meta-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border-radius: 999px;
     background: #fff;
+    border: 1px solid #e2e8f0;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.04);
+}
+
+.location-meta-chip .material-symbols-outlined {
+    font-size: 18px;
+    color: var(--color-primary);
+}
+
+.property-location-grid {
+    gap: 18px;
+}
+
+.property-location-grid > div,
+.property-location-grid .form-field {
+    min-width: 0;
+}
+
+.property-location-preview {
+    display: grid;
+    gap: 16px;
+    padding: 20px;
+    border-radius: 24px;
+    border: 1px solid rgba(0, 76, 109, 0.10);
+    background:
+        radial-gradient(circle at top left, rgba(0, 76, 109, 0.05), transparent 36%),
+        linear-gradient(180deg, #fbfcfe 0%, #f7fafc 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+    min-height: 100%;
 }
 
 .property-location-preview__header {
     display: flex;
     justify-content: space-between;
-    gap: 1rem;
+    gap: 16px;
     align-items: flex-start;
-    margin-bottom: 1rem;
+}
+
+.property-location-preview__header h3 {
+    margin: 0 0 6px;
+    font-size: 20px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.property-location-preview__header p {
+    margin: 0;
+    color: #64748b;
+    line-height: 1.55;
+}
+
+.property-location-preview__button {
+    min-width: 220px;
+    flex-shrink: 0;
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+}
+
+.property-location-preview__status-wrap {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 14px 16px;
+    border-radius: 18px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+}
+
+.property-location-preview__status-wrap .material-symbols-outlined {
+    font-size: 22px;
+    color: var(--color-primary);
+    margin-top: 1px;
 }
 
 .property-location-preview__status {
-    margin-bottom: 1rem;
+    margin: 0;
     color: #475569;
-    font-size: 0.95rem;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 24px;
+}
+
+.property-location-preview__map-shell {
+    padding: 10px;
+    border-radius: 20px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 14px 28px rgba(15, 23, 42, 0.06);
 }
 
 .property-location-preview-map {
-    height: 300px;
-    border-radius: 18px;
+    height: 340px;
+    border-radius: 16px;
     overflow: hidden;
-    background: #f8fafc;
+    background:
+        linear-gradient(180deg, #eef4f8 0%, #e8f0f5 100%);
+}
+
+.property-location-card .field-help {
+    margin-top: 8px;
+}
+
+.property-location-card input[type="hidden"] {
+    display: none;
+}
+
+@media (max-width: 1080px) {
+    .property-location-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .property-location-preview__header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .property-location-preview__button {
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+@media (max-width: 640px) {
+    .property-location-intro,
+    .property-location-preview {
+        padding: 16px;
+        border-radius: 20px;
+    }
+
+    .property-location-preview__map-shell {
+        padding: 8px;
+        border-radius: 18px;
+    }
+
+    .property-location-preview-map {
+        height: 280px;
+        border-radius: 14px;
+    }
+
+    .property-location-chips {
+        flex-direction: column;
+    }
+
+    .location-meta-chip {
+        width: 100%;
+        justify-content: flex-start;
+    }
 }

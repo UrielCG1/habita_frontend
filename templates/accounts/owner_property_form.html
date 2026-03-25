@@ -107,65 +107,104 @@
                     </div>
                 </section>
 
-                <section class="property-form-card">
-                    <div class="property-form-card__header">
+                <section class="property-editor-card property-location-card">
+                    <div class="card-heading card-heading--location">
                         <span class="material-symbols-outlined">location_on</span>
-                        <h2>Ubicación</h2>
-                    </div>
-
-                    <div class="property-form-grid property-form-grid--2">
-                        <div class="property-form-field property-form-field--full">
-                            <label for="{{ form.address_line.id_for_label }}">Dirección Completa</label>
-                            {{ form.address_line }}
-                        </div>
-
                         <div>
-                            <label for="{{ form.neighborhood.id_for_label }}">Colonia</label>
-                            {{ form.neighborhood }}
-                        </div>
-
-                        <div>
-                            <label for="{{ form.postal_code.id_for_label }}">Código postal</label>
-                            {{ form.postal_code }}
-                        </div>
-
-                        <div class="property-form-inline-2">
-                            <div>
-                                <label for="{{ form.city.id_for_label }}">Ciudad</label>
-                                {{ form.city }}
-                            </div>
-                            <div>
-                                <label for="{{ form.state.id_for_label }}">Estado</label>
-                                {{ form.state }}
-                            </div>
+                            <h2>Ubicación</h2>
+                            <p>Captura la dirección de la propiedad y genera una vista aproximada en el mapa.</p>
                         </div>
                     </div>
 
-                    {{ form.latitude }}
-                    {{ form.longitude }}
+                    <div class="property-location-layout">
+                        <div class="property-location-fields">
+                            <div class="property-location-intro">
+                                <p>
+                                    Entre más completa esté la dirección, mejor será la precisión del mapa.
+                                    Puedes usar calle y número, colonia, ciudad, estado y código postal.
+                                </p>
 
-                    <div class="property-location-preview">
-                        <div class="property-location-preview__header">
-                            <div>
-                                <h3>Vista aproximada</h3>
-                                <p>Calculada con dirección, colonia, ciudad, estado y código postal.</p>
+                                <div class="property-location-chips">
+                                    <span class="location-meta-chip">
+                                        <span class="material-symbols-outlined">home_pin</span>
+                                        Dirección estructurada
+                                    </span>
+                                    <span class="location-meta-chip">
+                                        <span class="material-symbols-outlined">map</span>
+                                        Vista aproximada
+                                    </span>
+                                    <span class="location-meta-chip">
+                                        <span class="material-symbols-outlined">pin_drop</span>
+                                        Coordenadas automáticas
+                                    </span>
+                                </div>
                             </div>
 
-                            <button
-                                type="button"
-                                id="preview-location-btn"
-                                class="btn-secondary-form"
-                                data-preview-url="{% url 'accounts:owner-property-location-preview' %}"
-                            >
-                                Ver ubicación aproximada
-                            </button>
+                            <div class="form-grid form-grid--2 property-location-grid">
+                                <div class="form-field form-field--full">
+                                    <label for="{{ form.address_line.id_for_label }}">Dirección completa</label>
+                                    {{ form.address_line }}
+                                    <small class="field-help">Ejemplo: Jazmín 223</small>
+                                    {% for error in form.address_line.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+                                </div>
+
+                                <div>
+                                    <label for="{{ form.neighborhood.id_for_label }}">Colonia</label>
+                                    {{ form.neighborhood }}
+                                    {% for error in form.neighborhood.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+                                </div>
+
+                                <div>
+                                    <label for="{{ form.postal_code.id_for_label }}">Código postal</label>
+                                    {{ form.postal_code }}
+                                    {% for error in form.postal_code.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+                                </div>
+
+                                <div>
+                                    <label for="{{ form.city.id_for_label }}">Ciudad</label>
+                                    {{ form.city }}
+                                    {% for error in form.city.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+                                </div>
+
+                                <div>
+                                    <label for="{{ form.state.id_for_label }}">Estado</label>
+                                    {{ form.state }}
+                                    {% for error in form.state.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+                                </div>
+                            </div>
+
+                            {{ form.latitude }}
+                            {{ form.longitude }}
                         </div>
 
-                        <div id="property-location-preview-status" class="property-location-preview__status">
-                            Completa la dirección y usa el botón para generar el mapa.
-                        </div>
+                        <div class="property-location-preview">
+                            <div class="property-location-preview__header">
+                                <div>
+                                    <h3>Vista aproximada</h3>
+                                    <p>Usa el botón para validar la ubicación y guardar latitud y longitud automáticamente.</p>
+                                </div>
 
-                        <div id="property-location-preview-map" class="property-location-preview-map"></div>
+                                <button
+                                    type="button"
+                                    id="preview-location-btn"
+                                    class="btn-secondary-form property-location-preview__button"
+                                    data-preview-url="{% url 'accounts:owner-property-location-preview' %}"
+                                >
+                                    Ver ubicación aproximada
+                                </button>
+                            </div>
+
+                            <div class="property-location-preview__status-wrap">
+                                <span class="material-symbols-outlined">near_me</span>
+                                <div id="property-location-preview-status" class="property-location-preview__status">
+                                    Completa la dirección y usa el botón para generar el mapa.
+                                </div>
+                            </div>
+
+                            <div class="property-location-preview__map-shell">
+                                <div id="property-location-preview-map" class="property-location-preview-map"></div>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
