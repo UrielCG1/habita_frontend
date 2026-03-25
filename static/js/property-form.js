@@ -344,6 +344,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const previewButton = document.getElementById("preview-location-btn");
   const previewStatus = document.getElementById("property-location-preview-status");
   const previewMapNode = document.getElementById("property-location-preview-map");
+  const latitudeInput = document.getElementById("id_latitude");
+  const longitudeInput = document.getElementById("id_longitude");
 
   let previewMap = null;
   let previewMarker = null;
@@ -359,17 +361,49 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
+  function buildPreviewLabel(fields) {
+    return [
+      fields.street,
+      fields.county,
+      fields.city,
+      fields.state,
+      fields.postalcode,
+    ]
+      .filter(Boolean)
+      .join(", ");
+  }
+
   function buildStructuredLocationParams(fields) {
     const params = new URLSearchParams();
 
-    if (fields.street) params.append("street", fields.street);
-    if (fields.county) params.append("county", fields.county);
+    if (fields.street) {
+      params.append("street", fields.street);
+      params.append("address_line", fields.street);
+    }
+
+    if (fields.county) {
+      params.append("county", fields.county);
+      params.append("neighborhood", fields.county);
+    }
+
     if (fields.city) params.append("city", fields.city);
     if (fields.state) params.append("state", fields.state);
-    if (fields.postalcode) params.append("postalcode", fields.postalcode);
+
+    if (fields.postalcode) {
+      params.append("postalcode", fields.postalcode);
+      params.append("postal_code", fields.postalcode);
+    }
+
     if (fields.country) params.append("country", fields.country);
 
     return params;
+  }
+
+  function clearPreviewMarker() {
+    if (previewMarker) {
+      previewMarker.remove();
+      previewMarker = null;
+    }
   }
 
   function ensurePreviewMap(lat, lng, title) {
@@ -386,9 +420,7 @@ document.addEventListener("DOMContentLoaded", () => {
       previewMap.setView([lat, lng], 15);
     }
 
-    if (previewMarker) {
-      previewMarker.remove();
-    }
+    clearPreviewMarker();
 
     previewMarker = L.marker([lat, lng]).addTo(previewMap);
 
@@ -399,6 +431,54 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
       previewMap.invalidateSize();
     }, 120);
+  }
+
+  function clearPreviewCoordinates(message) {
+    if (latitudeInput) latitudeInput.value = "";
+    if (longitudeInput) longitudeInput.value = "";
+    clearPreviewMarker();
+
+    if (previewStatus && message) {
+      previewStatus.textContent = message;
+    }
+  }
+
+  function bindLocationReset() {
+    const fieldIds = [
+      "id_address_line",
+      "id_neighborhood",
+      "id_city",
+      "id_state",
+      "id_postal_code",
+    ];
+
+    fieldIds.forEach((fieldId) => {
+      const field = document.getElementById(fieldId);
+      if (!field) return;
+
+      const resetPreview = () => {
+        clearPreviewCoordinates("La dirección cambió. Vuelve a consultar la ubicación aproximada.");
+      };
+
+      field.addEventListener("input", resetPreview);
+      field.addEventListener("change", resetPreview);
+    });
+  }
+
+  function initPreviewFromExistingCoordinates() {
+    const lat = parseFloat(latitudeInput?.value || "");
+    const lng = parseFloat(longitudeInput?.value || "");
+
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+    const fields = readStructuredLocationFields();
+    const title = buildPreviewLabel(fields) || "Ubicación actual";
+
+    if (previewStatus && !previewStatus.textContent.trim()) {
+      previewStatus.textContent = "Ubicación actual cargada.";
+    }
+
+    ensurePreviewMap(lat, lng, title);
   }
 
   async function fetchLocationPreview() {
@@ -430,26 +510,43 @@ document.addEventListener("DOMContentLoaded", () => {
         },
       });
 
-      const payload = await response.json();
+      let payload = null;
+      try {
+        payload = await response.json();
+      } catch (jsonError) {
+        payload = null;
+      }
 
-      if (!response.ok || !payload.success) {
-        previewStatus.textContent = payload.error || "No se pudo calcular la ubicación.";
+      if (!response.ok || !payload?.success) {
+        previewStatus.textContent = payload?.error || "No se pudo calcular la ubicación.";
+        clearPreviewMarker();
         return;
       }
 
       const data = payload.data;
 
-      document.getElementById("id_latitude").value = data.latitude;
-      document.getElementById("id_longitude").value = data.longitude;
+      if (latitudeInput) latitudeInput.value = data.latitude;
+      if (longitudeInput) longitudeInput.value = data.longitude;
 
       previewStatus.textContent = data.display_name || "Ubicación aproximada encontrada.";
-      ensurePreviewMap(data.latitude, data.longitude, data.display_name || "Ubicación aproximada");
+      ensurePreviewMap(
+        Number(data.latitude),
+        Number(data.longitude),
+        data.display_name || buildPreviewLabel(fields) || "Ubicación aproximada"
+      );
     } catch (error) {
       previewStatus.textContent = "No fue posible consultar la ubicación aproximada.";
+      clearPreviewMarker();
     }
   }
 
+  bindLocationReset();
+  initPreviewFromExistingCoordinates();
+
   if (previewButton) {
-    previewButton.addEventListener("click", fetchLocationPreview);
+    previewButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      fetchLocationPreview();
+    });
   }
 });

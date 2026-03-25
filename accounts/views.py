@@ -1,27 +1,34 @@
-from django.contrib import messages
 from decimal import Decimal, InvalidOperation
+
+from django.contrib import messages
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 
-from .dashboard_services import get_dashboard_summary, get_user_favorites, get_user_rental_requests, get_user_rental_requests, get_user_activity_profile
-from .decorators import habita_login_required, habita_role_required
-from .forms import LoginForm, RegisterForm, OwnerRequestStatusForm, OwnerPropertyForm
 from .admin_services import get_admin_dashboard
+from .dashboard_services import (
+    get_dashboard_summary,
+    get_user_activity_profile,
+    get_user_favorites,
+    get_user_rental_requests,
+)
+from .decorators import habita_login_required, habita_role_required
+from .forms import LoginForm, OwnerPropertyForm, OwnerRequestStatusForm, RegisterForm
 from .owner_services import (
+    build_owner_requests_summary,
     create_owner_property,
-    get_owner_properties,
-    get_owner_property_detail,
-    get_property_rental_requests,
-    get_owner_requests_overview,
-    patch_owner_property,
-    patch_rental_request_status,
-    upload_owner_property_images,
     delete_property_by_id,
     delete_property_image_by_id,
-    build_owner_requests_summary,
-    set_property_image_as_cover,
+    get_owner_properties,
+    get_owner_property_detail,
+    get_owner_requests_overview,
+    get_property_rental_requests,
+    patch_owner_property,
+    patch_rental_request_status,
     reorder_property_images,
+    set_property_image_as_cover,
+    upload_owner_property_images,
 )
 from .services import (
     AuthServiceError,
@@ -30,10 +37,10 @@ from .services import (
     InactiveUserError,
     InvalidCredentialsError,
     clear_auth_session,
+    get_property_geocode_preview,
     login_with_backend,
     register_with_backend,
     save_auth_session,
-    get_property_geocode_preview,
 )
 from .utils import get_habita_user
 
@@ -461,6 +468,80 @@ def _build_property_payload(form, is_published_value: bool) -> dict:
     }
 
 
+### helpers para vistas de creación/edición de propiedad del propietario
+
+def _safe_decimal(value) -> Decimal:
+    try:
+        return Decimal(str(value))
+    except (InvalidOperation, TypeError, ValueError):
+        return Decimal("0")
+
+
+def _get_first_query_value(request, *names: str, default: str = "") -> str:
+    for name in names:
+        value = (request.GET.get(name) or "").strip()
+        if value:
+            return value
+    return default.strip() if isinstance(default, str) else default
+
+
+def _normalize_location_preview_params(request) -> dict:
+    return {
+        "street": _get_first_query_value(request, "street", "address_line"),
+        "county": _get_first_query_value(request, "county", "neighborhood"),
+        "city": _get_first_query_value(request, "city"),
+        "state": _get_first_query_value(request, "state"),
+        "postalcode": _get_first_query_value(request, "postalcode", "postal_code"),
+        "country": _get_first_query_value(request, "country", default="Mexico") or "Mexico",
+    }
+
+
+def _build_property_form_initial(property_detail: dict) -> dict:
+    return {
+        "title": property_detail["title"],
+        "description": property_detail["description"],
+        "price": property_detail["price"],
+        "property_type": property_detail["property_type"],
+        "status": property_detail["status"],
+        "address_line": property_detail["address_line"],
+        "neighborhood": property_detail["neighborhood"],
+        "city": property_detail["city"],
+        "state": property_detail["state"],
+        "postal_code": property_detail.get("postal_code"),
+        "bedrooms": property_detail["bedrooms"],
+        "bathrooms": property_detail["bathrooms"],
+        "parking_spaces": property_detail["parking_spaces"],
+        "area_m2": property_detail["area_m2"],
+        "latitude": property_detail.get("latitude"),
+        "longitude": property_detail.get("longitude"),
+        "is_published": property_detail["is_published"],
+    }
+
+
+def _build_property_payload(form, is_published_value: bool) -> dict:
+    latitude = form.cleaned_data.get("latitude")
+    longitude = form.cleaned_data.get("longitude")
+
+    return {
+        "title": form.cleaned_data["title"],
+        "description": form.cleaned_data["description"],
+        "price": str(form.cleaned_data["price"]),
+        "property_type": form.cleaned_data["property_type"],
+        "status": form.cleaned_data["status"],
+        "address_line": form.cleaned_data["address_line"],
+        "neighborhood": form.cleaned_data["neighborhood"],
+        "city": form.cleaned_data["city"],
+        "state": form.cleaned_data["state"],
+        "postal_code": form.cleaned_data.get("postal_code") or None,
+        "bedrooms": form.cleaned_data["bedrooms"],
+        "bathrooms": form.cleaned_data["bathrooms"],
+        "parking_spaces": form.cleaned_data["parking_spaces"],
+        "area_m2": str(form.cleaned_data["area_m2"]) if form.cleaned_data["area_m2"] is not None else None,
+        "latitude": str(latitude) if latitude is not None else None,
+        "longitude": str(longitude) if longitude is not None else None,
+        "is_published": is_published_value,
+    }
+
 @habita_role_required("owner", "admin")
 def owner_property_create_view(request):
     habita_user = get_habita_user(request)
@@ -491,6 +572,7 @@ def owner_property_create_view(request):
                 {
                     "form": form,
                     "mode": "create",
+                    "property_obj": None,
                 },
             )
 
@@ -515,6 +597,7 @@ def owner_property_create_view(request):
         {
             "form": form,
             "mode": "create",
+            "property_obj": None,
         },
     )
 
@@ -533,27 +616,9 @@ def owner_property_edit_view(request, property_id: int):
         messages.error(request, error or "No fue posible cargar la propiedad.")
         return redirect("accounts:owner-properties")
 
-    initial = {
-        "title": property_detail["title"],
-        "description": property_detail["description"],
-        "price": property_detail["price"],
-        "property_type": property_detail["property_type"],
-        "status": property_detail["status"],
-        "address_line": property_detail["address_line"],
-        "neighborhood": property_detail["neighborhood"],
-        "city": property_detail["city"],
-        "state": property_detail["state"],
-        "postal_code": property_detail.get("postal_code"),
-        "bedrooms": property_detail["bedrooms"],
-        "bathrooms": property_detail["bathrooms"],
-        "parking_spaces": property_detail["parking_spaces"],
-        "area_m2": property_detail["area_m2"],
-        "latitude": property_detail.get("latitude"),
-        "longitude": property_detail.get("longitude"),
-        "is_published": property_detail["is_published"],
-    }
-
+    initial = _build_property_form_initial(property_detail)
     existing_image_ids = [image.get("id") for image in property_detail.get("images", []) if image.get("id")]
+
     form = OwnerPropertyForm(request.POST or None, request.FILES or None, initial=initial)
 
     if request.method == "POST" and form.is_valid():
@@ -618,25 +683,7 @@ def admin_property_edit_view(request, property_id: int):
         messages.error(request, error or "No fue posible cargar la propiedad.")
         return redirect("accounts:admin-area")
 
-    initial = {
-        "title": property_detail["title"],
-        "description": property_detail["description"],
-        "price": property_detail["price"],
-        "property_type": property_detail["property_type"],
-        "status": property_detail["status"],
-        "address_line": property_detail["address_line"],
-        "neighborhood": property_detail["neighborhood"],
-        "city": property_detail["city"],
-        "state": property_detail["state"],
-        "bedrooms": property_detail["bedrooms"],
-        "bathrooms": property_detail["bathrooms"],
-        "parking_spaces": property_detail["parking_spaces"],
-        "area_m2": property_detail["area_m2"],
-        "latitude": property_detail["latitude"],
-        "longitude": property_detail["longitude"],
-        "is_published": property_detail["is_published"],
-    }
-
+    initial = _build_property_form_initial(property_detail)
     existing_image_ids = [image.get("id") for image in property_detail.get("images", []) if image.get("id")]
 
     form = OwnerPropertyForm(request.POST or None, request.FILES or None, initial=initial)
@@ -644,32 +691,20 @@ def admin_property_edit_view(request, property_id: int):
     if request.method == "POST" and form.is_valid():
         submit_mode = request.POST.get("submit_mode", "save")
         is_published_value = form.cleaned_data["is_published"]
+
         if submit_mode == "publish":
             is_published_value = True
         elif submit_mode == "draft":
             is_published_value = False
-            
 
-        payload = {
-            "title": form.cleaned_data["title"],
-            "description": form.cleaned_data["description"],
-            "price": str(form.cleaned_data["price"]),
-            "property_type": form.cleaned_data["property_type"],
-            "status": form.cleaned_data["status"],
-            "address_line": form.cleaned_data["address_line"],
-            "neighborhood": form.cleaned_data["neighborhood"],
-            "city": form.cleaned_data["city"],
-            "state": form.cleaned_data["state"],
-            "bedrooms": form.cleaned_data["bedrooms"],
-            "bathrooms": form.cleaned_data["bathrooms"],
-            "parking_spaces": form.cleaned_data["parking_spaces"],
-            "area_m2": str(form.cleaned_data["area_m2"]) if form.cleaned_data["area_m2"] is not None else None,
-            "latitude": str(form.cleaned_data["latitude"]) if form.cleaned_data["latitude"] is not None else None,
-            "longitude": str(form.cleaned_data["longitude"]) if form.cleaned_data["longitude"] is not None else None,
-            "is_published": is_published_value,
-        }
+        payload = _build_property_payload(form, is_published_value)
 
-        updated_property, patch_error = patch_owner_property(request, property_id=property_id, payload=payload)
+        updated_property, patch_error = patch_owner_property(
+            request,
+            property_id=property_id,
+            payload=payload,
+        )
+
         if patch_error or not updated_property:
             messages.error(request, patch_error or "No fue posible actualizar la propiedad.")
             return render(
@@ -679,12 +714,13 @@ def admin_property_edit_view(request, property_id: int):
                     "form": form,
                     "mode": "edit",
                     "property_obj": property_detail,
+                    "admin_mode": True,
                 },
             )
 
         uploaded_files = list(form.cleaned_data.get("images") or [])
         warnings = _apply_property_gallery_changes(
-            request,
+            request=request,
             property_id=property_id,
             title=updated_property.get("title", property_detail.get("title", "")),
             initial_existing_ids=existing_image_ids,
@@ -836,16 +872,12 @@ import requests
 from accounts.decorators import habita_role_required
 
 
+@require_GET
 @habita_role_required("owner", "admin")
 def owner_property_location_preview_view(request):
-    street = (request.GET.get("street") or "").strip()
-    county = (request.GET.get("county") or "").strip()
-    city = (request.GET.get("city") or "").strip()
-    state = (request.GET.get("state") or "").strip()
-    postalcode = (request.GET.get("postalcode") or "").strip()
-    country = (request.GET.get("country") or "Mexico").strip()
+    params = _normalize_location_preview_params(request)
 
-    if not city or not state:
+    if not params["city"] or not params["state"]:
         return JsonResponse(
             {
                 "success": False,
@@ -854,7 +886,7 @@ def owner_property_location_preview_view(request):
             status=400,
         )
 
-    if not street and not county and not postalcode:
+    if not params["street"] and not params["county"] and not params["postalcode"]:
         return JsonResponse(
             {
                 "success": False,
@@ -864,12 +896,12 @@ def owner_property_location_preview_view(request):
         )
 
     data, error = get_property_geocode_preview(
-        street=street,
-        county=county,
-        city=city,
-        state=state,
-        postalcode=postalcode,
-        country=country,
+        street=params["street"],
+        county=params["county"],
+        city=params["city"],
+        state=params["state"],
+        postalcode=params["postalcode"],
+        country=params["country"],
     )
 
     if error:

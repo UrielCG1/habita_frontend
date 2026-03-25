@@ -241,14 +241,22 @@ def get_property_geocode_preview(
 
     if street:
         params["street"] = street
+        params["address_line"] = street
+
     if county:
         params["county"] = county
+        params["neighborhood"] = county
+
     if city:
         params["city"] = city
+
     if state:
         params["state"] = state
+
     if postalcode:
         params["postalcode"] = postalcode
+        params["postal_code"] = postalcode
+
     if country:
         params["country"] = country
 
@@ -261,12 +269,20 @@ def get_property_geocode_preview(
                 "Accept": "application/json",
             },
         )
-        response.raise_for_status()
-        payload = response.json()
-
     except requests.RequestException:
         return None, "No fue posible consultar la ubicación aproximada en este momento."
+
+    try:
+        payload = response.json()
     except ValueError:
+        payload = None
+
+    if not response.ok:
+        if isinstance(payload, dict):
+            return None, payload.get("error") or payload.get("detail") or "No fue posible consultar la ubicación aproximada."
+        return None, "No fue posible consultar la ubicación aproximada en este momento."
+
+    if not isinstance(payload, dict):
         return None, "La API respondió con un formato no válido."
 
     if not payload.get("success"):
