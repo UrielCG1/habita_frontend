@@ -633,9 +633,6 @@
 }
 
 .property-location-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
-    gap: 24px;
     align-items: start;
 }
 
@@ -698,6 +695,7 @@
     display: grid;
     gap: 16px;
     padding: 20px;
+    margin-top: 40px;
     border-radius: 24px;
     border: 1px solid rgba(0, 76, 109, 0.10);
     background:

@@ -144,7 +144,6 @@
                                 <div class="form-field form-field--full">
                                     <label for="{{ form.address_line.id_for_label }}">Dirección completa</label>
                                     {{ form.address_line }}
-                                    <small class="field-help">Ejemplo: Jazmín 223</small>
                                     {% for error in form.address_line.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
                                 </div>
 
