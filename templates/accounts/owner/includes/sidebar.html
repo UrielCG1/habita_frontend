@@ -1,0 +1,76 @@
+{% url 'accounts:owner-dashboard' as owner_dashboard_url %}
+{% url 'accounts:owner-properties' as owner_properties_url %}
+{% url 'accounts:owner-requests' as owner_requests_url %}
+{% url 'accounts:owner-reviews' as owner_reviews_url %}
+{% url 'accounts:owner-reports' as owner_reports_url %}
+
+<aside class="owner-sidebar">
+    <div class="owner-sidebar__brand">
+        <a href="{% url 'home:home' %}" class="owner-sidebar__brand-link">
+            <span class="owner-sidebar__brand-mark">H</span>
+            <div>
+                <strong>HABITA</strong>
+                <small>Owner Portal</small>
+            </div>
+        </a>
+    </div>
+
+    <nav class="owner-sidebar__nav">
+        <a
+            href="{{ owner_dashboard_url }}"
+            class="owner-sidebar__link {% if request.resolver_match.url_name == 'owner-dashboard' %}is-active{% endif %}"
+        >
+            <span class="material-symbols-outlined">dashboard</span>
+            <span>Dashboard</span>
+        </a>
+
+        <a
+            href="{{ owner_properties_url }}"
+            class="owner-sidebar__link {% if 'owner-property' in request.resolver_match.url_name or request.resolver_match.url_name == 'owner-properties' %}is-active{% endif %}"
+        >
+            <span class="material-symbols-outlined">apartment</span>
+            <span>Mis propiedades</span>
+        </a>
+
+        <a
+            href="{{ owner_requests_url }}"
+            class="owner-sidebar__link {% if 'owner-request' in request.resolver_match.url_name %}is-active{% endif %}"
+        >
+            <span class="material-symbols-outlined">mail</span>
+            <span>Solicitudes</span>
+        </a>
+
+        <a
+            href="{{ owner_reviews_url }}"
+            class="owner-sidebar__link {% if request.resolver_match.url_name == 'owner-reviews' %}is-active{% endif %}"
+        >
+            <span class="material-symbols-outlined">star</span>
+            <span>Reseñas</span>
+        </a>
+
+        <a
+            href="{{ owner_reports_url }}"
+            class="owner-sidebar__link {% if request.resolver_match.url_name == 'owner-reports' %}is-active{% endif %}"
+        >
+            <span class="material-symbols-outlined">description</span>
+            <span>Reportes</span>
+        </a>
+    </nav>
+
+    <div class="owner-sidebar__footer">
+        <div class="owner-sidebar__user">
+            <div class="owner-sidebar__avatar">
+                {{ habita_user.initials|default:habita_user.full_name|slice:":1"|upper }}
+            </div>
+            <div>
+                <strong>{{ habita_user.full_name }}</strong>
+                <small>Propietario</small>
+            </div>
+        </div>
+
+        <a href="{% url 'accounts:logout' %}" class="owner-sidebar__logout">
+            <span class="material-symbols-outlined">logout</span>
+            <span>Cerrar sesión</span>
+        </a>
+    </div>
+</aside>

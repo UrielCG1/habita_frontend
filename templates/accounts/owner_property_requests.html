@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "accounts/owner/base_owner.html" %}
 {% load static %}
 
 {% block title %}Solicitudes de {{ owned_property.title }} | HABITA{% endblock %}
@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="{% static 'css/owner-requests.css' %}">
 {% endblock %}
 
-{% block content %}
+{% block owner_content %}
 <section class="owner-requests-page">
     <div class="container">
         <div class="requests-breadcrumb-row">

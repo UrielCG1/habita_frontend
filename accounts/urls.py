@@ -20,6 +20,11 @@ from .views import (
     owner_set_cover_image_view,
     owner_requests_view,
     owner_property_location_preview_view,
+    
+    
+    owner_dashboard_view,
+    owner_reviews_view,
+    owner_reports_view,
 )
 
 app_name = "accounts"
@@ -64,4 +69,11 @@ urlpatterns = [
         owner_property_location_preview_view,
         name="owner-property-location-preview",
     ),
+    
+    
+    
+    
+    path("owner/dashboard/", owner_dashboard_view, name="owner-dashboard"),
+    path("owner/reviews/", owner_reviews_view, name="owner-reviews"),
+    path("owner/reports/", owner_reports_view, name="owner-reports"),
 ]

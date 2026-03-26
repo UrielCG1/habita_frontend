@@ -51,7 +51,7 @@ def _default_redirect_for_role(user: dict) -> str:
     if role == "admin":
         return reverse("accounts:admin-area")
     if role == "owner":
-        return reverse("accounts:owner-properties")
+        return reverse("accounts:owner-dashboard")
     return reverse("accounts:dashboard")
 
 
@@ -927,4 +927,56 @@ def owner_property_location_preview_view(request):
             "success": True,
             "data": data,
         }
+    )
+    
+    
+#######################################
+##    OWNER PORTAL - PROPERTY CREATION/EDITING
+##
+##################################
+
+@habita_role_required("owner", "admin")
+def owner_reviews_view(request):
+    habita_user = get_habita_user(request)
+    return render(
+        request,
+        "accounts/owner/reviews_placeholder.html",
+        {"habita_user": habita_user},
+    )
+
+
+@habita_role_required("owner", "admin")
+def owner_reports_view(request):
+    habita_user = get_habita_user(request)
+    return render(
+        request,
+        "accounts/owner/reports_placeholder.html",
+        {"habita_user": habita_user},
+    )
+
+
+@habita_role_required("owner", "admin")
+def owner_dashboard_view(request):
+    habita_user = get_habita_user(request)
+
+    properties, _properties_error = get_owner_properties(request, owner_id=habita_user["id"])
+    pending_requests, _pending_error = get_owner_requests_overview(
+        request,
+        owner_id=habita_user["id"],
+        status="pending",
+    )
+
+    dashboard_stats = {
+        "total_properties": len(properties),
+        "published_properties": sum(1 for item in properties if item.get("is_published")),
+        "pending_requests": len(pending_requests),
+    }
+
+    return render(
+        request,
+        "accounts/owner/dashboard.html",
+        {
+            "habita_user": habita_user,
+            "dashboard_stats": dashboard_stats,
+        },
     )

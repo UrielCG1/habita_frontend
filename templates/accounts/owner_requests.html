@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "accounts/owner/base_owner.html" %}
 {% load static %}
 
 {% block title %}Solicitudes recibidas | HABITA{% endblock %}
@@ -7,7 +7,13 @@
 <link rel="stylesheet" href="{% static 'css/owner-requests.css' %}">
 {% endblock %}
 
-{% block content %}
+
+{% block owner_page_eyebrow %}Seguimiento{% endblock %}
+{% block owner_page_title %}Solicitudes recibidas{% endblock %}
+{% block owner_page_subtitle %}
+Revisa a los interesados, administra notas privadas y actualiza el estado de cada solicitud desde un solo lugar.
+{% endblock %}
+{% block owner_content %}
 <section class="owner-requests-page">
     <div class="container">
         <div class="requests-hero-card">

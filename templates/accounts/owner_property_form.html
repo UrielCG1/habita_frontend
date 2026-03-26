@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "accounts/owner/base_owner.html" %}
 {% load static %}
 
 {% block title %}{% if mode == "edit" %}Editar propiedad{% else %}Registrar nueva propiedad{% endif %} | HABITA{% endblock %}
@@ -13,7 +13,14 @@
 >
 {% endblock %}
 
-{% block content %}
+
+{% block owner_page_eyebrow %}Publicación{% endblock %}
+{% block owner_page_title %}{% if mode == "edit" %}Editar propiedad{% else %}Nueva propiedad{% endif %}{% endblock %}
+{% block owner_page_subtitle %}
+Completa la información, administra imágenes y deja lista tu publicación.
+{% endblock %}
+
+{% block owner_content %}
 <section class="property-editor-page">
     <div class="container property-editor-shell">
         <div class="property-editor-breadcrumbs">

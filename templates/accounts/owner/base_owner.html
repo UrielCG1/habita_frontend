@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Owner Portal | HABITA{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/owner-portal.css' %}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="owner-portal-body">
+    <div class="owner-portal-shell">
+        {% include "accounts/owner/includes/sidebar.html" %}
+
+        <div class="owner-portal-main">
+            {% include "accounts/owner/includes/topbar.html" %}
+
+            <main class="owner-portal-content">
+                <header class="owner-page-header">
+                    <div>
+                        <p class="owner-page-header__eyebrow">{% block owner_page_eyebrow %}Owner portal{% endblock %}</p>
+                        <h1 class="owner-page-header__title">{% block owner_page_title %}Dashboard{% endblock %}</h1>
+                        <p class="owner-page-header__subtitle">
+                            {% block owner_page_subtitle %}
+                            Administra tus propiedades, solicitudes y actividad desde un solo lugar.
+                            {% endblock %}
+                        </p>
+                    </div>
+
+                    <div class="owner-page-header__actions">
+                        {% block owner_page_actions %}{% endblock %}
+                    </div>
+                </header>
+
+                {% if messages %}
+                    <div class="owner-flash-stack">
+                        {% for message in messages %}
+                            <div class="owner-flash owner-flash--{{ message.tags|default:'info' }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% block owner_content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,98 @@
+{% extends "accounts/owner/base_owner.html" %}
+{% load static %}
+
+{% block title %}Dashboard owner | HABITA{% endblock %}
+
+{% block owner_page_eyebrow %}Resumen general{% endblock %}
+{% block owner_page_title %}Dashboard{% endblock %}
+{% block owner_page_subtitle %}
+Bienvenido de vuelta. Desde aquí podrás revisar el estado general de tus propiedades y acceder rápido a los módulos principales.
+{% endblock %}
+
+{% block owner_page_actions %}
+<a href="{% url 'accounts:owner-properties' %}" class="btn-secondary btn-small">
+    <span class="material-symbols-outlined">apartment</span>
+    Ver propiedades
+</a>
+<a href="{% url 'accounts:owner-reports' %}" class="btn-primary btn-small">
+    <span class="material-symbols-outlined">description</span>
+    Reportes
+</a>
+{% endblock %}
+
+{% block owner_content %}
+<section class="owner-dashboard-grid">
+    <article class="owner-panel owner-panel--hero">
+        <div>
+            <p class="owner-panel__eyebrow">Owner Portal</p>
+            <h2>Tu nueva base de operación</h2>
+            <p>
+                Esta primera fase organiza todo tu flujo del owner dentro de un solo entorno:
+                dashboard, propiedades, solicitudes y próximos reportes.
+            </p>
+        </div>
+
+        <div class="owner-quick-actions">
+            <a href="{% url 'accounts:owner-property-create' %}" class="owner-quick-card">
+                <span class="material-symbols-outlined">add_home</span>
+                <strong>Nueva propiedad</strong>
+                <small>Publica un nuevo inmueble</small>
+            </a>
+
+            <a href="{% url 'accounts:owner-properties' %}" class="owner-quick-card">
+                <span class="material-symbols-outlined">grid_view</span>
+                <strong>Mis propiedades</strong>
+                <small>Administra tu portafolio</small>
+            </a>
+
+            <a href="{% url 'accounts:owner-requests' %}" class="owner-quick-card">
+                <span class="material-symbols-outlined">mail</span>
+                <strong>Solicitudes</strong>
+                <small>Da seguimiento a interesados</small>
+            </a>
+        </div>
+    </article>
+
+    <article class="owner-panel owner-panel--stat">
+        <span class="material-symbols-outlined">apartment</span>
+        <strong>{{ dashboard_stats.total_properties|default:"--" }}</strong>
+        <p>Propiedades registradas</p>
+    </article>
+
+    <article class="owner-panel owner-panel--stat">
+        <span class="material-symbols-outlined">campaign</span>
+        <strong>{{ dashboard_stats.published_properties|default:"--" }}</strong>
+        <p>Propiedades publicadas</p>
+    </article>
+
+    <article class="owner-panel owner-panel--stat">
+        <span class="material-symbols-outlined">mail</span>
+        <strong>{{ dashboard_stats.pending_requests|default:"--" }}</strong>
+        <p>Solicitudes pendientes</p>
+    </article>
+
+    <article class="owner-panel owner-panel--wide">
+        <div class="owner-panel__header">
+            <h3>Próximos bloques del dashboard</h3>
+        </div>
+        <ul class="owner-placeholder-list">
+            <li>Rendimiento de propiedades</li>
+            <li>Actividad reciente</li>
+            <li>Estado de solicitudes</li>
+            <li>Resumen de reseñas</li>
+            <li>Generación de reportes PDF</li>
+        </ul>
+    </article>
+
+    <article class="owner-panel">
+        <div class="owner-panel__header">
+            <h3>Acciones rápidas</h3>
+        </div>
+        <div class="owner-actions-list">
+            <a href="{% url 'accounts:owner-property-create' %}">Crear nueva propiedad</a>
+            <a href="{% url 'accounts:owner-properties' %}">Ir a mis propiedades</a>
+            <a href="{% url 'accounts:owner-requests' %}">Ver solicitudes recibidas</a>
+        </div>
+    </article>
+</section>
+{% endblock %}
