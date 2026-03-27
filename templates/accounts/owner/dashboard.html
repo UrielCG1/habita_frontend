@@ -60,6 +60,18 @@ Consulta el estado general de tus propiedades, solicitudes y puntos de atención
     </article>
 
     <article class="owner-panel owner-panel--stat">
+        <span class="material-symbols-outlined">payments</span>
+        <strong>{{ dashboard_stats.portfolio_value_display }}</strong>
+        <p>Valor mensual estimado</p>
+    </article>
+
+    <article class="owner-panel owner-panel--stat">
+        <span class="material-symbols-outlined">storefront</span>
+        <strong>{{ dashboard_stats.published_value_display }}</strong>
+        <p>Valor mensual publicado</p>
+    </article>
+
+    <article class="owner-panel owner-panel--stat">
         <span class="material-symbols-outlined">apartment</span>
         <strong>{{ dashboard_stats.total_properties }}</strong>
         <p>Propiedades registradas</p>
@@ -93,6 +105,32 @@ Consulta el estado general de tus propiedades, solicitudes y puntos de atención
         <span class="material-symbols-outlined">mail</span>
         <strong>{{ dashboard_stats.pending_requests }}</strong>
         <p>Solicitudes pendientes</p>
+    </article>
+
+    <article class="owner-panel">
+        <div class="owner-panel__header">
+            <h3>Salud del portafolio</h3>
+            <p class="owner-panel__support">Indicadores rápidos del estado actual de tus publicaciones.</p>
+        </div>
+
+        <div class="owner-summary-pills">
+            <article class="owner-summary-pill">
+                <strong>{{ portfolio_health.publication_ratio }}%</strong>
+                <span>Portafolio publicado</span>
+            </article>
+            <article class="owner-summary-pill">
+                <strong>{{ portfolio_health.occupancy_ratio }}%</strong>
+                <span>Portafolio ocupado</span>
+            </article>
+            <article class="owner-summary-pill">
+                <strong>{{ portfolio_health.with_pending_requests }}</strong>
+                <span>Con solicitudes pendientes</span>
+            </article>
+            <article class="owner-summary-pill">
+                <strong>{{ portfolio_health.unpublished_count }}</strong>
+                <span>No publicadas</span>
+            </article>
+        </div>
     </article>
 
     <article class="owner-panel owner-panel--wide">
@@ -159,6 +197,42 @@ Consulta el estado general de tus propiedades, solicitudes y puntos de atención
 
     <article class="owner-panel">
         <div class="owner-panel__header">
+            <h3>Propiedad foco</h3>
+            <p class="owner-panel__support">La propiedad con mayor movimiento actual.</p>
+        </div>
+
+        {% if top_property %}
+            <div class="owner-focus-card">
+                <h4>{{ top_property.title }}</h4>
+                <p>{{ top_property.location }}</p>
+
+                <div class="owner-focus-card__meta">
+                    <span class="owner-status-chip owner-status-chip--{{ top_property.status_code }}">
+                        {{ top_property.status_label }}
+                    </span>
+                    <span>{{ top_property.price }}</span>
+                </div>
+
+                <div class="owner-focus-card__stats">
+                    <div>
+                        <strong>{{ top_property.total_requests_count }}</strong>
+                        <span>Solicitudes</span>
+                    </div>
+                    <div>
+                        <strong>{{ top_property.pending_requests_count }}</strong>
+                        <span>Pendientes</span>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="owner-empty-state">
+                <p>Aún no hay una propiedad con actividad suficiente para destacar.</p>
+            </div>
+        {% endif %}
+    </article>
+
+    <article class="owner-panel">
+        <div class="owner-panel__header">
             <h3>Resumen de solicitudes</h3>
             <p class="owner-panel__support">Distribución actual del flujo de solicitudes.</p>
         </div>
@@ -213,6 +287,36 @@ Consulta el estado general de tus propiedades, solicitudes y puntos de atención
         {% else %}
             <div class="owner-empty-state">
                 <p>No hay solicitudes recientes por mostrar.</p>
+            </div>
+        {% endif %}
+    </article>
+
+    <article class="owner-panel owner-panel--wide">
+        <div class="owner-panel__header owner-panel__header--between">
+            <div>
+                <h3>Actividad reciente</h3>
+                <p class="owner-panel__support">Eventos recientes e indicadores operativos del owner.</p>
+            </div>
+        </div>
+
+        {% if activity_feed %}
+            <div class="owner-activity-feed">
+                {% for item in activity_feed %}
+                    <article class="owner-activity-item owner-activity-item--{{ item.tone }}">
+                        <div class="owner-activity-item__icon">
+                            <span class="material-symbols-outlined">{{ item.icon }}</span>
+                        </div>
+                        <div class="owner-activity-item__content">
+                            <h4>{{ item.title }}</h4>
+                            <p>{{ item.description }}</p>
+                            <small>{{ item.date_label }}</small>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="owner-empty-state">
+                <p>No hay actividad reciente por mostrar.</p>
             </div>
         {% endif %}
     </article>

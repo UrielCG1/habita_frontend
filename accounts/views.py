@@ -953,7 +953,87 @@ def owner_reports_view(request):
         "accounts/owner/reports_placeholder.html",
         {"habita_user": habita_user},
     )
+    
+    
+from decimal import Decimal
 
+
+def _money_to_compact(value) -> str:
+    amount = _safe_decimal(value)
+
+    if amount >= Decimal("1000000"):
+        return f"${amount / Decimal('1000000'):.1f}M"
+    if amount >= Decimal("1000"):
+        return f"${amount / Decimal('1000'):.1f}k"
+    return f"${amount:,.0f}"
+
+
+def _build_owner_activity_feed(properties: list[dict], requests: list[dict]) -> list[dict]:
+    activity_items = []
+
+    for request_item in requests:
+        activity_items.append(
+            {
+                "type": "request",
+                "icon": "mail",
+                "title": f"Nueva solicitud para {request_item.get('property_title', 'Propiedad')}",
+                "description": f"{request_item.get('user_name', 'Usuario')} • {request_item.get('status_label', 'Pendiente')}",
+                "date_label": request_item.get("created_at_display") or "Fecha no disponible",
+                "sort_value": request_item.get("created_at_sort"),
+                "tone": request_item.get("status_tone") or "pending",
+            }
+        )
+
+    for property_item in properties:
+        if not property_item.get("is_published"):
+            activity_items.append(
+                {
+                    "type": "property",
+                    "icon": "campaign",
+                    "title": f"{property_item.get('title', 'Propiedad')} sigue sin publicarse",
+                    "description": "Conviene activarla para que empiece a recibir visibilidad.",
+                    "date_label": "Estado actual",
+                    "sort_value": None,
+                    "tone": "warning",
+                }
+            )
+
+        if property_item.get("status_code") in {"rented", "occupied"}:
+            activity_items.append(
+                {
+                    "type": "property",
+                    "icon": "key",
+                    "title": f"{property_item.get('title', 'Propiedad')} ya está ocupada",
+                    "description": "Forma parte del bloque de propiedades rentadas.",
+                    "date_label": "Estado actual",
+                    "sort_value": None,
+                    "tone": "accepted",
+                }
+            )
+
+    dated_items = [item for item in activity_items if item.get("sort_value") is not None]
+    undated_items = [item for item in activity_items if item.get("sort_value") is None]
+
+    dated_items.sort(key=lambda item: item.get("sort_value"), reverse=True)
+
+    return (dated_items + undated_items)[:6]
+
+
+def _build_owner_health_metrics(properties: list[dict], pending_map: dict[int, int]) -> dict:
+    total = len(properties)
+    unpublished = sum(1 for item in properties if not item.get("is_published"))
+    occupied = sum(1 for item in properties if item.get("status_code") in {"rented", "occupied"})
+    with_pending = sum(1 for item in properties if pending_map.get(item.get("id"), 0) > 0)
+
+    publication_ratio = round(((total - unpublished) / total) * 100) if total else 0
+    occupancy_ratio = round((occupied / total) * 100) if total else 0
+
+    return {
+        "publication_ratio": publication_ratio,
+        "occupancy_ratio": occupancy_ratio,
+        "with_pending_requests": with_pending,
+        "unpublished_count": unpublished,
+    }
 
 @habita_role_required("owner", "admin")
 def owner_dashboard_view(request):
@@ -988,6 +1068,17 @@ def owner_dashboard_view(request):
 
     rented_statuses = {"rented", "occupied", "leased"}
 
+    total_monthly_value = sum(
+        _safe_decimal(item.get("price_amount"))
+        for item in properties
+    )
+
+    published_monthly_value = sum(
+        _safe_decimal(item.get("price_amount"))
+        for item in properties
+        if item.get("is_published")
+    )
+
     dashboard_stats = {
         "total_properties": len(properties),
         "published_properties": sum(1 for item in properties if item.get("is_published")),
@@ -998,6 +1089,8 @@ def owner_dashboard_view(request):
         "pending_requests": request_summary["pending"],
         "accepted_requests": request_summary["accepted"],
         "resolved_requests": request_summary["resolved"],
+        "portfolio_value_display": _money_to_compact(total_monthly_value),
+        "published_value_display": _money_to_compact(published_monthly_value),
     }
 
     property_rows = []
@@ -1056,8 +1149,12 @@ def owner_dashboard_view(request):
         reverse=True,
     )[:5]
 
-    alerts = alerts[:5]
+    portfolio_health = _build_owner_health_metrics(properties, pending_map)
+    activity_feed = _build_owner_activity_feed(properties, all_requests)
 
+    top_property = property_rows[0] if property_rows else None
+
+    alerts = alerts[:5]
     dashboard_error = properties_error or requests_error
 
     return render(
@@ -1071,5 +1168,8 @@ def owner_dashboard_view(request):
             "recent_requests": recent_requests,
             "alerts": alerts,
             "dashboard_error": dashboard_error,
+            "portfolio_health": portfolio_health,
+            "activity_feed": activity_feed,
+            "top_property": top_property,
         },
     )
