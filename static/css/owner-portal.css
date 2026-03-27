@@ -780,3 +780,125 @@
     color: var(--owner-text-soft);
     font-size: 13px;
 }
+
+
+
+.owner-reputation-box {
+    display: grid;
+    gap: 16px;
+}
+
+.owner-reputation-box__score {
+    display: grid;
+    gap: 6px;
+    padding: 18px;
+    border-radius: 18px;
+    background: #fbfcfd;
+    border: 1px solid var(--owner-border);
+}
+
+.owner-reputation-box__score strong {
+    font-size: 36px;
+    line-height: 1;
+}
+
+.owner-reputation-box__score span {
+    color: var(--owner-text-soft);
+}
+
+.owner-reputation-box__breakdown {
+    display: grid;
+    gap: 10px;
+}
+
+.owner-reputation-box__breakdown div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid var(--owner-border);
+    background: #fff;
+}
+
+.owner-reputation-box__breakdown span {
+    color: var(--owner-text-soft);
+}
+
+.owner-review-list {
+    display: grid;
+    gap: 14px;
+}
+
+.owner-review-item {
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr);
+    gap: 14px;
+    padding: 16px;
+    border-radius: 18px;
+    border: 1px solid var(--owner-border);
+    background: #fcfdff;
+}
+
+.owner-review-item__avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff3d9;
+    color: #8a5a00;
+    font-weight: 800;
+}
+
+.owner-review-item__content h4 {
+    margin: 0 0 8px;
+    font-size: 16px;
+}
+
+.owner-review-item__meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.owner-review-item__meta small {
+    color: var(--owner-text-soft);
+}
+
+.owner-review-item__content p {
+    margin: 0;
+    color: var(--owner-text-soft);
+    line-height: 1.5;
+}
+
+.owner-property-review-summary {
+    display: grid;
+    gap: 12px;
+}
+
+.owner-property-review-summary__item {
+    display: grid;
+    gap: 10px;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid var(--owner-border);
+    background: #fbfcfd;
+}
+
+.owner-property-review-summary__item h4 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.owner-property-review-summary__item div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.owner-property-review-summary__item span {
+    color: var(--owner-text-soft);
+}

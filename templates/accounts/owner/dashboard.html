@@ -107,6 +107,108 @@ Consulta el estado general de tus propiedades, solicitudes y puntos de atención
         <p>Solicitudes pendientes</p>
     </article>
 
+    <!-- tarjetas kpi -->
+
+    <article class="owner-panel owner-panel--stat">
+        <span class="material-symbols-outlined">favorite</span>
+        <strong>{{ reputation_data.favorites_count|default:0 }}</strong>
+        <p>Favoritos acumulados</p>
+    </article>
+
+    <article class="owner-panel owner-panel--stat">
+        <span class="material-symbols-outlined">reviews</span>
+        <strong>{{ reputation_data.reviews_count|default:0 }}</strong>
+        <p>Reseñas recibidas</p>
+    </article>
+
+    <article class="owner-panel owner-panel--stat">
+        <span class="material-symbols-outlined">star</span>
+        <strong>{{ reputation_data.average_rating|default:0 }}</strong>
+        <p>Calificación promedio</p>
+    </article>
+
+
+    <!-- Panel de reputación -->
+    <article class="owner-panel">
+        <div class="owner-panel__header">
+            <h3>Reputación</h3>
+            <p class="owner-panel__support">Resumen de satisfacción y percepción de tus propiedades.</p>
+        </div>
+
+        <div class="owner-reputation-box">
+            <div class="owner-reputation-box__score">
+                <strong>{{ reputation_data.average_rating|default:0 }}</strong>
+                <span>Promedio general</span>
+            </div>
+
+            <div class="owner-reputation-box__breakdown">
+                <div><span>5 estrellas</span><strong>{{ reputation_data.rating_breakdown.5|default:0 }}</strong></div>
+                <div><span>4 estrellas</span><strong>{{ reputation_data.rating_breakdown.4|default:0 }}</strong></div>
+                <div><span>3 estrellas</span><strong>{{ reputation_data.rating_breakdown.3|default:0 }}</strong></div>
+                <div><span>2 estrellas</span><strong>{{ reputation_data.rating_breakdown.2|default:0 }}</strong></div>
+                <div><span>1 estrella</span><strong>{{ reputation_data.rating_breakdown.1|default:0 }}</strong></div>
+            </div>
+        </div>
+    </article>
+
+
+    <!-- Lista de ultimas reseñas -->
+    <article class="owner-panel">
+        <div class="owner-panel__header">
+            <h3>Reputación</h3>
+            <p class="owner-panel__support">Resumen de satisfacción y percepción de tus propiedades.</p>
+        </div>
+
+        <div class="owner-reputation-box">
+            <div class="owner-reputation-box__score">
+                <strong>{{ reputation_data.average_rating|default:0 }}</strong>
+                <span>Promedio general</span>
+            </div>
+
+            <div class="owner-reputation-box__breakdown">
+                <div><span>5 estrellas</span><strong>{{ reputation_data.rating_breakdown.5|default:0 }}</strong></div>
+                <div><span>4 estrellas</span><strong>{{ reputation_data.rating_breakdown.4|default:0 }}</strong></div>
+                <div><span>3 estrellas</span><strong>{{ reputation_data.rating_breakdown.3|default:0 }}</strong></div>
+                <div><span>2 estrellas</span><strong>{{ reputation_data.rating_breakdown.2|default:0 }}</strong></div>
+                <div><span>1 estrella</span><strong>{{ reputation_data.rating_breakdown.1|default:0 }}</strong></div>
+            </div>
+        </div>
+    </article>
+
+    <!-- resumen por propiedad    -->
+    <article class="owner-panel">
+        <div class="owner-panel__header">
+            <h3>Propiedades mejor valoradas</h3>
+            <p class="owner-panel__support">Resumen de rendimiento por reseñas y favoritos.</p>
+        </div>
+
+        {% if reputation_data.property_review_summary %}
+            <div class="owner-property-review-summary">
+                {% for item in reputation_data.property_review_summary|slice:":4" %}
+                    <article class="owner-property-review-summary__item">
+                        <h4>{{ item.property_title }}</h4>
+                        <div>
+                            <strong>{{ item.average_rating }}</strong>
+                            <span>Promedio</span>
+                        </div>
+                        <div>
+                            <strong>{{ item.reviews_count }}</strong>
+                            <span>Reseñas</span>
+                        </div>
+                        <div>
+                            <strong>{{ item.favorites_count }}</strong>
+                            <span>Favoritos</span>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="owner-empty-state">
+                <p>Todavía no hay suficientes datos de reputación por propiedad.</p>
+            </div>
+        {% endif %}
+    </article>
+
     <article class="owner-panel">
         <div class="owner-panel__header">
             <h3>Salud del portafolio</h3>

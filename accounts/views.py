@@ -29,6 +29,7 @@ from .owner_services import (
     reorder_property_images,
     set_property_image_as_cover,
     upload_owner_property_images,
+    get_owner_dashboard_reputation,
 )
 from .services import (
     AuthServiceError,
@@ -1156,6 +1157,11 @@ def owner_dashboard_view(request):
 
     alerts = alerts[:5]
     dashboard_error = properties_error or requests_error
+    
+    reputation_data, reputation_error = get_owner_dashboard_reputation(
+        request,
+        owner_id=habita_user["id"],
+    )
 
     return render(
         request,
@@ -1171,5 +1177,7 @@ def owner_dashboard_view(request):
             "portfolio_health": portfolio_health,
             "activity_feed": activity_feed,
             "top_property": top_property,
+            "reputation_data": reputation_data,
+            "reputation_error": reputation_error,
         },
     )

@@ -579,3 +579,33 @@ def reorder_property_images(request, ordered_image_ids: list[int]) -> tuple[bool
 
     except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError):
         return False, "No fue posible guardar el orden de las imágenes."
+    
+    
+def get_owner_dashboard_reputation(request, owner_id: int) -> tuple[dict, Optional[str]]:
+    try:
+        response = authenticated_request(
+            request,
+            "GET",
+            f"/owners/{owner_id}/dashboard/reputation",
+        )
+
+        if response.status_code != 200:
+            return {}, "No fue posible cargar la reputación del owner."
+
+        payload = response.json()
+        data = payload.get("data") or {}
+
+        return {
+            "favorites_count": data.get("favorites_count", 0),
+            "reviews_count": data.get("reviews_count", 0),
+            "average_rating": data.get("average_rating", 0),
+            "rating_breakdown": data.get(
+                "rating_breakdown",
+                {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0},
+            ),
+            "latest_reviews": data.get("latest_reviews", []),
+            "property_review_summary": data.get("property_review_summary", []),
+        }, None
+
+    except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError, ValueError):
+        return {}, "No fue posible cargar la reputación del owner."
