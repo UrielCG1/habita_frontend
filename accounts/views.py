@@ -959,18 +959,106 @@ def owner_reports_view(request):
 def owner_dashboard_view(request):
     habita_user = get_habita_user(request)
 
-    properties, _properties_error = get_owner_properties(request, owner_id=habita_user["id"])
-    pending_requests, _pending_error = get_owner_requests_overview(
+    properties, properties_error = get_owner_properties(
         request,
         owner_id=habita_user["id"],
-        status="pending",
+        limit=100,
     )
+
+    all_requests, requests_error = get_owner_requests_overview(
+        request,
+        owner_id=habita_user["id"],
+        status=None,
+    )
+
+    request_summary = build_owner_requests_summary(all_requests)
+
+    pending_map = {}
+    total_map = {}
+
+    for rental_request in all_requests:
+        property_id = rental_request.get("property_id")
+        if not property_id:
+            continue
+
+        total_map[property_id] = total_map.get(property_id, 0) + 1
+
+        if rental_request.get("status_code") == "pending":
+            pending_map[property_id] = pending_map.get(property_id, 0) + 1
+
+    rented_statuses = {"rented", "occupied", "leased"}
 
     dashboard_stats = {
         "total_properties": len(properties),
         "published_properties": sum(1 for item in properties if item.get("is_published")),
-        "pending_requests": len(pending_requests),
+        "unpublished_properties": sum(1 for item in properties if not item.get("is_published")),
+        "available_properties": sum(1 for item in properties if item.get("status_code") == "available"),
+        "rented_properties": sum(1 for item in properties if item.get("status_code") in rented_statuses),
+        "total_requests": request_summary["total"],
+        "pending_requests": request_summary["pending"],
+        "accepted_requests": request_summary["accepted"],
+        "resolved_requests": request_summary["resolved"],
     }
+
+    property_rows = []
+    alerts = []
+
+    for property_item in properties:
+        property_id = property_item.get("id")
+        total_requests_count = total_map.get(property_id, 0)
+        pending_requests_count = pending_map.get(property_id, 0)
+
+        enriched = {
+            **property_item,
+            "total_requests_count": total_requests_count,
+            "pending_requests_count": pending_requests_count,
+            "needs_attention": pending_requests_count > 0 or not property_item.get("is_published"),
+            "attention_label": (
+                "Tiene solicitudes pendientes"
+                if pending_requests_count > 0
+                else "Pendiente de publicación"
+                if not property_item.get("is_published")
+                else "Operación estable"
+            ),
+        }
+        property_rows.append(enriched)
+
+        if not property_item.get("is_published"):
+            alerts.append(
+                {
+                    "tone": "warning",
+                    "title": f'{property_item.get("title", "Propiedad")} no está publicada',
+                    "description": "Actívala para que sea visible dentro de HABITA.",
+                }
+            )
+
+        if pending_requests_count > 0:
+            alerts.append(
+                {
+                    "tone": "info",
+                    "title": f'{property_item.get("title", "Propiedad")} tiene {pending_requests_count} solicitud(es) pendiente(s)',
+                    "description": "Conviene revisarlas para dar seguimiento oportuno.",
+                }
+            )
+
+    property_rows.sort(
+        key=lambda item: (
+            item.get("pending_requests_count", 0),
+            item.get("total_requests_count", 0),
+            item.get("is_published", False),
+        ),
+        reverse=True,
+    )
+
+    recent_requests = sorted(
+        all_requests,
+        key=lambda item: item.get("created_at_sort") or 0,
+        reverse=True,
+    )[:5]
+
+    alerts = alerts[:5]
+
+    dashboard_error = properties_error or requests_error
 
     return render(
         request,
@@ -978,5 +1066,10 @@ def owner_dashboard_view(request):
         {
             "habita_user": habita_user,
             "dashboard_stats": dashboard_stats,
+            "request_summary": request_summary,
+            "property_rows": property_rows[:5],
+            "recent_requests": recent_requests,
+            "alerts": alerts,
+            "dashboard_error": dashboard_error,
         },
     )

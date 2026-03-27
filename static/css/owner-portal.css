@@ -361,3 +361,319 @@
         flex-direction: column;
     }
 }
+
+
+
+
+.owner-dashboard-grid--phase2 .owner-panel--hero-soft {
+    background: linear-gradient(180deg, #ffffff 0%, #f9fbfc 100%);
+}
+
+.owner-panel__header--between {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.owner-panel__support {
+    margin: 8px 0 0;
+    color: var(--owner-text-soft);
+    line-height: 1.5;
+}
+
+.owner-inline-link {
+    color: var(--owner-accent);
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.owner-dashboard-properties,
+.owner-dashboard-requests,
+.owner-alert-list {
+    display: grid;
+    gap: 14px;
+}
+
+.owner-dashboard-property-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 18px;
+    padding: 16px;
+    border: 1px solid var(--owner-border);
+    border-radius: 18px;
+    background: #fcfdff;
+}
+
+.owner-dashboard-property-row__main {
+    display: flex;
+    gap: 14px;
+    min-width: 0;
+}
+
+.owner-dashboard-property-row__thumb {
+    width: 76px;
+    height: 76px;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #eef2f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.owner-dashboard-property-row__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.owner-dashboard-property-row__thumb .material-symbols-outlined {
+    color: var(--owner-text-soft);
+    font-size: 32px;
+}
+
+.owner-dashboard-property-row__info {
+    min-width: 0;
+}
+
+.owner-dashboard-property-row__info h4 {
+    margin: 0 0 6px;
+    font-size: 18px;
+}
+
+.owner-dashboard-property-row__info p {
+    margin: 0 0 10px;
+    color: var(--owner-text-soft);
+}
+
+.owner-dashboard-property-row__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    color: var(--owner-text-soft);
+    font-size: 14px;
+}
+
+.owner-dashboard-property-row__stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.owner-dashboard-property-row__stats div {
+    border: 1px solid var(--owner-border);
+    border-radius: 14px;
+    padding: 12px;
+    background: #fff;
+}
+
+.owner-dashboard-property-row__stats strong {
+    display: block;
+    font-size: 18px;
+    margin-bottom: 6px;
+}
+
+.owner-dashboard-property-row__stats span {
+    color: var(--owner-text-soft);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.owner-status-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 0 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    border: 1px solid transparent;
+}
+
+.owner-status-chip--available,
+.owner-status-chip--accepted {
+    background: #eef8f0;
+    color: #1f7a38;
+    border-color: #cce9d3;
+}
+
+.owner-status-chip--pending {
+    background: #fff7e8;
+    color: #a56a00;
+    border-color: #f1d39b;
+}
+
+.owner-status-chip--rejected,
+.owner-status-chip--cancelled,
+.owner-status-chip--inactive,
+.owner-status-chip--unpublished {
+    background: #fff1f1;
+    color: #b42318;
+    border-color: #f3c7c7;
+}
+
+.owner-status-chip--rented,
+.owner-status-chip--occupied {
+    background: #eef4ff;
+    color: #2949a8;
+    border-color: #ccdafc;
+}
+
+.owner-summary-pills {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.owner-summary-pill {
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid var(--owner-border);
+    background: #fafbfd;
+}
+
+.owner-summary-pill strong {
+    display: block;
+    font-size: 24px;
+    margin-bottom: 6px;
+}
+
+.owner-summary-pill span {
+    color: var(--owner-text-soft);
+}
+
+.owner-dashboard-request-item {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    padding: 14px;
+    border: 1px solid var(--owner-border);
+    border-radius: 16px;
+    background: #fcfdff;
+}
+
+.owner-dashboard-request-item__avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eaf2f6;
+    color: var(--owner-accent);
+    font-weight: 800;
+}
+
+.owner-dashboard-request-item__content {
+    min-width: 0;
+}
+
+.owner-dashboard-request-item__content h4 {
+    margin: 0 0 4px;
+    font-size: 15px;
+}
+
+.owner-dashboard-request-item__content p {
+    margin: 0 0 4px;
+    color: var(--owner-text-soft);
+}
+
+.owner-dashboard-request-item__content small {
+    color: var(--owner-text-soft);
+}
+
+.owner-alert-item {
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid var(--owner-border);
+    background: #fff;
+}
+
+.owner-alert-item h4 {
+    margin: 0 0 6px;
+    font-size: 15px;
+}
+
+.owner-alert-item p {
+    margin: 0;
+    color: var(--owner-text-soft);
+    line-height: 1.5;
+}
+
+.owner-alert-item--warning {
+    background: #fffaf0;
+    border-color: #f4ddb0;
+}
+
+.owner-alert-item--info {
+    background: #f3f8fc;
+    border-color: #d3e3ef;
+}
+
+.owner-report-preview {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.owner-report-preview__card {
+    display: grid;
+    gap: 8px;
+    padding: 18px;
+    border-radius: 18px;
+    border: 1px solid var(--owner-border);
+    background: #fbfcfd;
+}
+
+.owner-report-preview__card .material-symbols-outlined {
+    color: var(--owner-accent);
+}
+
+.owner-report-preview__card small {
+    color: var(--owner-text-soft);
+}
+
+.owner-empty-state {
+    padding: 18px;
+    border: 1px dashed var(--owner-border);
+    border-radius: 16px;
+    background: #fafbfd;
+}
+
+.owner-empty-state p {
+    margin: 0;
+    color: var(--owner-text-soft);
+}
+
+@media (max-width: 1100px) {
+    .owner-dashboard-property-row {
+        grid-template-columns: 1fr;
+    }
+
+    .owner-dashboard-property-row__stats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .owner-report-preview {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 720px) {
+    .owner-summary-pills,
+    .owner-dashboard-property-row__stats {
+        grid-template-columns: 1fr;
+    }
+
+    .owner-dashboard-request-item {
+        grid-template-columns: 48px 1fr;
+    }
+
+    .owner-dashboard-request-item .owner-status-chip {
+        grid-column: 1 / -1;
+        justify-self: start;
+    }
+}

@@ -6,29 +6,35 @@
 {% block owner_page_eyebrow %}Resumen general{% endblock %}
 {% block owner_page_title %}Dashboard{% endblock %}
 {% block owner_page_subtitle %}
-Bienvenido de vuelta. Desde aquí podrás revisar el estado general de tus propiedades y acceder rápido a los módulos principales.
+Consulta el estado general de tus propiedades, solicitudes y puntos de atención desde un solo lugar.
 {% endblock %}
 
 {% block owner_page_actions %}
+<a href="{% url 'accounts:owner-property-create' %}" class="btn-primary btn-small">
+    <span class="material-symbols-outlined">add_home</span>
+    Nueva propiedad
+</a>
 <a href="{% url 'accounts:owner-properties' %}" class="btn-secondary btn-small">
     <span class="material-symbols-outlined">apartment</span>
-    Ver propiedades
-</a>
-<a href="{% url 'accounts:owner-reports' %}" class="btn-primary btn-small">
-    <span class="material-symbols-outlined">description</span>
-    Reportes
+    Mis propiedades
 </a>
 {% endblock %}
 
 {% block owner_content %}
-<section class="owner-dashboard-grid">
-    <article class="owner-panel owner-panel--hero">
+{% if dashboard_error %}
+    <div class="owner-flash owner-flash--error">
+        {{ dashboard_error }}
+    </div>
+{% endif %}
+
+<section class="owner-dashboard-grid owner-dashboard-grid--phase2">
+    <article class="owner-panel owner-panel--hero owner-panel--hero-soft">
         <div>
             <p class="owner-panel__eyebrow">Owner Portal</p>
-            <h2>Tu nueva base de operación</h2>
+            <h2>Panel de control del propietario</h2>
             <p>
-                Esta primera fase organiza todo tu flujo del owner dentro de un solo entorno:
-                dashboard, propiedades, solicitudes y próximos reportes.
+                Visualiza rápidamente cómo va tu portafolio, cuáles propiedades necesitan atención
+                y qué solicitudes requieren seguimiento.
             </p>
         </div>
 
@@ -36,13 +42,7 @@ Bienvenido de vuelta. Desde aquí podrás revisar el estado general de tus propi
             <a href="{% url 'accounts:owner-property-create' %}" class="owner-quick-card">
                 <span class="material-symbols-outlined">add_home</span>
                 <strong>Nueva propiedad</strong>
-                <small>Publica un nuevo inmueble</small>
-            </a>
-
-            <a href="{% url 'accounts:owner-properties' %}" class="owner-quick-card">
-                <span class="material-symbols-outlined">grid_view</span>
-                <strong>Mis propiedades</strong>
-                <small>Administra tu portafolio</small>
+                <small>Publica un inmueble nuevo</small>
             </a>
 
             <a href="{% url 'accounts:owner-requests' %}" class="owner-quick-card">
@@ -50,48 +50,224 @@ Bienvenido de vuelta. Desde aquí podrás revisar el estado general de tus propi
                 <strong>Solicitudes</strong>
                 <small>Da seguimiento a interesados</small>
             </a>
+
+            <a href="{% url 'accounts:owner-reports' %}" class="owner-quick-card">
+                <span class="material-symbols-outlined">description</span>
+                <strong>Reportes</strong>
+                <small>Próximamente exportación PDF</small>
+            </a>
         </div>
     </article>
 
     <article class="owner-panel owner-panel--stat">
         <span class="material-symbols-outlined">apartment</span>
-        <strong>{{ dashboard_stats.total_properties|default:"--" }}</strong>
+        <strong>{{ dashboard_stats.total_properties }}</strong>
         <p>Propiedades registradas</p>
     </article>
 
     <article class="owner-panel owner-panel--stat">
         <span class="material-symbols-outlined">campaign</span>
-        <strong>{{ dashboard_stats.published_properties|default:"--" }}</strong>
-        <p>Propiedades publicadas</p>
+        <strong>{{ dashboard_stats.published_properties }}</strong>
+        <p>Publicadas</p>
+    </article>
+
+    <article class="owner-panel owner-panel--stat">
+        <span class="material-symbols-outlined">visibility_off</span>
+        <strong>{{ dashboard_stats.unpublished_properties }}</strong>
+        <p>No publicadas</p>
+    </article>
+
+    <article class="owner-panel owner-panel--stat">
+        <span class="material-symbols-outlined">home</span>
+        <strong>{{ dashboard_stats.available_properties }}</strong>
+        <p>Disponibles</p>
+    </article>
+
+    <article class="owner-panel owner-panel--stat">
+        <span class="material-symbols-outlined">key</span>
+        <strong>{{ dashboard_stats.rented_properties }}</strong>
+        <p>Rentadas / ocupadas</p>
     </article>
 
     <article class="owner-panel owner-panel--stat">
         <span class="material-symbols-outlined">mail</span>
-        <strong>{{ dashboard_stats.pending_requests|default:"--" }}</strong>
+        <strong>{{ dashboard_stats.pending_requests }}</strong>
         <p>Solicitudes pendientes</p>
     </article>
 
     <article class="owner-panel owner-panel--wide">
-        <div class="owner-panel__header">
-            <h3>Próximos bloques del dashboard</h3>
+        <div class="owner-panel__header owner-panel__header--between">
+            <div>
+                <h3>Rendimiento de propiedades</h3>
+                <p class="owner-panel__support">
+                    Resumen operativo de las propiedades con más movimiento o atención pendiente.
+                </p>
+            </div>
+            <a href="{% url 'accounts:owner-properties' %}" class="owner-inline-link">Ver todas</a>
         </div>
-        <ul class="owner-placeholder-list">
-            <li>Rendimiento de propiedades</li>
-            <li>Actividad reciente</li>
-            <li>Estado de solicitudes</li>
-            <li>Resumen de reseñas</li>
-            <li>Generación de reportes PDF</li>
-        </ul>
+
+        {% if property_rows %}
+            <div class="owner-dashboard-properties">
+                {% for property in property_rows %}
+                    <article class="owner-dashboard-property-row">
+                        <div class="owner-dashboard-property-row__main">
+                            <div class="owner-dashboard-property-row__thumb">
+                                {% if property.cover_image_url %}
+                                    <img src="{{ property.cover_image_url }}" alt="{{ property.title }}">
+                                {% else %}
+                                    <span class="material-symbols-outlined">holiday_village</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="owner-dashboard-property-row__info">
+                                <h4>{{ property.title }}</h4>
+                                <p>{{ property.location }}</p>
+
+                                <div class="owner-dashboard-property-row__meta">
+                                    <span class="owner-status-chip owner-status-chip--{{ property.status_code }}">
+                                        {{ property.status_label }}
+                                    </span>
+                                    <span>{{ property.price }}</span>
+                                    <span>{{ property.property_type_label }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="owner-dashboard-property-row__stats">
+                            <div>
+                                <strong>{{ property.total_requests_count }}</strong>
+                                <span>Solicitudes</span>
+                            </div>
+                            <div>
+                                <strong>{{ property.pending_requests_count }}</strong>
+                                <span>Pendientes</span>
+                            </div>
+                            <div>
+                                <strong>{{ property.attention_label }}</strong>
+                                <span>Estado</span>
+                            </div>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="owner-empty-state">
+                <p>Aún no hay propiedades para mostrar en el dashboard.</p>
+            </div>
+        {% endif %}
     </article>
 
     <article class="owner-panel">
         <div class="owner-panel__header">
-            <h3>Acciones rápidas</h3>
+            <h3>Resumen de solicitudes</h3>
+            <p class="owner-panel__support">Distribución actual del flujo de solicitudes.</p>
         </div>
-        <div class="owner-actions-list">
-            <a href="{% url 'accounts:owner-property-create' %}">Crear nueva propiedad</a>
-            <a href="{% url 'accounts:owner-properties' %}">Ir a mis propiedades</a>
-            <a href="{% url 'accounts:owner-requests' %}">Ver solicitudes recibidas</a>
+
+        <div class="owner-summary-pills">
+            <article class="owner-summary-pill">
+                <strong>{{ request_summary.total }}</strong>
+                <span>Total</span>
+            </article>
+            <article class="owner-summary-pill">
+                <strong>{{ request_summary.pending }}</strong>
+                <span>Pendientes</span>
+            </article>
+            <article class="owner-summary-pill">
+                <strong>{{ request_summary.accepted }}</strong>
+                <span>Aceptadas</span>
+            </article>
+            <article class="owner-summary-pill">
+                <strong>{{ request_summary.resolved }}</strong>
+                <span>Resueltas</span>
+            </article>
+        </div>
+    </article>
+
+    <article class="owner-panel">
+        <div class="owner-panel__header owner-panel__header--between">
+            <div>
+                <h3>Solicitudes recientes</h3>
+                <p class="owner-panel__support">Últimos movimientos recibidos por tus propiedades.</p>
+            </div>
+            <a href="{% url 'accounts:owner-requests' %}" class="owner-inline-link">Ver módulo</a>
+        </div>
+
+        {% if recent_requests %}
+            <div class="owner-dashboard-requests">
+                {% for request_item in recent_requests %}
+                    <article class="owner-dashboard-request-item">
+                        <div class="owner-dashboard-request-item__avatar">
+                            {{ request_item.user_initials }}
+                        </div>
+                        <div class="owner-dashboard-request-item__content">
+                            <h4>{{ request_item.user_name }}</h4>
+                            <p>{{ request_item.property_title }}</p>
+                            <small>{{ request_item.created_at_display }}</small>
+                        </div>
+                        <span class="owner-status-chip owner-status-chip--{{ request_item.status_tone }}">
+                            {{ request_item.status_label }}
+                        </span>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="owner-empty-state">
+                <p>No hay solicitudes recientes por mostrar.</p>
+            </div>
+        {% endif %}
+    </article>
+
+    <article class="owner-panel">
+        <div class="owner-panel__header owner-panel__header--between">
+            <div>
+                <h3>Alertas</h3>
+                <p class="owner-panel__support">Elementos que conviene revisar pronto.</p>
+            </div>
+        </div>
+
+        {% if alerts %}
+            <div class="owner-alert-list">
+                {% for alert in alerts %}
+                    <article class="owner-alert-item owner-alert-item--{{ alert.tone }}">
+                        <h4>{{ alert.title }}</h4>
+                        <p>{{ alert.description }}</p>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="owner-empty-state">
+                <p>Por ahora no hay alertas importantes.</p>
+            </div>
+        {% endif %}
+    </article>
+
+    <article class="owner-panel owner-panel--wide">
+        <div class="owner-panel__header owner-panel__header--between">
+            <div>
+                <h3>Próximo módulo: reportes</h3>
+                <p class="owner-panel__support">
+                    En la siguiente fase se integrará generación de reportes PDF desde el Owner Portal.
+                </p>
+            </div>
+            <a href="{% url 'accounts:owner-reports' %}" class="owner-inline-link">Ir a reportes</a>
+        </div>
+
+        <div class="owner-report-preview">
+            <div class="owner-report-preview__card">
+                <span class="material-symbols-outlined">description</span>
+                <strong>Resumen general</strong>
+                <small>Estado general del owner</small>
+            </div>
+            <div class="owner-report-preview__card">
+                <span class="material-symbols-outlined">apartment</span>
+                <strong>Propiedades</strong>
+                <small>Inventario y estatus</small>
+            </div>
+            <div class="owner-report-preview__card">
+                <span class="material-symbols-outlined">mail</span>
+                <strong>Solicitudes</strong>
+                <small>Seguimiento operativo</small>
+            </div>
         </div>
     </article>
 </section>
