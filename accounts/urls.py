@@ -42,8 +42,7 @@ urlpatterns = [
     # panel de administrador
     path("admin-area/", admin_area_view, name="admin-area"),
     
-    # propiedades del propietario
-    path("owner-properties/", owner_properties_view, name="owner-properties"),
+    
     
     path("owner-requests/", owner_requests_view, name="owner-requests"), # Solicitudes recibidas
     # solicitudes de una propiedad específica del propietario
@@ -72,7 +71,8 @@ urlpatterns = [
     
     
     
-    
+    # propiedades del propietario
+    path("owner/properties/", owner_properties_view, name="owner-properties"),
     path("owner/dashboard/", owner_dashboard_view, name="owner-dashboard"),
     path("owner/reviews/", owner_reviews_view, name="owner-reviews"),
     path("owner/reports/", owner_reports_view, name="owner-reports"),
