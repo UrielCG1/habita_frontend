@@ -44,7 +44,7 @@ urlpatterns = [
     
     
     
-    path("owner-requests/", owner_requests_view, name="owner-requests"), # Solicitudes recibidas
+
     # solicitudes de una propiedad específica del propietario
     path("owner-properties/<int:property_id>/requests/", owner_property_requests_view, name="owner-property-requests"),
     
@@ -73,6 +73,7 @@ urlpatterns = [
     
     # propiedades del propietario
     path("owner/properties/", owner_properties_view, name="owner-properties"),
+    path("owner/requests/", owner_requests_view, name="owner-requests"), # Solicitudes recibidas
     path("owner/dashboard/", owner_dashboard_view, name="owner-dashboard"),
     path("owner/reviews/", owner_reviews_view, name="owner-reviews"),
     path("owner/reports/", owner_reports_view, name="owner-reports"),
