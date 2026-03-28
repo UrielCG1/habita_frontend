@@ -993,12 +993,11 @@ def owner_reports_view(request):
         if export_error:
             messages.error(request, export_error)
         else:
-            download_url = export_result.get("download_url")
+            report_id = export_result.get("report_id")
             messages.success(request, "El reporte se generó correctamente.")
 
-            if download_url:
-                absolute_download_url = f"{settings.BACKEND_API_BASE_URL.rstrip('/')}{download_url}"
-                return redirect(absolute_download_url)
+            if report_id:
+                return redirect("accounts:owner-report-download", report_id=report_id)
 
         query = urlencode(
             {
@@ -1247,3 +1246,38 @@ def owner_dashboard_view(request):
             "reputation_error": reputation_error,
         },
     )
+    
+    
+from django.http import HttpResponse, Http404
+from .services import authenticated_request, UnauthorizedRefreshError
+
+
+@habita_role_required("owner", "admin")
+def owner_report_download_view(request, report_id: str):
+    habita_user = get_habita_user(request)
+
+    try:
+        response = authenticated_request(
+            request,
+            "GET",
+            f"/owners/{habita_user['id']}/reports/{report_id}/download",
+            stream=True,
+        )
+    except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError):
+        raise Http404("No fue posible descargar el reporte.")
+
+    if response.status_code != 200:
+        raise Http404("No fue posible descargar el reporte.")
+
+    content_type = response.headers.get("Content-Type", "application/pdf")
+    content_disposition = response.headers.get(
+        "Content-Disposition",
+        f'attachment; filename="reporte_{report_id}.pdf"',
+    )
+
+    django_response = HttpResponse(
+        response.content,
+        content_type=content_type,
+    )
+    django_response["Content-Disposition"] = content_disposition
+    return django_response

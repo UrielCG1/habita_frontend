@@ -25,6 +25,8 @@ from .views import (
     owner_dashboard_view,
     owner_reviews_view,
     owner_reports_view,
+    
+    owner_report_download_view,
 )
 
 app_name = "accounts"
@@ -77,4 +79,9 @@ urlpatterns = [
     path("owner/dashboard/", owner_dashboard_view, name="owner-dashboard"),
     path("owner/reviews/", owner_reviews_view, name="owner-reviews"),
     path("owner/reports/", owner_reports_view, name="owner-reports"),
+    path(
+        "owner/reports/<str:report_id>/download/",
+        owner_report_download_view,
+        name="owner-report-download",
+    ),
 ]

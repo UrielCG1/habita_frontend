@@ -619,6 +619,7 @@ REPORT_TYPE_LABELS = {
 }
 
 from django.conf import settings
+from django.urls import reverse
 
 
 def get_owner_reports_summary(
@@ -665,22 +666,22 @@ def get_owner_reports_summary(
 
         normalized_recent_reports = []
         for item in recent_reports:
-            raw_download_url = item.get("download_url") or ""
-            absolute_download_url = (
-                f"{settings.BACKEND_API_BASE_URL.rstrip('/')}{raw_download_url}"
-                if raw_download_url
+            report_id = item.get("id")
+            frontend_download_url = (
+                reverse("accounts:owner-report-download", kwargs={"report_id": report_id})
+                if report_id
                 else ""
             )
 
             normalized_recent_reports.append(
                 {
-                    "id": item.get("id"),
+                    "id": report_id,
                     "name": item.get("name") or "Reporte",
                     "report_type": item.get("report_type"),
                     "report_type_label": item.get("report_type_label")
                     or REPORT_TYPE_LABELS.get(item.get("report_type"), "Reporte"),
                     "created_at_display": item.get("created_at_display") or "",
-                    "download_url": absolute_download_url,
+                    "download_url": frontend_download_url,
                 }
             )
 
