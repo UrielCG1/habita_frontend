@@ -995,8 +995,10 @@ def owner_reports_view(request):
         else:
             download_url = export_result.get("download_url")
             messages.success(request, "El reporte se generó correctamente.")
+
             if download_url:
-                return redirect(download_url)
+                absolute_download_url = f"{settings.BACKEND_API_BASE_URL.rstrip('/')}{download_url}"
+                return redirect(absolute_download_url)
 
         query = urlencode(
             {

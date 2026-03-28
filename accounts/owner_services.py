@@ -618,6 +618,8 @@ REPORT_TYPE_LABELS = {
     "reputation": "Reputación",
 }
 
+from django.conf import settings
+
 
 def get_owner_reports_summary(
     request,
@@ -663,6 +665,13 @@ def get_owner_reports_summary(
 
         normalized_recent_reports = []
         for item in recent_reports:
+            raw_download_url = item.get("download_url") or ""
+            absolute_download_url = (
+                f"{settings.BACKEND_API_BASE_URL.rstrip('/')}{raw_download_url}"
+                if raw_download_url
+                else ""
+            )
+
             normalized_recent_reports.append(
                 {
                     "id": item.get("id"),
@@ -671,7 +680,7 @@ def get_owner_reports_summary(
                     "report_type_label": item.get("report_type_label")
                     or REPORT_TYPE_LABELS.get(item.get("report_type"), "Reporte"),
                     "created_at_display": item.get("created_at_display") or "",
-                    "download_url": item.get("download_url") or "",
+                    "download_url": absolute_download_url,
                 }
             )
 
