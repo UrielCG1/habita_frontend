@@ -1,0 +1,129 @@
+.owner-reports-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 20px;
+    align-items: start;
+}
+
+.owner-reports-main,
+.owner-reports-sidebar {
+    display: grid;
+    gap: 20px;
+}
+
+.owner-reports-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.owner-report-types {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.owner-report-type-card {
+    display: block;
+    padding: 18px;
+    border: 1px solid var(--owner-border);
+    border-radius: 18px;
+    background: #fbfcfd;
+}
+
+.owner-report-type-card input {
+    display: none;
+}
+
+.owner-report-type-card strong {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 16px;
+}
+
+.owner-report-type-card p {
+    margin: 0;
+    color: var(--owner-text-soft);
+    line-height: 1.5;
+}
+
+.owner-report-form {
+    display: grid;
+    gap: 16px;
+}
+
+.owner-report-form .form-group {
+    display: grid;
+    gap: 8px;
+}
+
+.owner-report-form label {
+    font-weight: 700;
+    color: var(--owner-text);
+}
+
+.owner-report-form .form-control {
+    min-height: 46px;
+    padding: 0 14px;
+    border: 1px solid var(--owner-border);
+    border-radius: 12px;
+    background: #fff;
+    color: var(--owner-text);
+}
+
+.btn-block {
+    width: 100%;
+    justify-content: center;
+}
+
+.owner-recent-reports {
+    display: grid;
+    gap: 12px;
+}
+
+.owner-recent-report-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px;
+    border: 1px solid var(--owner-border);
+    border-radius: 16px;
+    background: #fcfdff;
+}
+
+.owner-recent-report-item h4 {
+    margin: 0 0 6px;
+    font-size: 16px;
+}
+
+.owner-recent-report-item p {
+    margin: 0 0 4px;
+    color: var(--owner-text-soft);
+}
+
+.owner-recent-report-item small {
+    color: var(--owner-text-soft);
+}
+
+@media (max-width: 1200px) {
+    .owner-reports-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .owner-reports-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .owner-reports-kpis,
+    .owner-report-types {
+        grid-template-columns: 1fr;
+    }
+
+    .owner-recent-report-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

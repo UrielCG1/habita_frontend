@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from urllib.parse import urlencode
 from django.views.decorators.http import require_GET, require_POST
 
 from .admin_services import get_admin_dashboard
@@ -30,6 +31,8 @@ from .owner_services import (
     set_property_image_as_cover,
     upload_owner_property_images,
     get_owner_dashboard_reputation,
+    export_owner_report_pdf,
+    get_owner_reports_summary,
 )
 from .services import (
     AuthServiceError,
@@ -949,11 +952,72 @@ def owner_reviews_view(request):
 @habita_role_required("owner", "admin")
 def owner_reports_view(request):
     habita_user = get_habita_user(request)
-    return render(
+
+    date_from = (request.GET.get("date_from") or "").strip()
+    date_to = (request.GET.get("date_to") or "").strip()
+
+    reports_data, reports_error = get_owner_reports_summary(
         request,
-        "accounts/owner/reports_placeholder.html",
-        {"habita_user": habita_user},
+        owner_id=habita_user["id"],
+        date_from=date_from or None,
+        date_to=date_to or None,
     )
+
+    if request.method == "POST":
+        report_type = (request.POST.get("report_type") or "summary").strip()
+        property_id_raw = (request.POST.get("property_id") or "").strip()
+        export_date_from = (request.POST.get("date_from") or "").strip()
+        export_date_to = (request.POST.get("date_to") or "").strip()
+
+        property_id = None
+        if property_id_raw and property_id_raw.lower() != "all":
+            try:
+                property_id = int(property_id_raw)
+            except ValueError:
+                property_id = None
+
+        export_payload = {
+            "report_type": report_type,
+            "date_from": export_date_from or None,
+            "date_to": export_date_to or None,
+            "property_id": property_id,
+            "format": "pdf",
+        }
+
+        export_result, export_error = export_owner_report_pdf(
+            request,
+            owner_id=habita_user["id"],
+            payload=export_payload,
+        )
+
+        if export_error:
+            messages.error(request, export_error)
+        else:
+            download_url = export_result.get("download_url")
+            messages.success(request, "El reporte se generó correctamente.")
+            if download_url:
+                return redirect(download_url)
+
+        query = urlencode(
+            {
+                "date_from": export_date_from,
+                "date_to": export_date_to,
+                "report_type": report_type,
+                "property_id": property_id_raw or "all",
+            }
+        )
+        return redirect(f"{reverse('accounts:owner-reports')}?{query}")
+
+    context = {
+        "habita_user": habita_user,
+        "reports_error": reports_error,
+        "reports_data": reports_data or {},
+        "selected_date_from": date_from,
+        "selected_date_to": date_to,
+        "selected_report_type": request.GET.get("report_type", "summary"),
+        "selected_property_id": request.GET.get("property_id", "all"),
+    }
+    return render(request, "accounts/owner/reports.html", context)
     
     
 from decimal import Decimal
@@ -1108,11 +1172,11 @@ def owner_dashboard_view(request):
             "pending_requests_count": pending_requests_count,
             "needs_attention": pending_requests_count > 0 or not property_item.get("is_published"),
             "attention_label": (
-                "Tiene solicitudes pendientes"
+                "Solicitudes pendientes"
                 if pending_requests_count > 0
-                else "Pendiente de publicación"
+                else "Sin publicar"
                 if not property_item.get("is_published")
-                else "Operación estable"
+                else "Estable"
             ),
         }
         property_rows.append(enriched)

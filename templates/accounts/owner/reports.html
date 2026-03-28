@@ -1,0 +1,230 @@
+{% extends "accounts/owner/base_owner.html" %}
+{% load static %}
+
+{% block title %}Reportes | HABITA{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/reports.css' %}">
+{% endblock %}
+
+{% block owner_page_eyebrow %}Análisis y exportación{% endblock %}
+{% block owner_page_title %}Reportes{% endblock %}
+{% block owner_page_subtitle %}
+Genera reportes ejecutivos y operativos de tus propiedades, solicitudes y reputación dentro del Owner Portal.
+{% endblock %}
+
+{% block owner_page_actions %}
+<a href="{% url 'accounts:owner-dashboard' %}" class="btn-secondary btn-small">
+    <span class="material-symbols-outlined">dashboard</span>
+    Dashboard
+</a>
+{% endblock %}
+
+{% block owner_content %}
+{% if reports_error %}
+    <div class="owner-flash owner-flash--error">
+        {{ reports_error }}
+    </div>
+{% endif %}
+
+<section class="owner-reports-layout">
+    <div class="owner-reports-main">
+        <section class="owner-reports-hero owner-panel">
+            <div>
+                <p class="owner-panel__eyebrow">Panel de reportes</p>
+                <h2>Genera reportes PDF de tu operación</h2>
+                <p>
+                    Consulta métricas rápidas, filtra por periodo y exporta reportes de propiedades,
+                    solicitudes, reputación o resumen general.
+                </p>
+            </div>
+        </section>
+
+        <section class="owner-reports-kpis">
+            <article class="owner-panel owner-panel--stat">
+                <span class="material-symbols-outlined">apartment</span>
+                <strong>{{ reports_data.summary_cards.properties_count|default:0 }}</strong>
+                <p>Propiedades</p>
+            </article>
+
+            <article class="owner-panel owner-panel--stat">
+                <span class="material-symbols-outlined">mail</span>
+                <strong>{{ reports_data.summary_cards.requests_count|default:0 }}</strong>
+                <p>Solicitudes</p>
+            </article>
+
+            <article class="owner-panel owner-panel--stat">
+                <span class="material-symbols-outlined">reviews</span>
+                <strong>{{ reports_data.summary_cards.reviews_count|default:0 }}</strong>
+                <p>Reseñas</p>
+            </article>
+
+            <article class="owner-panel owner-panel--stat">
+                <span class="material-symbols-outlined">star</span>
+                <strong>{{ reports_data.summary_cards.average_rating|default:0 }}</strong>
+                <p>Calificación promedio</p>
+            </article>
+        </section>
+
+        <section class="owner-panel">
+            <div class="owner-panel__header">
+                <h3>Tipos de reporte</h3>
+                <p class="owner-panel__support">Selecciona el reporte que quieres generar.</p>
+            </div>
+
+            <div class="owner-report-types">
+                {% for report_type in reports_data.report_types %}
+                    <label class="owner-report-type-card">
+                        <input
+                            type="radio"
+                            name="report_type_preview"
+                            value="{{ report_type.code }}"
+                            {% if selected_report_type == report_type.code or forloop.first and not selected_report_type %}checked{% endif %}
+                            disabled
+                        >
+                        <div>
+                            <strong>{{ report_type.label }}</strong>
+                            <p>{{ report_type.description }}</p>
+                        </div>
+                    </label>
+                {% empty %}
+                    <div class="owner-empty-state">
+                        <p>No hay tipos de reporte disponibles.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="owner-panel">
+            <div class="owner-panel__header owner-panel__header--between">
+                <div>
+                    <h3>Reportes recientes</h3>
+                    <p class="owner-panel__support">Historial reciente de exportaciones generadas.</p>
+                </div>
+            </div>
+
+            {% if reports_data.recent_reports %}
+                <div class="owner-recent-reports">
+                    {% for report in reports_data.recent_reports %}
+                        <article class="owner-recent-report-item">
+                            <div>
+                                <h4>{{ report.name }}</h4>
+                                <p>{{ report.report_type_label }}</p>
+                                <small>{{ report.created_at_display }}</small>
+                            </div>
+
+                            {% if report.download_url %}
+                                <a href="{{ report.download_url }}" class="btn-secondary btn-small">
+                                    <span class="material-symbols-outlined">download</span>
+                                    Descargar
+                                </a>
+                            {% endif %}
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="owner-empty-state">
+                    <p>Aún no hay reportes recientes registrados.</p>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+
+    <aside class="owner-reports-sidebar">
+        <section class="owner-panel">
+            <div class="owner-panel__header">
+                <h3>Generar PDF</h3>
+                <p class="owner-panel__support">Configura y exporta el reporte deseado.</p>
+            </div>
+
+            <form method="post" class="owner-report-form">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="report_type">Tipo de reporte</label>
+                    <select id="report_type" name="report_type" class="form-control">
+                        {% for item in reports_data.report_types %}
+                            <option value="{{ item.code }}" {% if selected_report_type == item.code %}selected{% endif %}>
+                                {{ item.label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="date_from">Fecha inicial</label>
+                    <input
+                        type="date"
+                        id="date_from"
+                        name="date_from"
+                        class="form-control"
+                        value="{{ selected_date_from }}"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="date_to">Fecha final</label>
+                    <input
+                        type="date"
+                        id="date_to"
+                        name="date_to"
+                        class="form-control"
+                        value="{{ selected_date_to }}"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="property_id">Propiedad</label>
+                    <select id="property_id" name="property_id" class="form-control">
+                        <option value="all">Todas las propiedades</option>
+                        {% for property in reports_data.available_properties %}
+                            <option
+                                value="{{ property.id }}"
+                                {% if selected_property_id == property.id|stringformat:"s" %}selected{% endif %}
+                            >
+                                {{ property.title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <input type="hidden" name="format" value="pdf">
+
+                <button type="submit" class="btn-primary btn-block">
+                    <span class="material-symbols-outlined">description</span>
+                    Generar PDF
+                </button>
+            </form>
+        </section>
+
+        <section class="owner-panel">
+            <div class="owner-panel__header">
+                <h3>Reportes disponibles</h3>
+            </div>
+
+            <div class="owner-report-preview">
+                <div class="owner-report-preview__card">
+                    <span class="material-symbols-outlined">description</span>
+                    <strong>Resumen general</strong>
+                    <small>Panorama ejecutivo</small>
+                </div>
+                <div class="owner-report-preview__card">
+                    <span class="material-symbols-outlined">apartment</span>
+                    <strong>Propiedades</strong>
+                    <small>Inventario y estado</small>
+                </div>
+                <div class="owner-report-preview__card">
+                    <span class="material-symbols-outlined">mail</span>
+                    <strong>Solicitudes</strong>
+                    <small>Seguimiento operativo</small>
+                </div>
+                <div class="owner-report-preview__card">
+                    <span class="material-symbols-outlined">star</span>
+                    <strong>Reputación</strong>
+                    <small>Favoritos y reseñas</small>
+                </div>
+            </div>
+        </section>
+    </aside>
+</section>
+{% endblock %}

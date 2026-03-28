@@ -609,3 +609,115 @@ def get_owner_dashboard_reputation(request, owner_id: int) -> tuple[dict, Option
 
     except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError, ValueError):
         return {}, "No fue posible cargar la reputación del owner."
+    
+
+REPORT_TYPE_LABELS = {
+    "summary": "Resumen general",
+    "properties": "Propiedades",
+    "requests": "Solicitudes",
+    "reputation": "Reputación",
+}
+
+
+def get_owner_reports_summary(
+    request,
+    owner_id: int,
+    date_from: str | None = None,
+    date_to: str | None = None,
+) -> tuple[dict, Optional[str]]:
+    params = {}
+    if date_from:
+        params["date_from"] = date_from
+    if date_to:
+        params["date_to"] = date_to
+
+    try:
+        response = authenticated_request(
+            request,
+            "GET",
+            f"/owners/{owner_id}/dashboard/reports-summary",
+            params=params,
+        )
+
+        if response.status_code != 200:
+            return {}, "No fue posible cargar el resumen de reportes."
+
+        payload = response.json()
+        data = payload.get("data") or {}
+
+        summary_cards = data.get("summary_cards") or {}
+        report_types = data.get("report_types") or []
+        available_properties = data.get("available_properties") or []
+        recent_reports = data.get("recent_reports") or []
+
+        normalized_report_types = []
+        for item in report_types:
+            code = (item.get("code") or "").strip()
+            normalized_report_types.append(
+                {
+                    "code": code,
+                    "label": item.get("label") or REPORT_TYPE_LABELS.get(code, code.title()),
+                    "description": item.get("description") or "",
+                }
+            )
+
+        normalized_recent_reports = []
+        for item in recent_reports:
+            normalized_recent_reports.append(
+                {
+                    "id": item.get("id"),
+                    "name": item.get("name") or "Reporte",
+                    "report_type": item.get("report_type"),
+                    "report_type_label": item.get("report_type_label")
+                    or REPORT_TYPE_LABELS.get(item.get("report_type"), "Reporte"),
+                    "created_at_display": item.get("created_at_display") or "",
+                    "download_url": item.get("download_url") or "",
+                }
+            )
+
+        return {
+            "summary_cards": {
+                "properties_count": summary_cards.get("properties_count", 0),
+                "requests_count": summary_cards.get("requests_count", 0),
+                "reviews_count": summary_cards.get("reviews_count", 0),
+                "average_rating": summary_cards.get("average_rating", 0),
+            },
+            "report_types": normalized_report_types,
+            "available_properties": available_properties,
+            "recent_reports": normalized_recent_reports,
+        }, None
+
+    except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError, ValueError):
+        return {}, "No fue posible cargar el resumen de reportes."
+
+
+def export_owner_report_pdf(
+    request,
+    owner_id: int,
+    payload: dict,
+) -> tuple[dict, Optional[str]]:
+    try:
+        response = authenticated_request(
+            request,
+            "POST",
+            f"/owners/{owner_id}/reports/export",
+            json=payload,
+        )
+
+        if response.status_code not in (200, 201):
+            return {}, "No fue posible generar el reporte PDF."
+
+        body = response.json()
+        data = body.get("data") or {}
+
+        return {
+            "report_id": data.get("report_id"),
+            "report_name": data.get("report_name") or "Reporte",
+            "report_type": data.get("report_type"),
+            "format": data.get("format") or "pdf",
+            "generated_at_display": data.get("generated_at_display") or "",
+            "download_url": data.get("download_url") or "",
+        }, None
+
+    except (AuthServiceError, BackendUnavailableError, UnauthorizedRefreshError, ValueError):
+        return {}, "No fue posible generar el reporte PDF."
