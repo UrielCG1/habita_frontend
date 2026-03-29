@@ -7,22 +7,6 @@
 <link rel="stylesheet" href="{% static 'css/owner-requests.css' %}">
 {% endblock %}
 
-{% block owner_page_eyebrow %}Seguimiento{% endblock %}
-{% block owner_page_title %}Solicitudes recibidas{% endblock %}
-{% block owner_page_subtitle %}
-Revisa a los interesados, filtra por estado y administra el seguimiento de cada solicitud desde un solo módulo.
-{% endblock %}
-
-{% block owner_page_actions %}
-<a href="{% url 'accounts:owner-properties' %}" class="btn-secondary btn-small">
-    <span class="material-symbols-outlined">apartment</span>
-    Mis propiedades
-</a>
-<a href="{% url 'accounts:owner-dashboard' %}" class="btn-primary btn-small">
-    <span class="material-symbols-outlined">dashboard</span>
-    Dashboard
-</a>
-{% endblock %}
 
 {% block owner_content %}
 <section class="owner-requests-page">

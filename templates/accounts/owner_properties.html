@@ -7,22 +7,6 @@
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 {% endblock %}
 
-{% block owner_page_eyebrow %}Portafolio{% endblock %}
-{% block owner_page_title %}Mis propiedades{% endblock %}
-{% block owner_page_subtitle %}
-Administra tus publicaciones, revisa el estado de cada propiedad y entra rápido a las solicitudes pendientes desde un solo panel.
-{% endblock %}
-
-{% block owner_page_actions %}
-<a href="{% url 'accounts:owner-property-create' %}" class="btn-primary btn-small">
-    <span class="material-symbols-outlined">add_home</span>
-    Nueva propiedad
-</a>
-<a href="{% url 'accounts:owner-requests' %}" class="btn-secondary btn-small">
-    <span class="material-symbols-outlined">mail</span>
-    Ver solicitudes
-</a>
-{% endblock %}
 
 {% block owner_content %}
 <section class="owner-properties-page">

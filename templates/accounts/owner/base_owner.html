@@ -21,22 +21,6 @@
             {% include "accounts/owner/includes/topbar.html" %}
 
             <main class="owner-portal-content">
-                <header class="owner-page-header">
-                    <div>
-                        <p class="owner-page-header__eyebrow">{% block owner_page_eyebrow %}Owner portal{% endblock %}</p>
-                        <h1 class="owner-page-header__title">{% block owner_page_title %}Dashboard{% endblock %}</h1>
-                        <p class="owner-page-header__subtitle">
-                            {% block owner_page_subtitle %}
-                            Administra tus propiedades, solicitudes y actividad desde un solo lugar.
-                            {% endblock %}
-                        </p>
-                    </div>
-
-                    <div class="owner-page-header__actions">
-                        {% block owner_page_actions %}{% endblock %}
-                    </div>
-                </header>
-
                 {% if messages %}
                     <div class="owner-flash-stack">
                         {% for message in messages %}

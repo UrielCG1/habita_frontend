@@ -14,31 +14,6 @@
 {% endblock %}
 
 
-{% block owner_page_eyebrow %}Publicación{% endblock %}
-{% block owner_page_title %}
-    {% if mode == "edit" %}
-        Editar propiedad
-    {% else %}
-        Nueva propiedad
-    {% endif %}
-{% endblock %}
-{% block owner_page_subtitle %}
-Completa la información, administra imágenes y deja lista tu publicación dentro del Owner Portal.
-{% endblock %}
-
-{% block owner_page_actions %}
-<a href="{% url 'accounts:owner-properties' %}" class="btn-secondary btn-small">
-    <span class="material-symbols-outlined">apartment</span>
-    Mis propiedades
-</a>
-{% if mode == "edit" and property_data.id %}
-<a href="{% url 'accounts:owner-property-requests' property_data.id %}" class="btn-primary btn-small">
-    <span class="material-symbols-outlined">mail</span>
-    Ver solicitudes
-</a>
-{% endif %}
-{% endblock %}
-
 {% block owner_content %}
 <section class="property-editor-page">
     <div class="container property-editor-shell">

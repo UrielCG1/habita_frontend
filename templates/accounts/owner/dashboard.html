@@ -8,22 +8,6 @@
 <link rel="stylesheet" href="{% static 'css/owner-portal.css' %}">
 {% endblock %}
 
-{% block owner_page_eyebrow %}Resumen general{% endblock %}
-{% block owner_page_title %}Dashboard{% endblock %}
-{% block owner_page_subtitle %}
-Consulta el estado general de tus propiedades, solicitudes y puntos de atención desde un solo lugar.
-{% endblock %}
-
-{% block owner_page_actions %}
-<a href="{% url 'accounts:owner-property-create' %}" class="btn-primary btn-small">
-    <span class="material-symbols-outlined">add_home</span>
-    Nueva propiedad
-</a>
-<a href="{% url 'accounts:owner-properties' %}" class="btn-secondary btn-small">
-    <span class="material-symbols-outlined">apartment</span>
-    Mis propiedades
-</a>
-{% endblock %}
 
 {% block owner_content %}
 {% if dashboard_error %}
