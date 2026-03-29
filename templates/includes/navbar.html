@@ -19,7 +19,7 @@
                         <a href="{% url 'accounts:owner-property-create' %}">Nueva propiedad</a>
                         -->
                     <a href="{% url 'accounts:owner-properties' %}">Mis propiedades</a>
-                    <a href="{% url 'accounts:accounts:owner-dashboard' %}">Dashboard</a>
+                    <a href="{% url 'accounts:owner-dashboard' %}">Dashboard</a>
                 {% elif habita_user.role == "admin" %}
                     <a href="{% url 'accounts:admin-area' %}">Panel admin</a>
                 {% endif %}
