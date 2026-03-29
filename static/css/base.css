@@ -570,3 +570,20 @@ textarea {
         align-items: stretch;
     }
 }
+
+
+.footer-bottom--stacked {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    text-align: center;
+}
+
+.footer-disclaimer {
+    margin: 0;
+    max-width: 920px;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.72);
+}
