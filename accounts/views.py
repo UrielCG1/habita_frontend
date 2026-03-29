@@ -1227,6 +1227,42 @@ def owner_dashboard_view(request):
         request,
         owner_id=habita_user["id"],
     )
+    
+    rating_breakdown = (reputation_data or {}).get("rating_breakdown") or {}
+
+    chart_payload = {
+        "portfolio_status": {
+            "labels": ["Disponibles", "Rentadas / ocupadas", "No publicadas"],
+            "data": [
+                dashboard_stats["available_properties"],
+                dashboard_stats["rented_properties"],
+                dashboard_stats["unpublished_properties"],
+            ],
+        },
+        "request_flow": {
+            "labels": ["Pendientes", "Aceptadas", "Resueltas"],
+            "data": [
+                request_summary["pending"],
+                request_summary["accepted"],
+                request_summary["resolved"],
+            ],
+        },
+        "top_properties": {
+            "labels": [item.get("title", "Propiedad") for item in property_rows[:5]],
+            "requests": [item.get("total_requests_count", 0) for item in property_rows[:5]],
+            "pending": [item.get("pending_requests_count", 0) for item in property_rows[:5]],
+        },
+        "rating_breakdown": {
+            "labels": ["5★", "4★", "3★", "2★", "1★"],
+            "data": [
+                rating_breakdown.get("5", 0),
+                rating_breakdown.get("4", 0),
+                rating_breakdown.get("3", 0),
+                rating_breakdown.get("2", 0),
+                rating_breakdown.get("1", 0),
+            ],
+        },
+    }
 
     return render(
         request,
@@ -1244,6 +1280,7 @@ def owner_dashboard_view(request):
             "top_property": top_property,
             "reputation_data": reputation_data,
             "reputation_error": reputation_error,
+            "chart_payload": chart_payload,
         },
     )
     

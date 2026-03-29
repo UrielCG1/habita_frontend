@@ -43,7 +43,7 @@
             <a href="{% url 'accounts:owner-reports' %}" class="owner-quick-card">
                 <span class="material-symbols-outlined">description</span>
                 <strong>Reportes</strong>
-                <small>Próximamente exportación PDF</small>
+                <small>Exportación PDF y análisis</small>
             </a>
         </div>
     </article>
@@ -94,6 +94,59 @@
         <span class="material-symbols-outlined">star</span>
         <strong>{{ reputation_data.average_rating|default:0 }}</strong>
         <p>Calificación promedio</p>
+    </article>
+
+    <article class="owner-panel owner-panel--hero owner-charts-panel">
+        <div class="owner-panel__header owner-panel__header--between">
+            <div>
+                <h3>Visualización del portafolio</h3>
+                <p class="owner-panel__support">
+                    Gráficos rápidos para entender el estado actual de propiedades, solicitudes y reputación.
+                </p>
+            </div>
+        </div>
+
+        <div class="owner-chart-grid">
+            <section class="owner-chart-card">
+                <div class="owner-chart-card__header">
+                    <h4>Estado del portafolio</h4>
+                    <p>Distribución actual de tus propiedades.</p>
+                </div>
+                <div class="owner-chart-canvas-wrap">
+                    <canvas id="portfolioStatusChart"></canvas>
+                </div>
+            </section>
+
+            <section class="owner-chart-card">
+                <div class="owner-chart-card__header">
+                    <h4>Flujo de solicitudes</h4>
+                    <p>Panorama actual del pipeline de solicitudes.</p>
+                </div>
+                <div class="owner-chart-canvas-wrap">
+                    <canvas id="requestFlowChart"></canvas>
+                </div>
+            </section>
+
+            <section class="owner-chart-card">
+                <div class="owner-chart-card__header">
+                    <h4>Top propiedades por solicitudes</h4>
+                    <p>Comparativo entre solicitudes totales y pendientes.</p>
+                </div>
+                <div class="owner-chart-canvas-wrap owner-chart-canvas-wrap--bar">
+                    <canvas id="topPropertiesChart"></canvas>
+                </div>
+            </section>
+
+            <section class="owner-chart-card">
+                <div class="owner-chart-card__header">
+                    <h4>Distribución de calificaciones</h4>
+                    <p>Resumen visual de reputación por estrellas.</p>
+                </div>
+                <div class="owner-chart-canvas-wrap">
+                    <canvas id="ratingBreakdownChart"></canvas>
+                </div>
+            </section>
+        </div>
     </article>
 
     <article class="owner-panel">
@@ -450,4 +503,11 @@
         {% endif %}
     </article>
 </section>
+
+{{ chart_payload|json_script:"owner-dashboard-chart-data" }}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'js/owner-dashboard-charts.js' %}"></script>
 {% endblock %}
