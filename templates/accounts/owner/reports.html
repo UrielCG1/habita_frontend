@@ -7,19 +7,6 @@
 <link rel="stylesheet" href="{% static 'css/reports.css' %}">
 {% endblock %}
 
-{% block owner_page_eyebrow %}Análisis y exportación{% endblock %}
-{% block owner_page_title %}Reportes{% endblock %}
-{% block owner_page_subtitle %}
-Genera reportes ejecutivos y operativos de tus propiedades, solicitudes y reputación dentro del Owner Portal.
-{% endblock %}
-
-{% block owner_page_actions %}
-<a href="{% url 'accounts:owner-dashboard' %}" class="btn-secondary btn-small">
-    <span class="material-symbols-outlined">dashboard</span>
-    Dashboard
-</a>
-{% endblock %}
-
 {% block owner_content %}
 {% if reports_error %}
     <div class="owner-flash owner-flash--error">
