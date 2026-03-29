@@ -752,3 +752,12 @@
         height: 300px;
     }
 }
+
+
+.brand-icon {
+    height: 42px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
