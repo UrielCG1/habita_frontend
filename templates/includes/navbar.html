@@ -14,9 +14,12 @@
                 {% if habita_user.role == "tenant" %}
                     <a href="{% url 'accounts:activity' %}">Mi actividad</a>
                 {% elif habita_user.role == "owner" %}
+                    <!--
+                        <a href="{% url 'accounts:owner-requests' %}">Solicitudes recibidas</a>
+                        <a href="{% url 'accounts:owner-property-create' %}">Nueva propiedad</a>
+                        -->
                     <a href="{% url 'accounts:owner-properties' %}">Mis propiedades</a>
-                    <a href="{% url 'accounts:owner-requests' %}">Solicitudes recibidas</a>
-                    <a href="{% url 'accounts:owner-property-create' %}">Nueva propiedad</a>
+                    <a href="{% url 'accounts:accounts:owner-dashboard' %}">Dashboard</a>
                 {% elif habita_user.role == "admin" %}
                     <a href="{% url 'accounts:admin-area' %}">Panel admin</a>
                 {% endif %}
