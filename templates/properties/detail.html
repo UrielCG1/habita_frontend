@@ -75,15 +75,41 @@
             </div>
         </section>
 
-        <section class="detail-gallery-shell">
+        <section
+            class="detail-gallery-shell"
+            id="property-gallery"
+            data-gallery-root
+        >
             {% if property.primary_image_url %}
-                <div class="detail-gallery-main">
-                    <img src="{{ property.primary_image_url }}" alt="{{ property.primary_image_alt }}">
+                <div
+                    class="detail-gallery-main"
+                    data-gallery-open
+                    data-gallery-index="0"
+                    role="button"
+                    tabindex="0"
+                    aria-label="Abrir galería de imágenes"
+                >
+                    <img
+                        id="detail-gallery-featured-image"
+                        src="{{ property.primary_image_url }}"
+                        alt="{{ property.primary_image_alt }}"
+                    >
                     <div class="detail-gallery-main__overlay"></div>
+
+                    <button
+                        type="button"
+                        class="detail-gallery-main__expand"
+                        data-gallery-open
+                        data-gallery-index="0"
+                        aria-label="Ver imágenes en grande"
+                    >
+                        <span class="material-symbols-outlined">open_in_full</span>
+                    </button>
+
                     {% if property.gallery_count > 1 %}
                         <div class="detail-gallery-main__counter">
                             <span class="material-symbols-outlined">photo_library</span>
-                            {{ property.gallery_count }} fotos
+                            <span id="detail-gallery-counter-text">1 / {{ property.gallery_count }}</span>
                         </div>
                     {% endif %}
                 </div>
@@ -97,9 +123,17 @@
             <div class="detail-gallery-thumbs">
                 {% if property.gallery_thumbs %}
                     {% for image in property.gallery_thumbs %}
-                        <div class="detail-gallery-thumb">
+                        <button
+                            type="button"
+                            class="detail-gallery-thumb {% if forloop.first %}is-active{% endif %}"
+                            data-gallery-thumb
+                            data-image-url="{{ image.image_url }}"
+                            data-image-alt="{{ image.alt_text|default:property.title }}"
+                            data-gallery-index="{{ forloop.counter0 }}"
+                            aria-label="Ver imagen {{ forloop.counter }}"
+                        >
                             <img src="{{ image.image_url }}" alt="{{ image.alt_text }}">
-                        </div>
+                        </button>
                     {% endfor %}
                 {% else %}
                     <div class="detail-gallery-thumb detail-gallery-thumb--empty">
@@ -109,7 +143,8 @@
                 {% endif %}
             </div>
         </section>
-
+        
+        
         <div class="detail-layout">
             <div class="detail-main-column">
                 <article class="detail-section-card">
@@ -433,6 +468,32 @@
         </div>
     </div>
 </section>
+
+<div class="detail-lightbox" id="detail-lightbox" hidden>
+    <div class="detail-lightbox__backdrop" data-lightbox-close></div>
+
+    <div class="detail-lightbox__dialog" role="dialog" aria-modal="true" aria-label="Galería de imágenes">
+        <button type="button" class="detail-lightbox__close" data-lightbox-close aria-label="Cerrar galería">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+
+        <button type="button" class="detail-lightbox__nav detail-lightbox__nav--prev" id="lightboxPrev" aria-label="Imagen anterior">
+            <span class="material-symbols-outlined">chevron_left</span>
+        </button>
+
+        <figure class="detail-lightbox__figure">
+            <img id="detail-lightbox-image" src="" alt="">
+            <figcaption class="detail-lightbox__caption">
+                <span id="detail-lightbox-caption"></span>
+                <span id="detail-lightbox-position"></span>
+            </figcaption>
+        </figure>
+
+        <button type="button" class="detail-lightbox__nav detail-lightbox__nav--next" id="lightboxNext" aria-label="Imagen siguiente">
+            <span class="material-symbols-outlined">chevron_right</span>
+        </button>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -443,37 +504,160 @@
 ></script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+  // =========================
+  // MAPA
+  // =========================
   const mapNode = document.getElementById("property-detail-map");
-  if (!mapNode || typeof L === "undefined") return;
+  if (mapNode && typeof L !== "undefined") {
+    const lat = parseFloat(mapNode.dataset.lat || "");
+    const lng = parseFloat(mapNode.dataset.lng || "");
+    const title = mapNode.dataset.title || "Propiedad";
+    const location = mapNode.dataset.location || "";
 
-  const lat = parseFloat(mapNode.dataset.lat || "");
-  const lng = parseFloat(mapNode.dataset.lng || "");
-  const title = mapNode.dataset.title || "Propiedad";
-  const location = mapNode.dataset.location || "";
+    if (!Number.isNaN(lat) && !Number.isNaN(lng)) {
+      const map = L.map(mapNode, {
+        scrollWheelZoom: false,
+      }).setView([lat, lng], 15);
 
-  if (Number.isNaN(lat) || Number.isNaN(lng)) return;
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap",
+      }).addTo(map);
 
-  const map = L.map(mapNode, {
-    scrollWheelZoom: false,
-  }).setView([lat, lng], 15);
+      const popupHtml = `
+        <div class="detail-map-popup">
+          <strong>${title}</strong>
+          <div>${location}</div>
+        </div>
+      `;
 
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: "&copy; OpenStreetMap",
-  }).addTo(map);
+      L.marker([lat, lng]).addTo(map).bindPopup(popupHtml).openPopup();
 
-  const popupHtml = `
-    <div class="detail-map-popup">
-      <strong>${title}</strong>
-      <div>${location}</div>
-    </div>
-  `;
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 120);
+    }
+  }
 
-  L.marker([lat, lng]).addTo(map).bindPopup(popupHtml).openPopup();
+  // =========================
+  // GALERÍA
+  // =========================
+  const featuredImage = document.getElementById("detail-gallery-featured-image");
+  const thumbs = Array.from(document.querySelectorAll("[data-gallery-thumb]"));
+  const counterText = document.getElementById("detail-gallery-counter-text");
 
-  setTimeout(() => {
-    map.invalidateSize();
-  }, 120);
+  const lightbox = document.getElementById("detail-lightbox");
+  const lightboxImage = document.getElementById("detail-lightbox-image");
+  const lightboxCaption = document.getElementById("detail-lightbox-caption");
+  const lightboxPosition = document.getElementById("detail-lightbox-position");
+  const lightboxPrev = document.getElementById("lightboxPrev");
+  const lightboxNext = document.getElementById("lightboxNext");
+  const openTriggers = Array.from(document.querySelectorAll("[data-gallery-open]"));
+  const closeTriggers = Array.from(document.querySelectorAll("[data-lightbox-close]"));
+
+  if (!featuredImage || !thumbs.length || !lightbox || !lightboxImage) return;
+
+  const images = thumbs.map((thumb) => ({
+    src: thumb.dataset.imageUrl,
+    alt: thumb.dataset.imageAlt || "{{ property.title|escapejs }}",
+  }));
+
+  let currentIndex = 0;
+
+  function syncFeaturedImage(index) {
+    const image = images[index];
+    if (!image) return;
+
+    featuredImage.src = image.src;
+    featuredImage.alt = image.alt;
+
+    thumbs.forEach((thumb, thumbIndex) => {
+      thumb.classList.toggle("is-active", thumbIndex === index);
+    });
+
+    if (counterText) {
+      counterText.textContent = `${index + 1} / ${images.length}`;
+    }
+
+    currentIndex = index;
+  }
+
+  function updateLightbox(index) {
+    const image = images[index];
+    if (!image) return;
+
+    lightboxImage.src = image.src;
+    lightboxImage.alt = image.alt;
+    lightboxCaption.textContent = image.alt;
+    lightboxPosition.textContent = `${index + 1} / ${images.length}`;
+    currentIndex = index;
+  }
+
+  function openLightbox(index = currentIndex) {
+    updateLightbox(index);
+    lightbox.hidden = false;
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeLightbox() {
+    lightbox.hidden = true;
+    document.body.style.overflow = "";
+  }
+
+  function showNext() {
+    const nextIndex = (currentIndex + 1) % images.length;
+    updateLightbox(nextIndex);
+    syncFeaturedImage(nextIndex);
+  }
+
+  function showPrev() {
+    const prevIndex = (currentIndex - 1 + images.length) % images.length;
+    updateLightbox(prevIndex);
+    syncFeaturedImage(prevIndex);
+  }
+
+  thumbs.forEach((thumb, index) => {
+    thumb.addEventListener("click", () => {
+      syncFeaturedImage(index);
+    });
+  });
+
+  openTriggers.forEach((trigger) => {
+    trigger.addEventListener("click", () => {
+      const index = parseInt(trigger.dataset.galleryIndex || currentIndex, 10);
+      openLightbox(Number.isNaN(index) ? currentIndex : index);
+    });
+
+    trigger.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        const index = parseInt(trigger.dataset.galleryIndex || currentIndex, 10);
+        openLightbox(Number.isNaN(index) ? currentIndex : index);
+      }
+    });
+  });
+
+  if (lightboxPrev) {
+    lightboxPrev.addEventListener("click", showPrev);
+  }
+
+  if (lightboxNext) {
+    lightboxNext.addEventListener("click", showNext);
+  }
+
+  closeTriggers.forEach((trigger) => {
+    trigger.addEventListener("click", closeLightbox);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (lightbox.hidden) return;
+
+    if (event.key === "Escape") closeLightbox();
+    if (event.key === "ArrowRight") showNext();
+    if (event.key === "ArrowLeft") showPrev();
+  });
+
+  syncFeaturedImage(0);
 });
 </script>
 {% endblock %}
