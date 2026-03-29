@@ -46,19 +46,25 @@ Genera reportes ejecutivos y operativos de tus propiedades, solicitudes y reputa
                 <strong>{{ reports_data.summary_cards.properties_count|default:0 }}</strong>
                 <p>Propiedades</p>
             </article>
+        </section>
 
+        <section class="owner-reports-kpis">
             <article class="owner-panel owner-panel--stat">
                 <span class="material-symbols-outlined">mail</span>
                 <strong>{{ reports_data.summary_cards.requests_count|default:0 }}</strong>
                 <p>Solicitudes</p>
             </article>
+        </section>
 
+        <section class="owner-reports-kpis">
             <article class="owner-panel owner-panel--stat">
                 <span class="material-symbols-outlined">reviews</span>
                 <strong>{{ reports_data.summary_cards.reviews_count|default:0 }}</strong>
                 <p>Reseñas</p>
             </article>
+        </section>
 
+        <section class="owner-reports-kpis">
             <article class="owner-panel owner-panel--stat">
                 <span class="material-symbols-outlined">star</span>
                 <strong>{{ reports_data.summary_cards.average_rating|default:0 }}</strong>
